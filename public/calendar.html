@@ -164,18 +164,27 @@
                     btn.setAttribute("aria-checked", btn.getAttribute("data-cal-mode") === mode ? "true" : "false");
                   });
                   var viewTool = document.getElementById("cal-view-tool");
+                  var editTool = document.getElementById("cal-edit-tool");
                   if (viewTool) {
-                    var onView = mode === "view";
-                    viewTool.classList.toggle("is-on", onView);
-                    viewTool.setAttribute("aria-pressed", onView ? "true" : "false");
+                    viewTool.classList.toggle("is-on", mode === "view");
+                    viewTool.setAttribute("aria-pressed", mode === "view" ? "true" : "false");
+                  }
+                  if (editTool) {
+                    editTool.classList.toggle("is-on", mode === "edit");
+                    editTool.setAttribute("aria-pressed", mode === "edit" ? "true" : "false");
                   }
                 } catch (e) {}
               })();
             </script>
-            <button type="button" class="cal-tool-btn" id="cal-view-tool" aria-label="View mode" aria-pressed="false" title="View">
+            <button type="button" class="cal-tool-btn" id="cal-view-tool" data-cal-mode="view" aria-label="View mode" aria-pressed="false" title="View">
               <svg viewBox="0 0 24 24" aria-hidden="true">
                 <path class="cal-tool-icon" d="M2.5 12s3.4-5.75 9.5-5.75S21.5 12 21.5 12s-3.4 5.75-9.5 5.75S2.5 12 2.5 12z"/>
                 <circle class="cal-tool-icon-pupil" cx="12" cy="12" r="2.6"/>
+              </svg>
+            </button>
+            <button type="button" class="cal-tool-btn" id="cal-edit-tool" data-cal-mode="edit" aria-label="Edit mode" aria-pressed="false" title="Edit">
+              <svg viewBox="0 0 24 24" aria-hidden="true">
+                <path class="cal-tool-icon" d="M14.1 5.1l4.8 4.8M5.5 18.5l1.4-5.1L16.8 3.5a1.7 1.7 0 0 1 2.4 0l1.3 1.3a1.7 1.7 0 0 1 0 2.4L10.6 17.1 5.5 18.5z"/>
               </svg>
             </button>
             <button type="button" class="cal-tool-btn" id="cal-chat-toggle" aria-label="Toggle chat panel" aria-pressed="true" title="Chat">
