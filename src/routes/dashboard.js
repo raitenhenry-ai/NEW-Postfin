@@ -385,14 +385,9 @@ router.get("/connectors", wrap(async (req, res) => {
       accounts: byPlatform[key],
     })),
     maxAccountsPerPlatform: config.maxAccountsPerPlatform,
-    // Shown on the Connectors page so the values each platform's dashboard
-    // asks for can be copied from the running deployment, rather than
-    // guessed at and rejected as a mismatch.
+    // Shown on the Connectors page so App URL can be copied from the
+    // running deployment rather than guessed.
     baseUrl: config.baseUrl,
-    metaWebhook: {
-      url: `${config.baseUrl}/webhooks/meta`,
-      verifyToken: config.metaVerifyToken,
-    },
   });
 }));
 
