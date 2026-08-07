@@ -164,14 +164,14 @@
                     btn.setAttribute("aria-checked", btn.getAttribute("data-cal-mode") === mode ? "true" : "false");
                   });
                   var viewTool = document.getElementById("cal-view-tool");
-                  var editTool = document.getElementById("cal-edit-tool");
+                  var chatTool = document.getElementById("cal-chat-toggle");
                   if (viewTool) {
                     viewTool.classList.toggle("is-on", mode === "view");
                     viewTool.setAttribute("aria-pressed", mode === "view" ? "true" : "false");
                   }
-                  if (editTool) {
-                    editTool.classList.toggle("is-on", mode === "edit");
-                    editTool.setAttribute("aria-pressed", mode === "edit" ? "true" : "false");
+                  if (chatTool) {
+                    chatTool.classList.toggle("is-on", mode === "edit");
+                    chatTool.setAttribute("aria-pressed", mode === "edit" ? "true" : "false");
                   }
                 } catch (e) {}
               })();
@@ -182,12 +182,7 @@
                 <circle class="cal-tool-icon-pupil" cx="12" cy="12" r="2.6"/>
               </svg>
             </button>
-            <button type="button" class="cal-tool-btn" id="cal-edit-tool" data-cal-mode="edit" aria-label="Edit mode" aria-pressed="false" title="Edit">
-              <svg viewBox="0 0 24 24" aria-hidden="true">
-                <path class="cal-tool-icon" d="M14.1 5.1l4.8 4.8M5.5 18.5l1.4-5.1L16.8 3.5a1.7 1.7 0 0 1 2.4 0l1.3 1.3a1.7 1.7 0 0 1 0 2.4L10.6 17.1 5.5 18.5z"/>
-              </svg>
-            </button>
-            <button type="button" class="cal-tool-btn" id="cal-chat-toggle" aria-label="Toggle chat panel" aria-pressed="true" title="Chat">
+            <button type="button" class="cal-tool-btn" id="cal-chat-toggle" data-cal-mode="edit" aria-label="Edit mode" aria-pressed="false" title="Edit">
               <svg viewBox="0 0 24 24" aria-hidden="true">
                 <path class="cal-tool-icon" d="M4.75 5.5h14.5A2.25 2.25 0 0 1 21.5 7.75v6.5a2.25 2.25 0 0 1-2.25 2.25h-5.35l-3.85 2.9a.7.7 0 0 1-1.12-.56v-2.34H4.75A2.25 2.25 0 0 1 2.5 14.25v-6.5A2.25 2.25 0 0 1 4.75 5.5z"/>
               </svg>
