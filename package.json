@@ -1,0 +1,20 @@
+{
+  "name": "postfin",
+  "version": "1.0.0",
+  "description": "Postfin: paste a product URL, get an AI-generated UGC video, scheduled and auto-posted to every connected social account, with live analytics.",
+  "type": "module",
+  "main": "src/server.js",
+  "scripts": {
+    "start": "node src/server.js",
+    "dev": "node --watch src/server.js"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "dependencies": {
+    "better-sqlite3": "^11.10.0",
+    "dotenv": "^16.4.5",
+    "express": "^4.21.2",
+    "pg": "^8.22.0"
+  }
+}

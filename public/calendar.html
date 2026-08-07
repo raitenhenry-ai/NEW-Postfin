@@ -3,7 +3,8 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Profile</title>
+  <title>Calendar</title>
+  <link rel="icon" href="logo.png">
   <link rel="stylesheet" href="styles.css">
 </head>
 <body>
@@ -30,7 +31,7 @@
       </div>
     </div>
     <div class="divider"></div>
-    <a class="profile" href="profile.html" aria-label="cole perrilliat" aria-current="page">
+    <a class="profile" href="profile.html" aria-label="cole perrilliat">
       <span class="profile-avatar">C</span>
       <span class="profile-name">cole perrilliat</span>
       <svg class="profile-chevron" viewBox="0 0 12 12" fill="none" aria-hidden="true">
@@ -44,7 +45,7 @@
         <span class="nav-label">Dash</span>
       </span>
     </a>
-    <a class="nav-btn" href="calendar.html" aria-label="Calendar">
+    <a class="nav-btn active" href="calendar.html" aria-label="Calendar" aria-current="page">
       <span class="nav-box">
         <svg class="ads-icon" viewBox="0 0 24 24" fill="none" aria-hidden="true">
           <rect x="3.5" y="5" width="17" height="15.5" rx="2.5" stroke="currentColor" stroke-width="1.75"/>
@@ -81,12 +82,75 @@
     </a>
   </aside>
 
-  <main class="page">
-    <div class="dash-header">
-      <div class="dash-greeting"><h1>Profile</h1></div>
+  <main class="page cal-workspace">
+    <div class="cal-shell">
+      <section class="cal-main" aria-label="Content calendar">
+        <header class="cal-topbar">
+          <div class="cal-topbar-left">
+            <h1>Calendar</h1>
+            <div class="cal-nav-group">
+              <button type="button" class="cal-icon-btn" id="cal-prev" aria-label="Previous month">
+                <svg viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M10 3.5L5.5 8 10 12.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              </button>
+              <button type="button" class="cal-today-btn" id="cal-today">Today</button>
+              <button type="button" class="cal-icon-btn" id="cal-next" aria-label="Next month">
+                <svg viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M6 3.5L10.5 8 6 12.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              </button>
+            </div>
+          </div>
+
+          <button type="button" class="cal-month-label" id="cal-month-label">
+            <span id="cal-month-text">June 2026</span>
+            <svg viewBox="0 0 12 12" fill="none" aria-hidden="true"><path d="M3 4.5L6 7.5L9 4.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </button>
+
+          <div class="cal-topbar-right">
+            <div class="cal-mode-toggle" role="tablist" aria-label="Calendar mode">
+              <button type="button" class="cal-mode-btn active" data-cal-mode="view" aria-selected="true">View</button>
+              <button type="button" class="cal-mode-btn" data-cal-mode="edit" aria-selected="false">Edit</button>
+              <button type="button" class="cal-mode-btn" data-cal-mode="agent" aria-selected="false">AI Agent</button>
+            </div>
+            <button type="button" class="cal-view-btn">
+              Month
+              <svg viewBox="0 0 12 12" fill="none" aria-hidden="true"><path d="M3 4.5L6 7.5L9 4.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </button>
+          </div>
+        </header>
+
+        <div class="cal-board">
+          <div class="cal-weekdays" aria-hidden="true">
+            <span>SUN</span><span>MON</span><span>TUE</span><span>WED</span><span>THU</span><span>FRI</span><span>SAT</span>
+          </div>
+          <div class="cal-grid" id="cal-grid" role="grid" aria-label="June 2026"></div>
+        </div>
+
+        <p class="cal-hint" id="cal-hint">View mode · browse your schedule</p>
+      </section>
+
+      <aside class="cal-chat" aria-label="Day posts" id="cal-chat">
+        <div class="cal-chat-header">
+          <h2 id="cal-chat-title">Day posts</h2>
+          <span class="cal-chat-sub" id="cal-selection-label">Loading…</span>
+        </div>
+        <div class="cal-chat-messages" id="cal-chat-messages"></div>
+        <form class="cal-composer" id="cal-chat-form">
+          <div class="cal-composer-chips" id="cal-date-chips" hidden></div>
+          <textarea id="cal-chat-field" rows="3" placeholder="Describe your idea" autocomplete="off"></textarea>
+          <div class="cal-composer-toolbar">
+            <button type="button" class="cal-composer-plus" aria-label="Add attachment">+</button>
+            <div class="cal-composer-actions">
+              <button type="submit" class="cal-composer-send" id="cal-chat-send" aria-label="Send" disabled>
+                <svg viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M8 12.5V3.5M8 3.5L4.5 7M8 3.5L11.5 7" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              </button>
+            </div>
+          </div>
+        </form>
+      </aside>
     </div>
   </main>
 
+  <script src="api.js"></script>
   <script src="app.js"></script>
+  <script src="calendar.js"></script>
 </body>
 </html>

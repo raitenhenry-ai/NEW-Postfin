@@ -3,7 +3,8 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Recent</title>
+  <title>Connectors</title>
+  <link rel="icon" href="logo.png">
   <link rel="stylesheet" href="styles.css">
 </head>
 <body>
@@ -61,7 +62,7 @@
         <span class="nav-label">Analytics</span>
       </span>
     </a>
-    <a class="nav-btn active" href="recent.html" aria-label="Recent" aria-current="page">
+    <a class="nav-btn" href="recent.html" aria-label="Recent">
       <span class="nav-box">
         <svg class="ads-icon" viewBox="0 0 24 24" fill="none" aria-hidden="true">
           <circle cx="12" cy="12" r="8.25" stroke="currentColor" stroke-width="1.75"/>
@@ -70,7 +71,7 @@
         <span class="nav-label">Recent</span>
       </span>
     </a>
-    <a class="nav-btn" href="connectors.html" aria-label="Connectors">
+    <a class="nav-btn active" href="connectors.html" aria-label="Connectors" aria-current="page">
       <span class="nav-box">
         <svg class="ads-icon" viewBox="0 0 24 24" fill="none" aria-hidden="true">
           <path d="M8.5 15.5l7-7" stroke="currentColor" stroke-width="1.75" stroke-linecap="round"/>
@@ -81,12 +82,18 @@
     </a>
   </aside>
 
-  <main class="page">
-    <div class="dash-header">
-      <div class="dash-greeting"><h1>Recent</h1></div>
+  <main class="page connectors-page">
+    <div class="connectors-header">
+      <h1>Connectors</h1>
+      <p>Connect your social accounts to manage and publish content.</p>
     </div>
+
+    <div class="connectors-status" id="connectors-status"></div>
+    <ul class="connectors-list" id="connectors-list"></ul>
   </main>
 
+  <script src="api.js"></script>
   <script src="app.js"></script>
+  <script src="connectors.js"></script>
 </body>
 </html>

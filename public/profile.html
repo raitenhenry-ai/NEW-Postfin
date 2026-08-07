@@ -3,7 +3,8 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Connectors</title>
+  <title>Profile</title>
+  <link rel="icon" href="logo.png">
   <link rel="stylesheet" href="styles.css">
 </head>
 <body>
@@ -30,7 +31,7 @@
       </div>
     </div>
     <div class="divider"></div>
-    <a class="profile" href="profile.html" aria-label="cole perrilliat">
+    <a class="profile" href="profile.html" aria-label="cole perrilliat" aria-current="page">
       <span class="profile-avatar">C</span>
       <span class="profile-name">cole perrilliat</span>
       <svg class="profile-chevron" viewBox="0 0 12 12" fill="none" aria-hidden="true">
@@ -70,7 +71,7 @@
         <span class="nav-label">Recent</span>
       </span>
     </a>
-    <a class="nav-btn active" href="connectors.html" aria-label="Connectors" aria-current="page">
+    <a class="nav-btn" href="connectors.html" aria-label="Connectors">
       <span class="nav-box">
         <svg class="ads-icon" viewBox="0 0 24 24" fill="none" aria-hidden="true">
           <path d="M8.5 15.5l7-7" stroke="currentColor" stroke-width="1.75" stroke-linecap="round"/>
@@ -81,40 +82,16 @@
     </a>
   </aside>
 
-  <main class="page connectors-page">
-    <div class="connectors-header">
-      <h1>Connectors</h1>
-      <p>Connect your social accounts to manage and publish content.</p>
+  <main class="page">
+    <div class="dash-header">
+      <div class="dash-greeting"><h1>Profile</h1></div>
     </div>
 
-    <ul class="connectors-list">
-      <li class="connector-row">
-        <img class="connector-icon" src="icons/tiktok.png" alt="">
-        <div class="connector-copy">
-          <span class="connector-name">TikTok</span>
-          <span class="connector-desc">Connect your TikTok account</span>
-        </div>
-        <button type="button" class="connector-action">Connect</button>
-      </li>
-      <li class="connector-row">
-        <img class="connector-icon" src="icons/instagram.png" alt="">
-        <div class="connector-copy">
-          <span class="connector-name">Instagram</span>
-          <span class="connector-desc">Connect your Instagram account</span>
-        </div>
-        <button type="button" class="connector-action">Connect</button>
-      </li>
-      <li class="connector-row">
-        <img class="connector-icon" src="icons/youtube.png" alt="">
-        <div class="connector-copy">
-          <span class="connector-name">YouTube</span>
-          <span class="connector-desc">Connect your YouTube channel</span>
-        </div>
-        <button type="button" class="connector-action">Connect</button>
-      </li>
-    </ul>
+    <section class="profile-page" id="profile-page"></section>
   </main>
 
+  <script src="api.js"></script>
   <script src="app.js"></script>
+  <script src="profile.js"></script>
 </body>
 </html>

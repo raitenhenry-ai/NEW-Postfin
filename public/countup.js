@@ -1,3 +1,7 @@
+/* Count-up animation for the stat tiles.
+   Values that arrive from the API are marked [data-live]; the page script
+   animates those once the data lands, so they're skipped on load. */
+
 function parseStatValue(text) {
   const raw = text.trim();
   const prefix = raw.match(/^[^0-9.-]+/)?.[0] || "";
@@ -45,4 +49,6 @@ function animateStat(el, duration = 1300) {
   requestAnimationFrame(frame);
 }
 
-document.querySelectorAll(".stat-value").forEach((el) => animateStat(el, 1300));
+window.PostfinCountUp = { animateStat };
+
+document.querySelectorAll(".stat-value:not([data-live])").forEach((el) => animateStat(el, 1300));

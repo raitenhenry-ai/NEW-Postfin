@@ -19,184 +19,26 @@
     "July", "August", "September", "October", "November", "December",
   ];
 
-  const events = {
-    "2026-06-01": [
-      {
-        time: "10:00 AM",
-        title: "Morning routine tips",
-        platform: "TikTok",
-        product: "AuraGlow Morning Stack",
-        model: "Nova Clip 2.5",
-        caption:
-          "My 5-minute morning that actually sticks ☀️\nSave this if your mornings feel chaotic.",
-        hashtags: "#morningroutine #ugc #productivity #selfcare #auraGlow",
-        prompt:
-          "Create a hyper-authentic UGC morning-routine TikTok (15–20s, vertical 9:16). Hook in the first 1.5s with messy bed + phone alarm + on-screen text “the morning that fixed my energy.” Jump-cut through: water, AuraGlow stack scoop into shaker, quick face splash, outfit grab, walking-out door. Natural phone mic audio, slight handheld shake, daylight through blinds. End on product hero in hand with soft CTA “comment ROUTINE for the checklist.” Keep it raw creator energy, not polished ad.",
-      },
-    ],
-    "2026-06-06": [
-      {
-        time: "9:00 AM",
-        title: "Protein bowl",
-        platform: "TikTok",
-        product: "FitFuel Protein Bowl Kit",
-        model: "Nova Clip 2.5",
-        caption:
-          "High protein bowl in under 10 minutes 🥗💪\nSave this for your next meal prep day.",
-        hashtags: "#highprotein #mealprep #healthyrecipes #fitfuel #ugc",
-        prompt:
-          "Shoot a bright 15–20s vertical cooking clip assembling a high-protein bowl. Open on a clean counter with raw ingredients (chicken, rice, greens, eggs, FitFuel sauce). Fast chop-and-build jump cuts, hands in frame, appetizing overhead angles. Punchy on-screen protein grams each step. Finish with plated overhead hero + calorie/protein callout and soft save CTA. Natural daylight, high-contrast food UGC, no talking head.",
-      },
-    ],
-    "2026-06-08": [
-      {
-        time: "10:00 AM",
-        title: "iPhone Tricks You Didn't Know",
-        platform: "TikTok",
-        product: "iPhone 16 Pro",
-        model: "Aura Reel Pro",
-        caption:
-          "iPhone tricks that feel illegal to know 📱\nWhich one are you trying first?",
-        hashtags: "#iphonetricks #techhacks #appletips #viral #ugc",
-        prompt:
-          "Make a fast, scroll-stopping tech UGC TikTok teaching 3 iPhone tricks. Cold open with shocked face + text “stop using your iPhone wrong.” Demo each trick in under 4s with big numbered overlays, screen recordings + face cam cutaways. Punchy trending audio, snappy cuts, end with “part 2?” comment bait. Keep casual bedroom lighting and creator energy — educational but addictive.",
-      },
-      {
-        time: "12:00 PM",
-        title: "3 Easy Breakfast Ideas",
-        platform: "YouTube",
-        product: "MorningFuel Breakfast Bundle",
-        model: "Director Longform X",
-        caption:
-          "3 high-protein breakfasts you can make half-asleep 🍳\nFull recipes in the description.",
-        hashtags: "#breakfastideas #highprotein #mealprep #youtubeshorts #morningfuel",
-        prompt:
-          "Produce a YouTube Short / mid-form cooking video covering 3 easy high-protein breakfasts. Hook with finished plates first, then rapid recipe builds with ingredient callouts and macros on screen. Warm kitchen lighting, overhead + 45° angles, friendly voiceover. End each idea with a plated hero and soft subscribe CTA. Feels like a trusted creator meal-prep channel, not a brand studio.",
-      },
-      {
-        time: "4:30 PM",
-        title: "High Protein Dinner Recipe",
-        platform: "Instagram",
-        product: "LeanChef Dinner Kit",
-        model: "Aura Reel Pro",
-        caption:
-          "High protein dinner that tastes like cheat day 🔥\nSave this for busy weeknights.",
-        hashtags: "#highproteindinner #fitnessfood #reels #leanchef #mealideas",
-        prompt:
-          "Film an Instagram Reel of a high-protein dinner build: fridge pull, sizzle pan shot, plating montage, first-bite reaction. Use trending audio pacing, text overlays for protein grams, and a clean fridge-light aesthetic. End on a plated hero with LeanChef kit visible in soft background and a save sticker cue. Authentic kitchen UGC, slightly imperfect, highly shareable.",
-      },
-    ],
-    "2026-06-17": [
-      {
-        time: "12:30 PM",
-        title: "High protein dinner idea",
-        platform: "TikTok",
-        product: "MacroChef Skillet Kit",
-        model: "Nova Clip 2.5",
-        caption:
-          "Dinner macros without the boring chicken vibe 🍗\nComment “dinner” for the exact plate.",
-        hashtags: "#macrofriendly #dinnerideas #tiktokfood #macrochef #ugc",
-        prompt:
-          "Create a viral dinner-idea TikTok: hook with juicy plated close-up, then reverse-build the recipe in jump cuts. Overlay macros (P/C/F) big and readable. Handheld phone footage, steam, sizzle ASMR, creator talking casually off-camera. Close with MacroChef kit cameo and CTA to duet with their plate.",
-      },
-      {
-        time: "3:00 PM",
-        title: "Gym meal prep",
-        platform: "Instagram",
-        product: "PrepPro Containers",
-        model: "Aura Reel Pro",
-        caption:
-          "Sunday prep that carries the whole week 💪\nContainers linked in bio.",
-        hashtags: "#mealprep #gymfood #fitnessreels #preppro #bulkprep",
-        prompt:
-          "Shoot a satisfying meal-prep Reel: grocery dump, batch cook montage, PrepPro container packing, fridge overview. Chapter-style text titles, portion counts on screen, upbeat audio. End with weekly plan graphic and save CTA. Clean countertop UGC, bright daylight, creator hands only.",
-      },
-      {
-        time: "7:00 PM",
-        title: "Night macros",
-        platform: "YouTube",
-        product: "NightFuel Protein Blend",
-        model: "Director Longform X",
-        caption:
-          "How I hit protein at night without wrecking sleep 🌙\nFull routine below.",
-        hashtags: "#nightroutine #protein #fitnessyoutube #nightfuel #macros",
-        prompt:
-          "Film a calm nighttime protein routine video: kitchen pour of NightFuel, shaker, quick snack plate, talking-to-camera tips on late macros + sleep. Soft warm lamps, intimate creator vibe, clear on-screen tips. End with subscribe CTA and product in frame. Long enough for depth but paced for retention.",
-      },
-    ],
-    "2026-06-23": [
-      {
-        time: "3:00 PM",
-        title: "Summer vibe",
-        platform: "Instagram",
-        product: "Solara Summer Set",
-        model: "Aura Reel Pro",
-        caption:
-          "Summer energy loading… ☀️\nWhat’s your go-to warm weather vibe?",
-        hashtags: "#summerstyle #aesthetic #summervibes #solara #ugc",
-        prompt:
-          "Film a warm golden-hour lifestyle Reel featuring Solara Summer Set. Soft outdoor light, gentle movement, fabric/hair slow-mo, one snack insert, wide establishing shot. Soft dissolves, peach/amber grade, music-led pacing, no dialogue. End on chill end card with minimal text.",
-      },
-    ],
-    "2026-07-06": [
-      {
-        time: "11:00 AM",
-        title: "Healthy tips",
-        platform: "TikTok",
-        product: "VitalDay Greens",
-        model: "Nova Clip 2.5",
-        caption:
-          "3 healthy tips that don’t feel like a personality 😤\nTry #2 today.",
-        hashtags: "#healthytips #wellness #vitalday #ugc #greens",
-        prompt:
-          "Make a punchy tips TikTok with 3 health habits. Face-cam hooks, quick demos with VitalDay Greens in tip #2, bold text overlays, trending sound. Keep skeptical-funny tone that converts well for UGC. End with “follow for part 2” CTA.",
-      },
-    ],
-    "2026-08-06": [
-      {
-        time: "9:30 AM",
-        title: "Desk stretch reset",
-        platform: "TikTok",
-        product: "MotionEase Desk Kit",
-        model: "Nova Clip 2.5",
-        caption:
-          "60-second desk reset your back will thank you 💻\nSave before your next meeting.",
-        hashtags: "#deskstretch #wfh #mobility #motionease #ugc",
-        prompt:
-          "Create a raw WFH UGC TikTok: creator at messy desk, text hook “your back at 3pm vs after this.” Demo 3 stretches with MotionEase band visible, countdown overlays, slight humor. Natural laptop light + window light. End with soft CTA to comment STRETCH for the full sequence.",
-      },
-      {
-        time: "1:00 PM",
-        title: "Creator lunch haul",
-        platform: "Instagram",
-        product: "FreshCart Protein Box",
-        model: "Aura Reel Pro",
-        caption:
-          "What I actually eat between edits 🥗\nHigh protein, low decision fatigue.",
-        hashtags: "#creatorlife #lunchideas #freshcart #reels #highprotein",
-        prompt:
-          "Film an Instagram Reel lunch haul: unbox FreshCart Protein Box, overhead ingredient reveal, quick assemble, first bite. Trendy audio, text callouts for macros, casual apartment kitchen. End with save CTA and product label readable in final frame.",
-      },
-      {
-        time: "6:15 PM",
-        title: "UGC hook formulas that convert",
-        platform: "YouTube",
-        product: "ClipForge Hook Pack",
-        model: "Director Longform X",
-        caption:
-          "The hook formulas I reuse for viral UGC 📈\nSteal these for your next brand video.",
-        hashtags: "#ugctips #contentcreator #hooks #clipforge #youtubecreator",
-        prompt:
-          "Produce a YouTube creator-education video breaking down 5 UGC hook formulas that drive watch time. Cold open with a before/after retention graph mock, then demo each hook with example clips and ClipForge templates on screen. Talking-head + screen inserts, clear chapters, examples of pattern interrupts, curiosity gaps, and product-first opens. Close with a downloadable checklist CTA and soft product mention for ClipForge Hook Pack. Retention-first pacing, conversational, highly actionable.",
-      },
-    ],
-  };
+  const { api, escapeHtml, PLATFORM_LABELS, toast } = window.Postfin;
 
-  const MODEL_OPTIONS = [
-    "Nova Clip 2.5",
-    "Aura Reel Pro",
-    "Director Longform X",
-  ];
+  // Jobs keyed by YYYY-MM-DD, filled from /api/calendar.
+  let events = {};
+
+  // One job can go to several platforms, but a calendar row only has space
+  // for one name - show the first and count the rest.
+  function platformLabel(post) {
+    const list = post.platforms || [];
+    if (!list.length) return "No platform";
+    const first = PLATFORM_LABELS[list[0]] || list[0];
+    return list.length > 1 ? `${first} +${list.length - 1}` : first;
+  }
+
+  // The detail panel has room for the full list.
+  function platformLabelFull(post) {
+    const list = post.platforms || [];
+    if (!list.length) return "No platform selected";
+    return list.map((p) => PLATFORM_LABELS[p] || p).join(", ");
+  }
 
   function platformKey(name) {
     return String(name || "").toLowerCase().replace(/\s+/g, "");
@@ -324,7 +166,15 @@
     if (openedPost != null && posts[openedPost]) {
       const post = posts[openedPost];
       const detail = document.createElement("div");
-      detail.className = `cal-post-detail is-${platformKey(post.platform)}`;
+      detail.className = `cal-post-detail is-${platformKey(post.platforms[0] || "")}`;
+
+      // A slot can only be moved while the video is still waiting to go out.
+      const canReschedule = canEdit && post.jobStatus !== "posted";
+      const slotValue = post.scheduledAt
+        ? new Date(post.scheduledAt - new Date().getTimezoneOffset() * 60000)
+            .toISOString().slice(0, 16)
+        : "";
+
       detail.innerHTML = `
         <button type="button" class="cal-post-back" id="cal-post-back">
           <svg viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M10 3.5L5.5 8 10 12.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
@@ -337,19 +187,21 @@
         <div class="cal-post-fields">
           <section>
             <h4>Product</h4>
-            ${canEdit ? `<input class="cal-post-field-input" data-field="product" type="text">` : `<p class="cal-post-product"></p>`}
+            <p class="cal-post-product"></p>
           </section>
           <section>
-            <h4>Model</h4>
-            ${canEdit ? `
-              <select class="cal-post-field-input cal-post-model-select" data-field="model">
-                ${MODEL_OPTIONS.map((m) => `<option value="${m}">${m}</option>`).join("")}
-              </select>
-            ` : `<p class="cal-post-model"></p>`}
+            <h4>Renderer</h4>
+            <p class="cal-post-model"></p>
           </section>
           <section>
-            <h4>Date posted</h4>
-            <p class="cal-post-date"></p>
+            <h4>${post.scheduledAt ? "Scheduled for" : "Posted"}</h4>
+            ${canReschedule
+              ? `<input class="cal-post-field-input" data-field="scheduledAt" type="datetime-local" value="${slotValue}">`
+              : `<p class="cal-post-date"></p>`}
+          </section>
+          <section>
+            <h4>Status</h4>
+            <p class="cal-post-status"></p>
           </section>
           <section>
             <h4>Caption</h4>
@@ -361,50 +213,63 @@
           </section>
           <section>
             <h4>Prompt</h4>
-            ${canEdit ? `<textarea class="cal-post-field-input cal-post-prompt-input" data-field="prompt" rows="8"></textarea>` : `<p class="cal-post-prompt"></p>`}
+            <p class="cal-post-prompt"></p>
           </section>
+          ${post.videoUrl ? `<section><h4>Video</h4><video class="cal-post-video" src="${escapeHtml(post.videoUrl)}" controls playsinline></video></section>` : ""}
         </div>
+        ${canEdit ? `<div class="cal-post-actions"><button type="button" class="pf-btn" data-action="save">Save changes</button><span class="cal-post-saved" hidden>Saved</span></div>` : ""}
       `;
 
-      detail.querySelector(".cal-post-summary").textContent = `${post.platform} · ${post.time}`;
-      detail.querySelector(".cal-post-date").textContent = `${formatLong(focused)} · ${post.time}`;
+      detail.querySelector(".cal-post-summary").textContent =
+        `${platformLabelFull(post)} \u00b7 ${post.time}`;
+      detail.querySelector(".cal-post-product").textContent =
+        post.productName || post.productUrl || "\u2014";
+      detail.querySelector(".cal-post-model").textContent =
+        post.provider === "heygen" ? "HeyGen avatar" : "Built-in renderer";
+      detail.querySelector(".cal-post-status").textContent =
+        `${post.jobStatus}${post.accountCount ? ` \u00b7 ${post.accountCount} account(s)` : ""}`;
+      detail.querySelector(".cal-post-prompt").textContent = post.prompt || "Script not generated yet.";
+      const dateEl = detail.querySelector(".cal-post-date");
+      if (dateEl) dateEl.textContent = `${formatLong(focused)} \u00b7 ${post.time}`;
 
       if (canEdit) {
         detail.querySelector('[data-field="title"]').value = post.title || "";
-        detail.querySelector('[data-field="product"]').value = post.product || "";
-        const modelSelect = detail.querySelector('[data-field="model"]');
-        if (modelSelect) {
-          if (post.model && !MODEL_OPTIONS.includes(post.model)) {
-            const opt = document.createElement("option");
-            opt.value = post.model;
-            opt.textContent = post.model;
-            modelSelect.appendChild(opt);
-          }
-          modelSelect.value = post.model || MODEL_OPTIONS[0];
-        }
         detail.querySelector('[data-field="caption"]').value = post.caption || "";
         detail.querySelector('[data-field="hashtags"]').value = post.hashtags || "";
-        detail.querySelector('[data-field="prompt"]').value = post.prompt || "";
-        detail.querySelectorAll("[data-field]").forEach((el) => {
-          const sync = () => {
-            post[el.dataset.field] = el.value;
+
+        // Edits are staged locally and written on Save, so a stray keystroke
+        // doesn't fire a request per character.
+        const saveBtn = detail.querySelector('[data-action="save"]');
+        saveBtn.addEventListener("click", async () => {
+          const body = {
+            title: detail.querySelector('[data-field="title"]').value,
+            caption: detail.querySelector('[data-field="caption"]').value,
+            hashtags: detail.querySelector('[data-field="hashtags"]').value,
           };
-          el.addEventListener("input", sync);
-          el.addEventListener("change", sync);
+          const slot = detail.querySelector('[data-field="scheduledAt"]');
+          if (slot && slot.value) body.scheduledAt = new Date(slot.value).getTime();
+
+          saveBtn.disabled = true;
+          try {
+            await api(`/api/jobs/${post.id}`, { method: "PATCH", body });
+            toast("Saved");
+            await loadEvents();
+            render();
+          } catch (err) {
+            toast(err.message, "error");
+          } finally {
+            saveBtn.disabled = false;
+          }
         });
       } else {
         detail.querySelector(".cal-post-title").textContent = post.title;
-        detail.querySelector(".cal-post-product").textContent = post.product;
-        detail.querySelector(".cal-post-model").textContent = post.model || "—";
-        detail.querySelector(".cal-post-caption").textContent = post.caption;
-        detail.querySelector(".cal-post-hashtags").textContent = post.hashtags;
-        detail.querySelector(".cal-post-prompt").textContent = post.prompt;
+        detail.querySelector(".cal-post-caption").textContent = post.caption || "\u2014";
+        detail.querySelector(".cal-post-hashtags").textContent = post.hashtags || "\u2014";
       }
 
       detail.querySelector("#cal-post-back").addEventListener("click", () => {
         openedPost = null;
-        if (canEdit) render();
-        else renderDayPanel();
+        renderDayPanel();
       });
       dayPanel.appendChild(detail);
       return;
@@ -415,7 +280,7 @@
     posts.forEach((post, index) => {
       const btn = document.createElement("button");
       btn.type = "button";
-      btn.className = `cal-post-item is-${platformKey(post.platform)}`;
+      btn.className = `cal-post-item is-${platformKey(post.platforms[0] || "")}`;
       btn.innerHTML = `
         <i class="cal-post-item-bar" aria-hidden="true"></i>
         <span class="cal-post-item-copy">
@@ -428,7 +293,7 @@
         <svg class="cal-post-item-chevron" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M6 3.5L10.5 8 6 12.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
       `;
       btn.querySelector(".cal-post-item-title").textContent = post.title;
-      btn.querySelector(".cal-post-item-platform").textContent = post.platform;
+      btn.querySelector(".cal-post-item-platform").textContent = platformLabel(post);
       btn.querySelector(".cal-post-item-time").textContent = post.time;
       btn.addEventListener("click", () => {
         openedPost = index;
@@ -600,7 +465,7 @@
         list.addEventListener("wheel", (e) => e.stopPropagation(), { passive: true });
         dayEvents.forEach((ev) => {
           const row = document.createElement("div");
-          row.className = `cal-event-row is-${platformKey(ev.platform)}`;
+          row.className = `cal-event-row is-${platformKey(ev.platforms[0] || "")}`;
           row.innerHTML = `
             <i class="cal-event-bar" aria-hidden="true"></i>
             <span class="cal-event-title"></span>
@@ -608,7 +473,7 @@
             <span class="cal-event-time"></span>
           `;
           row.querySelector(".cal-event-title").textContent = ev.title;
-          row.querySelector(".cal-event-platform").textContent = ev.platform;
+          row.querySelector(".cal-event-platform").textContent = platformLabel(ev);
           row.querySelector(".cal-event-time").textContent = ev.time;
           list.appendChild(row);
         });
@@ -688,13 +553,17 @@
     btn.addEventListener("click", () => setMode(btn.dataset.calMode));
   });
 
-  document.getElementById("cal-prev")?.addEventListener("click", () => {
+  document.getElementById("cal-prev")?.addEventListener("click", async () => {
     view = new Date(view.getFullYear(), view.getMonth() - 1, 1);
+    render();
+    await loadEvents();
     render();
   });
 
-  document.getElementById("cal-next")?.addEventListener("click", () => {
+  document.getElementById("cal-next")?.addEventListener("click", async () => {
     view = new Date(view.getFullYear(), view.getMonth() + 1, 1);
+    render();
+    await loadEvents();
     render();
   });
 
@@ -735,15 +604,92 @@
     }
   });
 
-  form?.addEventListener("submit", (e) => {
+  // The agent box turns a product URL plus a set of selected days into one
+  // scheduled video per day. The pipeline needs a real product page to
+  // scrape, so a prompt without a URL can't be actioned.
+  const URL_PATTERN = /https?:\/\/[^\s]+/i;
+
+  function agentMessage(html, kind = "info") {
+    if (!dayPanel) return;
+    dayPanel.innerHTML = `<div class="cal-day-empty ${kind === "error" ? "is-error" : ""}">${html}</div>`;
+  }
+
+  form?.addEventListener("submit", async (e) => {
     e.preventDefault();
     if (!field || !field.value.trim()) return;
-    field.value = "";
+
+    const text = field.value.trim();
+    const match = text.match(URL_PATTERN);
+    if (!match) {
+      toast("Include the product URL you want a video made from", "error");
+      agentMessage("Paste the product page URL in your message - the generator scrapes it for the name, price and images.", "error");
+      return;
+    }
+
+    const days = [...selected].sort();
+    if (!days.length) {
+      toast("Select at least one day on the calendar", "error");
+      return;
+    }
+
+    const productUrl = match[0];
+    // Keep whatever the user wrote around the URL as the video's title.
+    const title = text.replace(URL_PATTERN, "").trim().slice(0, 120) || undefined;
+
+    if (sendBtn) sendBtn.disabled = true;
+    agentMessage(`Scheduling ${days.length} video${days.length === 1 ? "" : "s"}...`);
+
+    const results = [];
+    for (const key of days) {
+      // 9am local on each selected day, unless that has already passed today.
+      const when = parseKey(key);
+      when.setHours(9, 0, 0, 0);
+      const scheduledAt = when.getTime() > Date.now() ? when.getTime() : Date.now() + 60000;
+      try {
+        await api("/api/jobs", {
+          method: "POST",
+          body: { productUrl, title, scheduledAt, platforms: [] },
+        });
+        results.push({ key, ok: true });
+      } catch (err) {
+        results.push({ key, ok: false, error: err.message });
+      }
+    }
+
+    const failed = results.filter((r) => !r.ok);
+    if (failed.length) {
+      toast(`${failed.length} of ${results.length} failed: ${failed[0].error}`, "error");
+    } else {
+      toast(`Scheduled ${results.length} video${results.length === 1 ? "" : "s"}`);
+      field.value = "";
+      selected.clear();
+    }
+
+    if (sendBtn) sendBtn.disabled = false;
     syncSendState();
     resizeField();
+    await loadEvents();
+    render();
   });
+
+  // Pulls the jobs for the visible month plus a month of padding either
+  // side, so scrolling between months rarely needs a fetch.
+  async function loadEvents() {
+    const start = new Date(view.getFullYear(), view.getMonth() - 1, 1).getTime();
+    const end = new Date(view.getFullYear(), view.getMonth() + 2, 0, 23, 59, 59).getTime();
+    try {
+      const data = await api(`/api/calendar?start=${start}&end=${end}`);
+      events = Object.fromEntries(
+        Object.entries(data.days).map(([key, day]) => [key, day.posts])
+      );
+    } catch (err) {
+      toast(`Couldn't load the calendar: ${err.message}`, "error");
+      events = {};
+    }
+  }
 
   syncSendState();
   resizeField();
   render();
+  loadEvents().then(render);
 })();

@@ -4,6 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Analytics</title>
+  <link rel="icon" href="logo.png">
   <link rel="stylesheet" href="styles.css">
 </head>
 <body>
@@ -92,6 +93,7 @@
           <button type="button" class="analytics-platform-btn" data-platform="instagram" aria-selected="false">Instagram</button>
         </div>
       </div>
+      <button class="date-range" type="button" id="analytics-refresh" title="Pull fresh numbers from the platform APIs">Refresh</button>
       <div class="analytics-range" id="analytics-range">
         <button class="date-range analytics-range-btn" type="button" id="analytics-range-btn" aria-haspopup="listbox" aria-expanded="false">
           <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
@@ -122,8 +124,8 @@
         <header class="analytics-chart-head">
           <h2>Views</h2>
           <div class="analytics-chart-stats">
-            <span class="analytics-chart-value">128.7K</span>
-            <span class="analytics-chart-delta">↑ 24.6%</span>
+            <span class="analytics-chart-value">—</span>
+            <span class="analytics-chart-delta"></span>
           </div>
         </header>
         <div class="analytics-chart-body">
@@ -141,8 +143,8 @@
         <header class="analytics-chart-head">
           <h2>Followers</h2>
           <div class="analytics-chart-stats">
-            <span class="analytics-chart-value">2.34K</span>
-            <span class="analytics-chart-delta">↑ 18.7%</span>
+            <span class="analytics-chart-value">—</span>
+            <span class="analytics-chart-delta"></span>
           </div>
         </header>
         <div class="analytics-chart-body">
@@ -160,8 +162,8 @@
         <header class="analytics-chart-head">
           <h2>Comments</h2>
           <div class="analytics-chart-stats">
-            <span class="analytics-chart-value">3.07K</span>
-            <span class="analytics-chart-delta">↑ 27.4%</span>
+            <span class="analytics-chart-value">—</span>
+            <span class="analytics-chart-delta"></span>
           </div>
         </header>
         <div class="analytics-chart-body">
@@ -181,112 +183,34 @@
         <h2>Recent videos</h2>
         <a href="recent.html">See all</a>
       </div>
-      <div class="analytics-recent-grid">
-        <article class="recent-video-card">
-          <div class="recent-video-thumb">
-            <img src="thumbs/protein-bowl.png" alt="">
-            <img class="recent-video-platform" src="icons/tiktok.png" alt="TikTok">
-            <div class="recent-video-stats">
-              <span><svg viewBox="0 0 12 12" fill="none" aria-hidden="true"><path d="M4.2 2.8v6.4L9.5 6 4.2 2.8z" fill="currentColor"/></svg>125K</span>
-              <span><svg viewBox="0 0 12 12" fill="none" aria-hidden="true"><path d="M6 10.2S2.2 7.6 2.2 4.9A2.15 2.15 0 0 1 6 3.7a2.15 2.15 0 0 1 3.8 1.2C9.8 7.6 6 10.2 6 10.2z" fill="currentColor"/></svg>14.2K</span>
-              <span><svg viewBox="0 0 12 12" fill="none" aria-hidden="true"><path d="M2.2 2.4h7.6a1 1 0 0 1 1 1v4.2a1 1 0 0 1-1 1H6.2L4 10.2V8.6H2.2a1 1 0 0 1-1-1V3.4a1 1 0 0 1 1-1z" fill="currentColor"/></svg>892</span>
-            </div>
-          </div>
-          <h3>3 Ingredient Pancakes</h3>
-          <p>Aug 8, 10:00 AM</p>
-        </article>
-        <article class="recent-video-card">
-          <div class="recent-video-thumb">
-            <img src="thumbs/morning-routine.png" alt="">
-            <img class="recent-video-platform" src="icons/tiktok.png" alt="TikTok">
-            <div class="recent-video-stats">
-              <span><svg viewBox="0 0 12 12" fill="none" aria-hidden="true"><path d="M4.2 2.8v6.4L9.5 6 4.2 2.8z" fill="currentColor"/></svg>98.6K</span>
-              <span><svg viewBox="0 0 12 12" fill="none" aria-hidden="true"><path d="M6 10.2S2.2 7.6 2.2 4.9A2.15 2.15 0 0 1 6 3.7a2.15 2.15 0 0 1 3.8 1.2C9.8 7.6 6 10.2 6 10.2z" fill="currentColor"/></svg>11.4K</span>
-              <span><svg viewBox="0 0 12 12" fill="none" aria-hidden="true"><path d="M2.2 2.4h7.6a1 1 0 0 1 1 1v4.2a1 1 0 0 1-1 1H6.2L4 10.2V8.6H2.2a1 1 0 0 1-1-1V3.4a1 1 0 0 1 1-1z" fill="currentColor"/></svg>654</span>
-            </div>
-          </div>
-          <h3>Creamy Garlic Pasta</h3>
-          <p>Aug 7, 12:00 PM</p>
-        </article>
-        <article class="recent-video-card">
-          <div class="recent-video-thumb">
-            <img src="thumbs/summer-outfit.png" alt="">
-            <img class="recent-video-platform" src="icons/tiktok.png" alt="TikTok">
-            <div class="recent-video-stats">
-              <span><svg viewBox="0 0 12 12" fill="none" aria-hidden="true"><path d="M4.2 2.8v6.4L9.5 6 4.2 2.8z" fill="currentColor"/></svg>75.3K</span>
-              <span><svg viewBox="0 0 12 12" fill="none" aria-hidden="true"><path d="M6 10.2S2.2 7.6 2.2 4.9A2.15 2.15 0 0 1 6 3.7a2.15 2.15 0 0 1 3.8 1.2C9.8 7.6 6 10.2 6 10.2z" fill="currentColor"/></svg>9.1K</span>
-              <span><svg viewBox="0 0 12 12" fill="none" aria-hidden="true"><path d="M2.2 2.4h7.6a1 1 0 0 1 1 1v4.2a1 1 0 0 1-1 1H6.2L4 10.2V8.6H2.2a1 1 0 0 1-1-1V3.4a1 1 0 0 1 1-1z" fill="currentColor"/></svg>501</span>
-            </div>
-          </div>
-          <h3>High Protein Breakfast</h3>
-          <p>Aug 6, 4:30 PM</p>
-        </article>
-        <article class="recent-video-card">
-          <div class="recent-video-thumb">
-            <img src="thumbs/morning-routine.png" alt="">
-            <img class="recent-video-platform" src="icons/youtube.png" alt="YouTube">
-            <div class="recent-video-stats">
-              <span><svg viewBox="0 0 12 12" fill="none" aria-hidden="true"><path d="M4.2 2.8v6.4L9.5 6 4.2 2.8z" fill="currentColor"/></svg>63.2K</span>
-              <span><svg viewBox="0 0 12 12" fill="none" aria-hidden="true"><path d="M6 10.2S2.2 7.6 2.2 4.9A2.15 2.15 0 0 1 6 3.7a2.15 2.15 0 0 1 3.8 1.2C9.8 7.6 6 10.2 6 10.2z" fill="currentColor"/></svg>7.8K</span>
-              <span><svg viewBox="0 0 12 12" fill="none" aria-hidden="true"><path d="M2.2 2.4h7.6a1 1 0 0 1 1 1v4.2a1 1 0 0 1-1 1H6.2L4 10.2V8.6H2.2a1 1 0 0 1-1-1V3.4a1 1 0 0 1 1-1z" fill="currentColor"/></svg>412</span>
-            </div>
-          </div>
-          <h3>Productive Desk Setup</h3>
-          <p>Aug 5, 9:15 AM</p>
-        </article>
-        <article class="recent-video-card">
-          <div class="recent-video-thumb">
-            <img src="thumbs/summer-outfit.png" alt="">
-            <img class="recent-video-platform" src="icons/instagram.png" alt="Instagram">
-            <div class="recent-video-stats">
-              <span><svg viewBox="0 0 12 12" fill="none" aria-hidden="true"><path d="M4.2 2.8v6.4L9.5 6 4.2 2.8z" fill="currentColor"/></svg>52.1K</span>
-              <span><svg viewBox="0 0 12 12" fill="none" aria-hidden="true"><path d="M6 10.2S2.2 7.6 2.2 4.9A2.15 2.15 0 0 1 6 3.7a2.15 2.15 0 0 1 3.8 1.2C9.8 7.6 6 10.2 6 10.2z" fill="currentColor"/></svg>6.4K</span>
-              <span><svg viewBox="0 0 12 12" fill="none" aria-hidden="true"><path d="M2.2 2.4h7.6a1 1 0 0 1 1 1v4.2a1 1 0 0 1-1 1H6.2L4 10.2V8.6H2.2a1 1 0 0 1-1-1V3.4a1 1 0 0 1 1-1z" fill="currentColor"/></svg>338</span>
-            </div>
-          </div>
-          <h3>Dream Vacation Spot</h3>
-          <p>Aug 4, 1:20 PM</p>
-        </article>
-        <article class="recent-video-card">
-          <div class="recent-video-thumb">
-            <img src="thumbs/protein-bowl.png" alt="">
-            <img class="recent-video-platform" src="icons/tiktok.png" alt="TikTok">
-            <div class="recent-video-stats">
-              <span><svg viewBox="0 0 12 12" fill="none" aria-hidden="true"><path d="M4.2 2.8v6.4L9.5 6 4.2 2.8z" fill="currentColor"/></svg>41.8K</span>
-              <span><svg viewBox="0 0 12 12" fill="none" aria-hidden="true"><path d="M6 10.2S2.2 7.6 2.2 4.9A2.15 2.15 0 0 1 6 3.7a2.15 2.15 0 0 1 3.8 1.2C9.8 7.6 6 10.2 6 10.2z" fill="currentColor"/></svg>5.2K</span>
-              <span><svg viewBox="0 0 12 12" fill="none" aria-hidden="true"><path d="M2.2 2.4h7.6a1 1 0 0 1 1 1v4.2a1 1 0 0 1-1 1H6.2L4 10.2V8.6H2.2a1 1 0 0 1-1-1V3.4a1 1 0 0 1 1-1z" fill="currentColor"/></svg>276</span>
-            </div>
-          </div>
-          <h3>Easy Cookie Recipe</h3>
-          <p>Aug 4, 1:45 PM</p>
-        </article>
-      </div>
+      <div class="analytics-recent-grid"></div>
     </section>
 
     <section class="analytics-totals" aria-label="Engagement totals">
       <article class="analytics-total-card" data-total="likes">
         <span class="analytics-total-label">Total likes</span>
-        <span class="analytics-total-value">54.1K</span>
-        <span class="analytics-total-delta">↑ 18.2%</span>
+        <span class="analytics-total-value">—</span>
+        <span class="analytics-total-delta"></span>
       </article>
       <article class="analytics-total-card" data-total="comments">
         <span class="analytics-total-label">Comments</span>
-        <span class="analytics-total-value">3.07K</span>
-        <span class="analytics-total-delta">↑ 24.6%</span>
+        <span class="analytics-total-value">—</span>
+        <span class="analytics-total-delta"></span>
       </article>
       <article class="analytics-total-card" data-total="saves">
         <span class="analytics-total-label">Saves</span>
-        <span class="analytics-total-value">12.8K</span>
-        <span class="analytics-total-delta">↑ 31.4%</span>
+        <span class="analytics-total-value">—</span>
+        <span class="analytics-total-delta"></span>
       </article>
       <article class="analytics-total-card" data-total="shares">
         <span class="analytics-total-label">Shares</span>
-        <span class="analytics-total-value">8.42K</span>
-        <span class="analytics-total-delta">↑ 15.9%</span>
+        <span class="analytics-total-value">—</span>
+        <span class="analytics-total-delta"></span>
       </article>
     </section>
   </main>
 
+  <script src="api.js"></script>
   <script src="app.js"></script>
   <script src="analytics.js"></script>
 </body>
