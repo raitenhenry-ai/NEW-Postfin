@@ -76,7 +76,10 @@ export function shapeJob(job, posts = []) {
   return {
     id: job.id,
     title: job.title || script?.hook || product?.name || "Untitled video",
-    productUrl: job.product_url,
+    // Empty for videos planned from a brief rather than a product page.
+    productUrl: job.product_url || null,
+    brief: job.brief || null,
+    concept: job.concept_json ? JSON.parse(job.concept_json) : null,
     product,
     script,
     settings,

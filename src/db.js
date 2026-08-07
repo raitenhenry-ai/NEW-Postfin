@@ -94,6 +94,8 @@ CREATE INDEX IF NOT EXISTS account_metrics_account_idx ON account_metrics (accou
 const PG_MIGRATIONS = `
 ALTER TABLE ugc_jobs ADD COLUMN IF NOT EXISTS title TEXT;
 ALTER TABLE ugc_jobs ADD COLUMN IF NOT EXISTS scheduled_at BIGINT;
+ALTER TABLE ugc_jobs ADD COLUMN IF NOT EXISTS brief TEXT;
+ALTER TABLE ugc_jobs ADD COLUMN IF NOT EXISTS concept_json TEXT;
 `;
 
 if (config.databaseUrl) {
@@ -221,5 +223,18 @@ CREATE TABLE IF NOT EXISTS account_metrics (
 );
 CREATE INDEX IF NOT EXISTS account_metrics_account_idx ON account_metrics (account_id, collected_at);`);
     db.pragma("user_version = 2");
+  }
+
+  // v3: videos planned from a written brief rather than a product page.
+  // product_url keeps its NOT NULL constraint and holds an empty string for
+  // these - rebuilding the table to drop it would risk live data for no real
+  // gain, and every read already treats "" as "no product".
+  if (version < 3) {
+    const columns = db.prepare("PRAGMA table_info(ugc_jobs)").all().map((c) => c.name);
+    if (!columns.includes("brief")) db.exec("ALTER TABLE ugc_jobs ADD COLUMN brief TEXT");
+    if (!columns.includes("concept_json")) {
+      db.exec("ALTER TABLE ugc_jobs ADD COLUMN concept_json TEXT");
+    }
+    db.pragma("user_version = 3");
   }
 }

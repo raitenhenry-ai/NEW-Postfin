@@ -75,20 +75,25 @@ async function processJob(jobId) {
   const workDir = path.join(config.ugcDir, `job${job.id}`);
 
   try {
-    // 1. Scrape the product page (skipped if a re-run already has it).
+    // 1. Scrape the product page (skipped if a re-run already has it, or if
+    // this video was planned from a written brief and has no product).
     let product = job.product_json ? JSON.parse(job.product_json) : null;
-    if (!product) {
+    if (!product && job.product_url) {
       await setJob(job.id, { status: "scraping", error: null });
       product = await scrapeProduct(job.product_url);
       await setJob(job.id, { product_json: JSON.stringify(product) });
       console.log(`[ugc] job ${job.id}: scraped "${product.name}" (${product.images.length} images)`);
     }
 
-    // 2. Write the script.
+    // 2. Write the script, from the product, the planned concept, or both.
     let script = job.script_json ? JSON.parse(job.script_json) : null;
     if (!script) {
       await setJob(job.id, { status: "scripting" });
-      script = await generateScript(product, settings);
+      script = await generateScript(product, {
+        ...settings,
+        brief: job.brief || undefined,
+        concept: job.concept_json ? JSON.parse(job.concept_json) : undefined,
+      });
       await setJob(job.id, { script_json: JSON.stringify(script) });
       console.log(`[ugc] job ${job.id}: script ready (${script.generatedBy})`);
     }
@@ -104,7 +109,11 @@ async function processJob(jobId) {
       console.log(`[ugc] job ${job.id}: HeyGen render started (${videoId})`);
       await waitAndDownload(videoId, outputPath);
     } else {
-      const images = await downloadImages(product.images, path.join(workDir, "images"));
+      // Brief-planned videos have no product imagery; the renderer falls
+      // back to captions on a plain background.
+      const images = product?.images?.length
+        ? await downloadImages(product.images, path.join(workDir, "images"))
+        : [];
       await renderLocalVideo({ script, images, workDir, outputPath, settings });
     }
     await setJob(job.id, { status: "ready", video_filename: filename });

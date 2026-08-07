@@ -223,7 +223,9 @@
     if (isEditMode()) {
       dayPanel.innerHTML = `
         <div class="cal-day-empty">
-          Select dates on the calendar, then describe what you want the AI agent to create.
+          Select the days you want to post on, then describe what you want.
+          Add a product URL and it'll be used as source material - otherwise
+          the videos are built from your brief alone.
         </div>
       `;
       return;
@@ -841,15 +843,37 @@
     }
   });
 
-  // Edit mode turns a product URL plus a set of selected days into one
-  // scheduled video per day. The pipeline needs a real product page to
-  // scrape, so a message without a URL can't be actioned.
+  // Edit mode: whatever the user types is a creative brief. The planner
+  // turns it into one distinct video per selected day - a product URL is
+  // optional extra source material, not a requirement.
   const URL_PATTERN = /https?:\/\/[^\s]+/i;
 
-  function agentMessage(text, kind = "info") {
+  function agentMessage(html, kind = "info") {
     if (!dayPanel) return;
     dayPanel.innerHTML =
-      `<div class="cal-day-empty ${kind === "error" ? "is-error" : ""}">${escapeHtml(text)}</div>`;
+      `<div class="cal-agent ${kind === "error" ? "is-error" : ""}">${html}</div>`;
+  }
+
+  // Renders the planner's reply: what it decided each day's video will be.
+  function renderPlan(plan) {
+    const rows = plan.videos.map((v) => `
+      <li class="cal-plan-item">
+        <span class="cal-plan-date">${escapeHtml(
+          new Date(v.scheduledAt).toLocaleDateString("en-US", {
+            weekday: "short", month: "short", day: "numeric",
+          })
+        )}</span>
+        <span class="cal-plan-copy">
+          <strong>${escapeHtml(v.title)}</strong>
+          ${v.angle ? `<span>${escapeHtml(v.angle)}</span>` : ""}
+        </span>
+      </li>`).join("");
+
+    agentMessage(`
+      <p class="cal-agent-lead">Planned ${plan.videos.length} video${plan.videos.length === 1 ? "" : "s"}${
+        plan.plannedBy === "template" ? " (no OpenAI key - using your brief as-is)" : ""
+      }. They're generating now and will post at their scheduled times.</p>
+      <ul class="cal-plan-list">${rows}</ul>`);
   }
 
   form?.addEventListener("submit", async (e) => {
@@ -861,68 +885,51 @@
       return;
     }
 
-    const text = field.value.trim();
-    const match = text.match(URL_PATTERN);
-    if (!match) {
-      toast("Include the product URL you want a video made from", "error");
-      agentMessage(
-        "Paste the product page URL in your message - the generator scrapes it for the name, price and images.",
-        "error"
-      );
-      return;
-    }
-
     const days = [...selected].sort();
     if (!days.length) {
-      toast("Select at least one day on the calendar", "error");
+      toast("Select the days you want to post on", "error");
+      agentMessage("Click or drag across days on the calendar first, then describe what you want.", "error");
       return;
     }
 
-    const productUrl = match[0];
-    // Whatever the user wrote around the URL becomes the video's title.
-    const title = text.replace(URL_PATTERN, "").trim().slice(0, 120) || undefined;
+    const text = field.value.trim();
+    // A URL in the message is source material; the rest is the brief.
+    const match = text.match(URL_PATTERN);
+    const productUrl = match ? match[0] : "";
+    const brief = text.replace(URL_PATTERN, "").trim();
 
-    if (sendBtn) sendBtn.disabled = true;
-    agentMessage(`Scheduling ${days.length} video${days.length === 1 ? "" : "s"}...`);
-
-    const results = [];
-    for (const key of days) {
-      // 9am local on each selected day, unless that has already passed.
+    // 9am local on each selected day.
+    const slots = days.map((key) => {
       const when = parseKey(key);
       when.setHours(9, 0, 0, 0);
-      const scheduledAt = when.getTime() > Date.now() ? when.getTime() : Date.now() + 60000;
-      try {
-        await api("/api/jobs", {
-          method: "POST",
-          body: { productUrl, title, scheduledAt, platforms: [] },
-        });
-        results.push({ ok: true });
-      } catch (err) {
-        results.push({ ok: false, error: err.message });
-      }
-    }
+      return when.getTime();
+    });
 
-    const failed = results.filter((r) => !r.ok);
-    if (failed.length) {
-      toast(`${failed.length} of ${results.length} failed: ${failed[0].error}`, "error");
-    } else {
-      toast(`Scheduled ${results.length} video${results.length === 1 ? "" : "s"}`);
+    if (sendBtn) sendBtn.disabled = true;
+    agentMessage(`Planning ${days.length} video${days.length === 1 ? "" : "s"}...`);
+
+    try {
+      const plan = await api("/api/plan", {
+        method: "POST",
+        body: { brief, productUrl, slots, platforms: [] },
+      });
+      renderPlan(plan);
+      toast(`Planned ${plan.videos.length} video${plan.videos.length === 1 ? "" : "s"}`);
       field.value = "";
       selected.clear();
+      await loadEvents();
+      render();
+      // render() repaints the panel, so put the plan back in front of it.
+      renderPlan(plan);
+    } catch (err) {
+      toast(err.message, "error");
+      agentMessage(escapeHtml(err.message), "error");
+    } finally {
+      if (sendBtn) sendBtn.disabled = false;
+      syncSendState();
+      resizeField();
     }
-
-    if (sendBtn) sendBtn.disabled = false;
-    syncSendState();
-    resizeField();
-    await loadEvents();
-    render();
   });
-
-  // Keep the side panel visible so View can show day posts
-  setChatCollapsed(false);
-
-  viewToolBtn?.addEventListener("click", () => setMode("view"));
-  chatToggleBtn?.addEventListener("click", () => setMode("edit"));
 
   // Pulls the jobs for the visible month plus a month of padding either
   // side, so stepping between months rarely needs a fetch.

@@ -29,9 +29,36 @@ export function styleOptions() {
   return Object.keys(STYLES);
 }
 
+// Describes the subject of the video to the model. A job either has a
+// scraped product, a planned concept from a written brief, or both - when
+// both are present the concept steers the angle and the product supplies
+// the facts.
+function subjectBlock(product, settings) {
+  const parts = [];
+  const concept = settings.concept;
+
+  if (concept?.title) parts.push(`Video concept: ${concept.title}`);
+  if (concept?.angle) parts.push(`Angle: ${concept.angle}`);
+  if (concept?.talkingPoints?.length) {
+    parts.push(`Cover these points:\n- ${concept.talkingPoints.join("\n- ")}`);
+  }
+  if (settings.brief) parts.push(`Overall brief: ${settings.brief}`);
+
+  if (product) {
+    parts.push(
+      `Product: ${product.name}` +
+        (product.brand ? `\nBrand: ${product.brand}` : "") +
+        (product.price ? `\nPrice: ${product.price} ${product.currency || ""}` : "") +
+        (product.site ? `\nStore: ${product.site}` : "") +
+        `\n\nProduct description:\n${product.description || "(none found)"}`
+    );
+  }
+  return parts.join("\n\n");
+}
+
 export async function generateScript(product, settings = {}) {
   const tone = TONES[settings.tone] ? settings.tone : "casual";
-  if (!config.openaiApiKey) return templateScript(product, tone);
+  if (!config.openaiApiKey) return templateScript(product, tone, settings);
 
   const res = await fetch("https://api.openai.com/v1/chat/completions", {
     method: "POST",
@@ -47,14 +74,22 @@ export async function generateScript(product, settings = {}) {
         {
           role: "system",
           content:
-            "You write scripts for short UGC-style product videos (TikTok/Reels/Shorts), " +
-            "spoken by a single creator holding or showing the product. " +
+            "You write scripts for short UGC-style videos (TikTok/Reels/Shorts), " +
+            "spoken to camera by a single creator. " +
+            (product
+              ? "The creator is holding or showing the product. "
+              : "There is no product to show - write it as the creator talking to " +
+                "camera about the topic. ") +
             'Reply with JSON only: {"hook": string, "scenes": [{"text": string}], ' +
             '"cta": string, "caption": string, "hashtags": string[]}. ' +
             "hook: a scroll-stopping first line, max 12 words, no hashtags. " +
-            "scenes: 3-4 short spoken lines (max 20 words each) covering what the product is, " +
-            "the standout benefit, and a personal touch - natural spoken language, no emoji. " +
-            "cta: one closing spoken line telling viewers where to get it. " +
+            (product
+              ? "scenes: 3-4 short spoken lines (max 20 words each) covering what the product is, " +
+                "the standout benefit, and a personal touch - natural spoken language, no emoji. " +
+                "cta: one closing spoken line telling viewers where to get it. "
+              : "scenes: 3-4 short spoken lines (max 20 words each) delivering the concept's " +
+                "talking points - natural spoken language, no emoji. " +
+                "cta: one closing spoken line - a follow/save/comment prompt. ") +
             "caption: 1-2 sentences for the post text, may include 1-2 emoji. " +
             "hashtags: 6-10 lowercase hashtags starting with #, mixing product-specific and " +
             "discovery tags (#tiktokmademebuyit #fyp style). " +
@@ -64,12 +99,7 @@ export async function generateScript(product, settings = {}) {
         },
         {
           role: "user",
-          content:
-            `Product: ${product.name}\n` +
-            (product.brand ? `Brand: ${product.brand}\n` : "") +
-            (product.price ? `Price: ${product.price} ${product.currency || ""}\n` : "") +
-            `Store: ${product.site}\n\n` +
-            `Product description:\n${product.description || "(none found)"}`,
+          content: subjectBlock(product, settings),
         },
       ],
     }),
@@ -90,8 +120,12 @@ export async function generateScript(product, settings = {}) {
     tone,
     hook: String(parsed.hook).trim().slice(0, 120),
     scenes,
-    cta: String(parsed.cta || `Get yours at ${product.site}`).trim().slice(0, 160),
-    caption: String(parsed.caption || product.name).trim().slice(0, 500),
+    cta: String(
+      parsed.cta || (product?.site ? `Get yours at ${product.site}` : "Follow for more")
+    ).trim().slice(0, 160),
+    caption: String(
+      parsed.caption || product?.name || settings.concept?.title || "New video"
+    ).trim().slice(0, 500),
     hashtags: (Array.isArray(parsed.hashtags) ? parsed.hashtags : [])
       .map((h) => String(h).trim().toLowerCase())
       .filter(Boolean)
@@ -101,7 +135,11 @@ export async function generateScript(product, settings = {}) {
   };
 }
 
-function templateScript(product, tone) {
+function templateScript(product, tone, settings = {}) {
+  // No product means the job came from a written brief, so the concept the
+  // planner produced is all there is to work from.
+  if (!product) return briefTemplateScript(tone, settings);
+
   const name = product.name;
   const blurb = (product.description || "").split(/(?<=[.!?])\s+/)[0]?.slice(0, 140);
   return {
@@ -120,6 +158,31 @@ function templateScript(product, tone) {
       "#tiktokmademebuyit", "#musthaves", "#viralproducts", "#fyp",
       "#unboxing", "#productreview", "#shopping",
     ],
+    generatedBy: "template",
+  };
+}
+
+// Fallback for brief-planned videos when there is no OpenAI key. The
+// planner's talking points become the scenes; without them the brief itself
+// carries the video.
+function briefTemplateScript(tone, settings) {
+  const concept = settings.concept || {};
+  const topic = concept.title || settings.brief || "something worth sharing";
+  const points = (concept.talkingPoints || []).filter(Boolean);
+
+  return {
+    tone,
+    hook: `Let's talk about ${topic}`.slice(0, 120),
+    scenes: points.length
+      ? points.slice(0, 4).map((p) => String(p).slice(0, 160))
+      : [
+          concept.angle ? String(concept.angle).slice(0, 160) : `Here's the thing about ${topic}.`,
+          "I kept seeing this come up, so I tried it myself.",
+          "Honestly, it made more of a difference than I expected.",
+        ],
+    cta: "Follow for more like this.",
+    caption: concept.title || String(settings.brief || topic).slice(0, 200),
+    hashtags: ["#fyp", "#foryou", "#tips", "#creator", "#viral", "#howto"],
     generatedBy: "template",
   };
 }

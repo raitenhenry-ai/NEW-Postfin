@@ -3,6 +3,7 @@ import config, { PLATFORM_NAMES } from "../config.js";
 import { q, q1, run as dbRun } from "../db.js";
 import { platforms } from "../accounts.js";
 import { toneOptions, styleOptions } from "../ugc/script.js";
+import { planContent, normalizeSettings } from "../ugc/plan.js";
 import { heygenConfigured } from "../ugc/heygen.js";
 import { collectMetrics } from "../metrics.js";
 import { reschedule } from "../schedule.js";
@@ -78,11 +79,19 @@ router.get("/accounts", wrap(async (req, res) => {
 // slot; without one it posts as soon as it has rendered.
 router.post("/jobs", wrap(async (req, res) => {
   const productUrl = String(req.body.productUrl || "").trim();
-  try {
-    const parsed = new URL(productUrl);
-    if (!/^https?:$/.test(parsed.protocol)) throw new Error();
-  } catch {
-    return res.status(400).json({ error: "Enter a valid product URL (https://...)" });
+  const brief = String(req.body.brief || "").trim();
+
+  // One of the two is required: a page to scrape, or a written brief to
+  // build the video from.
+  if (productUrl) {
+    try {
+      const parsed = new URL(productUrl);
+      if (!/^https?:$/.test(parsed.protocol)) throw new Error();
+    } catch {
+      return res.status(400).json({ error: "Enter a valid product URL (https://...)" });
+    }
+  } else if (!brief) {
+    return res.status(400).json({ error: "Enter a product URL (https://...) or describe the video" });
   }
 
   const wanted = Array.isArray(req.body.platforms)
@@ -105,12 +114,80 @@ router.post("/jobs", wrap(async (req, res) => {
 
   const now = Date.now();
   const row = await q1(
-    `INSERT INTO ugc_jobs (product_url, settings_json, status, auto_post, title, scheduled_at, created_at, updated_at)
-     VALUES (?, ?, 'queued', ?, ?, ?, ?, ?) RETURNING id`,
-    [productUrl, JSON.stringify(settings), autoPost, title, scheduledAt, now, now]
+    `INSERT INTO ugc_jobs (product_url, settings_json, status, auto_post, title, brief,
+       scheduled_at, created_at, updated_at)
+     VALUES (?, ?, 'queued', ?, ?, ?, ?, ?, ?) RETURNING id`,
+    [productUrl, JSON.stringify(settings), autoPost, title, brief || null, scheduledAt, now, now]
   );
   enqueueUgcJob(row.id);
   res.json({ id: row.id, status: "queued", scheduledAt });
+}));
+
+// Plan a set of videos from one written brief: the calendar composer sends
+// what the user typed plus the slots they selected, and gets back one
+// distinct concept per slot, each already queued as a job.
+//
+// body: { brief, slots: [epochMs], productUrl?, platforms?, tone?, style?, autoPost? }
+router.post("/plan", wrap(async (req, res) => {
+  const brief = String(req.body.brief || "").trim();
+
+  // The client sends absolute timestamps because it knows the user's
+  // timezone; the server never has to guess what "Tuesday 9am" means.
+  const slots = (Array.isArray(req.body.slots) ? req.body.slots : [])
+    .map((s) => (typeof s === "number" ? s : Date.parse(s)))
+    .filter((s) => Number.isFinite(s))
+    .sort((a, b) => a - b);
+  if (!slots.length) return res.status(400).json({ error: "Select at least one day to post on" });
+  if (slots.length > 30) return res.status(400).json({ error: "Plan at most 30 videos at a time" });
+
+  // A product URL is optional - it becomes source material when present.
+  let productUrl = String(req.body.productUrl || "").trim();
+  if (productUrl) {
+    try {
+      const parsed = new URL(productUrl);
+      if (!/^https?:$/.test(parsed.protocol)) throw new Error();
+    } catch {
+      return res.status(400).json({ error: "That product URL isn't valid" });
+    }
+  }
+  if (!brief && !productUrl) {
+    return res.status(400).json({ error: "Describe what you want, or include a product URL" });
+  }
+
+  const { tone, style } = normalizeSettings(req.body);
+  const plan = await planContent({ brief, count: slots.length, productUrl, tone, style });
+
+  const wanted = Array.isArray(req.body.platforms)
+    ? req.body.platforms.filter((p) => PLATFORM_NAMES.includes(p))
+    : [];
+  const autoPost = req.body.autoPost === false ? 0 : 1;
+  const now = Date.now();
+
+  const created = [];
+  for (const [i, concept] of plan.concepts.entries()) {
+    // A slot in the past would publish the moment it renders; nudge it just
+    // far enough out that the video finishes first.
+    const scheduledAt = slots[i] > now ? slots[i] : now + 60000;
+    const settings = { tone, style, platforms: wanted };
+    const row = await q1(
+      `INSERT INTO ugc_jobs (product_url, settings_json, status, auto_post, title,
+         brief, concept_json, scheduled_at, created_at, updated_at)
+       VALUES (?, ?, 'queued', ?, ?, ?, ?, ?, ?, ?) RETURNING id`,
+      [
+        productUrl, JSON.stringify(settings), autoPost, concept.title,
+        brief || null, JSON.stringify(concept), scheduledAt, now, now,
+      ]
+    );
+    enqueueUgcJob(row.id);
+    created.push({ id: row.id, scheduledAt, ...concept });
+  }
+
+  res.json({
+    plannedBy: plan.generatedBy,
+    brief,
+    productUrl: productUrl || null,
+    videos: created,
+  });
 }));
 
 // null = no schedule, a number = a valid future slot, undefined = invalid.

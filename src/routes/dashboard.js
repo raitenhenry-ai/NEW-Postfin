@@ -315,7 +315,8 @@ router.get("/calendar", wrap(async (req, res) => {
       provider: shaped.provider,
       productUrl: shaped.productUrl,
       videoUrl: shaped.videoUrl,
-      prompt: promptText(shaped.script, shaped.settings),
+      prompt: promptText(shaped.script, shaped.settings, shaped.concept),
+      brief: shaped.brief,
       caption: shaped.script?.caption || "",
       hashtags: (shaped.script?.hashtags || []).join(" "),
       productName: shaped.product?.name || "",
@@ -329,9 +330,13 @@ router.get("/calendar", wrap(async (req, res) => {
 
 // The brief the video was generated from: the hook, the scenes and the CTA
 // the script module produced, plus the tone/style that shaped them.
-function promptText(script, settings) {
-  if (!script) return "";
+function promptText(script, settings, concept) {
   const parts = [];
+  // A planned video shows its concept even before the script exists, so the
+  // calendar has something to display while it is still rendering.
+  if (concept?.title) parts.push(`Concept: ${concept.title}`);
+  if (concept?.angle) parts.push(`Angle: ${concept.angle}`);
+  if (!script) return parts.join("\n\n");
   if (script.hook) parts.push(`Hook: ${script.hook}`);
   const scenes = (script.scenes || []).map((s, i) => `${i + 1}. ${s.text || s}`);
   if (scenes.length) parts.push(`Scenes:\n${scenes.join("\n")}`);
