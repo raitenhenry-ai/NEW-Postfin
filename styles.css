@@ -2059,9 +2059,17 @@ body.sidebar-expanded {
 }
 
 .cal-chat-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 10px;
   padding: 14px 14px 10px;
   border-bottom: 1px solid #1c1c1f;
   flex-shrink: 0;
+}
+
+.cal-chat-header-text {
+  min-width: 0;
 }
 
 .cal-chat-header h2 {
@@ -2076,6 +2084,37 @@ body.sidebar-expanded {
   margin-top: 4px;
   color: #8a8a92;
   font-size: 12px;
+}
+
+.cal-chat-toggle {
+  width: 32px;
+  height: 32px;
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid #222226;
+  background: #1a1a1e;
+  color: #c8c8ce;
+  border-radius: 8px;
+  cursor: pointer;
+  padding: 0;
+  transition: background 0.15s, border-color 0.15s, color 0.15s;
+}
+
+.cal-chat-toggle:hover {
+  background: #222226;
+  border-color: #2e2e32;
+  color: #fff;
+}
+
+.cal-chat-toggle svg {
+  width: 14px;
+  height: 14px;
+}
+
+.cal-chat-toggle[hidden] {
+  display: none;
 }
 
 .cal-chat-messages {
