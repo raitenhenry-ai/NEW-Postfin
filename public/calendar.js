@@ -925,6 +925,8 @@
   });
   setChatCollapsed(loadChatCollapsed());
 
+  viewToolBtn?.addEventListener("click", () => setMode("view"));
+
   // Pulls the jobs for the visible month plus a month of padding either
   // side, so stepping between months rarely needs a fetch.
   async function loadEvents() {
