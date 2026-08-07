@@ -891,13 +891,15 @@
 
   const CHAT_KEY = "cal-chat-collapsed";
   const calBody = document.querySelector(".cal-body");
-  const chatHideBtn = document.getElementById("cal-chat-hide");
-  const chatShowBtn = document.getElementById("cal-chat-show");
+  const chatToggleBtn = document.getElementById("cal-chat-toggle");
 
   function setChatCollapsed(collapsed) {
     calBody?.classList.toggle("chat-collapsed", collapsed);
-    if (chatHideBtn) chatHideBtn.hidden = collapsed;
-    if (chatShowBtn) chatShowBtn.hidden = !collapsed;
+    chatToggleBtn?.setAttribute("aria-pressed", collapsed ? "false" : "true");
+    chatToggleBtn?.setAttribute(
+      "aria-label",
+      collapsed ? "Show chat panel" : "Hide chat and expand calendar"
+    );
     try {
       localStorage.setItem(CHAT_KEY, collapsed ? "1" : "0");
     } catch {
@@ -913,8 +915,10 @@
     }
   }
 
-  chatHideBtn?.addEventListener("click", () => setChatCollapsed(true));
-  chatShowBtn?.addEventListener("click", () => setChatCollapsed(false));
+  chatToggleBtn?.addEventListener("click", () => {
+    const collapsed = !calBody?.classList.contains("chat-collapsed");
+    setChatCollapsed(collapsed);
+  });
   setChatCollapsed(loadChatCollapsed());
 
   syncSendState();
