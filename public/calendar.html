@@ -163,10 +163,16 @@
                   document.querySelectorAll("#cal-mode-menu [data-cal-mode]").forEach(function (btn) {
                     btn.setAttribute("aria-checked", btn.getAttribute("data-cal-mode") === mode ? "true" : "false");
                   });
+                  var viewTool = document.getElementById("cal-view-tool");
+                  if (viewTool) {
+                    var onView = mode === "view";
+                    viewTool.classList.toggle("is-on", onView);
+                    viewTool.setAttribute("aria-pressed", onView ? "true" : "false");
+                  }
                 } catch (e) {}
               })();
             </script>
-            <button type="button" class="cal-tool-btn" id="cal-view-btn" aria-label="View mode" aria-pressed="true" title="View">
+            <button type="button" class="cal-tool-btn" id="cal-view-tool" aria-label="View mode" aria-pressed="false" title="View">
               <svg viewBox="0 0 24 24" aria-hidden="true">
                 <path class="cal-tool-icon" d="M2.5 12s3.4-5.75 9.5-5.75S21.5 12 21.5 12s-3.4 5.75-9.5 5.75S2.5 12 2.5 12z"/>
                 <circle class="cal-tool-icon-pupil" cx="12" cy="12" r="2.6"/>
