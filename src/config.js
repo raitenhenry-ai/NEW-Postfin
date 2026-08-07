@@ -16,6 +16,33 @@ function firstExisting(candidates) {
   return null;
 }
 
+// Trailing slashes and a pasted-in page path ("…/index.html") both produce
+// redirect URIs the platforms reject, so strip them.
+function normalizeBaseUrl(raw) {
+  const trimmed = String(raw).trim().replace(/\/+$/, "");
+  try {
+    // Operate on the path only - the host is full of dots and would other-
+    // wise look like a filename to strip.
+    const url = new URL(trimmed);
+    url.pathname = url.pathname.replace(/\/[^/]*\.[a-z]{2,5}$/i, "");
+    return (url.origin + url.pathname).replace(/\/+$/, "");
+  } catch {
+    return trimmed;
+  }
+}
+
+// Railway, Render and Fly each expose the public hostname; use it when
+// BASE_URL wasn't set explicitly.
+function hostProvidedUrl() {
+  const railway = env("RAILWAY_PUBLIC_DOMAIN");
+  if (railway) return `https://${railway}`;
+  const render = env("RENDER_EXTERNAL_URL");
+  if (render) return render;
+  const fly = env("FLY_APP_NAME");
+  if (fly) return `https://${fly}.fly.dev`;
+  return "";
+}
+
 // Optional numeric settings stay null when unset so the UI can tell
 // "not configured" apart from a genuine zero.
 function numberOrNull(raw) {
@@ -33,7 +60,15 @@ export const PLATFORM_NAMES = [
 const config = {
   rootDir,
   port: Number(process.env.PORT || 3000),
-  baseUrl: env("BASE_URL", `http://localhost:${process.env.PORT || 3000}`).replace(/\/+$/, ""),
+  // Every OAuth redirect URI and the public video URLs are built off this, so
+  // getting it wrong breaks connecting accounts and publishing. An explicit
+  // BASE_URL always wins; otherwise fall back to the domain the host already
+  // knows about, which is right far more often than localhost is.
+  baseUrl: normalizeBaseUrl(
+    env("BASE_URL") ||
+      hostProvidedUrl() ||
+      `http://localhost:${process.env.PORT || 3000}`
+  ),
 
   // Login; empty = no auth (local use only).
   adminPassword: env("ADMIN_PASSWORD"),
