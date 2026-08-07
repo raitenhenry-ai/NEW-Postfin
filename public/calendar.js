@@ -458,6 +458,8 @@
     });
   }
 
+  const viewToolBtn = document.getElementById("cal-view-btn");
+
   function syncModeSwitcher() {
     if (modeSwitcherLabel) {
       modeSwitcherLabel.textContent = mode === "edit" ? "Edit" : "View";
@@ -469,6 +471,7 @@
       const on = btn.getAttribute("data-cal-mode") === mode;
       btn.setAttribute("aria-checked", on ? "true" : "false");
     });
+    viewToolBtn?.setAttribute("aria-pressed", isViewMode() ? "true" : "false");
   }
 
   function setModeMenuOpen(open) {
