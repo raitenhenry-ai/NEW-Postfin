@@ -59,7 +59,18 @@
     try {
       data = text ? JSON.parse(text) : null;
     } catch {
-      throw new Error(`Unexpected response from ${path}`);
+      // A non-JSON body means the request never reached the API. The usual
+      // cause is that only the contents of public/ got deployed, so a static
+      // host answers /api/* with its own 404 page: the pages render but
+      // nothing loads. Say that outright rather than "unexpected response".
+      if (/^\s*<(!doctype|html)/i.test(text)) {
+        throw new Error(
+          "The Postfin API isn't running - the pages are being served without their backend. " +
+            "This app needs the Node server (npm start, or the included Dockerfile); " +
+            "a static-only host serves public/ but not /api."
+        );
+      }
+      throw new Error(`Unexpected response from ${path} (HTTP ${res.status})`);
     }
     if (!res.ok) throw new Error(data?.error || `Request failed (${res.status})`);
     return data;
