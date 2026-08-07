@@ -1,0 +1,14 @@
+---
+description: Always commit and push every code change to GitHub immediately
+alwaysApply: true
+---
+
+# Auto-push to GitHub
+
+After **any** file create/edit/delete in this repo, immediately sync to GitHub before ending your turn:
+
+1. `git add` the changed files (never add `.env`, `*.pem`, `*.key`, or credential files)
+2. `git commit` with a short message describing the change
+3. `git push origin HEAD` (remote is `raitenhenry-ai/NEW-Postfin`)
+
+Do this even for small UI tweaks. Do not wait for the user to ask. If push fails, retry once over SSH (`git@github.com:raitenhenry-ai/NEW-Postfin.git`).
