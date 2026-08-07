@@ -14,12 +14,6 @@
         <img class="logo-hover" src="logo-hover.png" alt="">
       </button>
       <div class="top-actions">
-        <button class="top-icon-btn" type="button" aria-label="Unlock" id="lock-btn">
-          <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
-            <path d="M8 11V8a4 4 0 0 1 7.5-1.9" stroke="currentColor" stroke-width="1.75" stroke-linecap="round"/>
-            <rect x="5" y="11" width="14" height="10" rx="2.5" stroke="currentColor" stroke-width="1.75"/>
-          </svg>
-        </button>
         <button class="top-icon-btn" type="button" aria-label="Collapse sidebar" id="collapse-btn">
           <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
             <rect x="3" y="4" width="18" height="16" rx="3.5" stroke="currentColor" stroke-width="1.75"/>
@@ -136,6 +130,13 @@
         <div class="calendar-toolbar">
           <h2>Content Calendar</h2>
           <div class="calendar-toolbar-right">
+            <a class="automated-plan-btn" id="automated-plan-btn" href="calendar.html">
+              <svg class="automated-plan-icon" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+                <path d="M8 1.5l.9 2.7c.2.6.7 1.1 1.3 1.3L13.5 6.5l-2.7.9c-.6.2-1.1.7-1.3 1.3L8 11.5l-.9-2.7c-.2-.6-.7-1.1-1.3-1.3L2.5 6.5l2.7-.9c.6-.2 1.1-.7 1.3-1.3L8 1.5z" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/>
+                <path d="M12.5 10.5l.45 1.35c.1.3.35.55.65.65L15 13l-1.4.45c-.3.1-.55.35-.65.65L12.5 15.5l-.45-1.4c-.1-.3-.35-.55-.65-.65L10 13l1.4-.45c.3-.1.55-.35.65-.65l.45-1.4z" fill="currentColor"/>
+              </svg>
+              <span class="automated-plan-label">Edit my automated plan</span>
+            </a>
             <div class="view-toggle" role="tablist" aria-label="Calendar view">
               <button type="button" data-cal-view="day" aria-selected="false">Day</button>
               <button type="button" class="active" data-cal-view="week" aria-selected="true">Week</button>

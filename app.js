@@ -361,3 +361,31 @@ dayModal?.querySelectorAll("[data-close-modal]").forEach((el) => {
 document.addEventListener("keydown", (e) => {
   if (e.key === "Escape") closeDayModal();
 });
+
+const automatedPlanBtn = document.getElementById("automated-plan-btn");
+
+function hasContentPlan() {
+  const chipCount = document.querySelectorAll(".content-calendar .post-chip").length;
+  if (chipCount > 0) return true;
+  return Object.values(monthPosts).some((day) => day.posts?.length);
+}
+
+function syncAutomatedPlanBtn() {
+  if (!automatedPlanBtn) return;
+  const hasPlan = hasContentPlan();
+  const label = hasPlan ? "Edit my automated plan" : "Start my automated plan";
+  const labelEl = automatedPlanBtn.querySelector(".automated-plan-label");
+  if (labelEl) labelEl.textContent = label;
+  automatedPlanBtn.setAttribute("aria-label", label);
+}
+
+if (automatedPlanBtn) {
+  syncAutomatedPlanBtn();
+  automatedPlanBtn.addEventListener("click", () => {
+    try {
+      localStorage.setItem("cal-mode", "edit");
+    } catch {
+      /* ignore */
+    }
+  });
+}
