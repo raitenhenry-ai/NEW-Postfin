@@ -2045,6 +2045,7 @@ body.sidebar-expanded {
   flex-direction: column;
   min-height: 0;
   height: 100%;
+  align-self: stretch;
   overflow: hidden;
 }
 
