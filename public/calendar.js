@@ -13,10 +13,29 @@
   const hint = document.getElementById("cal-hint");
   const shell = document.querySelector(".cal-shell");
   const modeButtons = document.querySelectorAll("[data-cal-mode]");
+  const modeSwitcher = document.getElementById("cal-mode-switcher");
+  const modeSwitcherBtn = document.getElementById("cal-mode-switcher-btn");
+  const modeSwitcherLabel = document.getElementById("cal-mode-switcher-label");
+  const modeSwitcherIcon = document.getElementById("cal-mode-switcher-icon");
+  const modeMenu = document.getElementById("cal-mode-menu");
+  const monthPicker = document.getElementById("cal-month-picker");
+  const monthLabelBtn = document.getElementById("cal-month-label");
+  const monthMenu = document.getElementById("cal-month-menu");
+  const monthMenuGrid = document.getElementById("cal-month-menu-grid");
+  const yearText = document.getElementById("cal-year-text");
+
+  const VIEW_ICON =
+    '<svg viewBox="0 0 16 16" fill="none"><path d="M1.5 8s2.5-4.5 6.5-4.5S14.5 8 14.5 8s-2.5 4.5-6.5 4.5S1.5 8 1.5 8z" stroke="currentColor" stroke-width="1.4"/><circle cx="8" cy="8" r="2" stroke="currentColor" stroke-width="1.4"/></svg>';
+  const EDIT_ICON =
+    '<svg viewBox="0 0 16 16" fill="none"><path d="M9.2 3.2l3.6 3.6M3 13l1.1-3.9L11.4 1.8a1.3 1.3 0 0 1 1.8 0l1 1a1.3 1.3 0 0 1 0 1.8L6.9 11.9 3 13z" stroke="currentColor" stroke-width="1.35" stroke-linejoin="round"/></svg>';
 
   const MONTHS = [
     "January", "February", "March", "April", "May", "June",
     "July", "August", "September", "October", "November", "December",
+  ];
+  const MONTHS_SHORT = [
+    "Jan", "Feb", "Mar", "Apr", "May", "Jun",
+    "Jul", "Aug", "Sep", "Oct", "Nov", "Dec",
   ];
 
   const { api, escapeHtml, PLATFORM_LABELS, toast } = window.Postfin;
@@ -38,6 +57,11 @@
     const list = post.platforms || [];
     if (!list.length) return "No platform selected";
     return list.map((p) => PLATFORM_LABELS[p] || p).join(", ");
+  }
+
+  // Which platform colours a row.
+  function primaryPlatform(post) {
+    return (post.platforms || [])[0] || "";
   }
 
   function platformKey(name) {
@@ -66,8 +90,16 @@
     return `${formatShort(startKey)} – ${formatShort(endKey)}`;
   }
 
+  function dayAfter(key) {
+    const d = parseKey(key);
+    d.setHours(12, 0, 0, 0);
+    d.setDate(d.getDate() + 1);
+    return keyFromDate(d);
+  }
+
   function groupDateRanges(keys) {
-    const sorted = [...keys].sort();
+    // One chip per connected stretch of days — month boundaries do not split chips.
+    const sorted = [...new Set(keys)].sort();
     if (!sorted.length) return [];
 
     const ranges = [];
@@ -75,10 +107,7 @@
 
     for (let i = 1; i < sorted.length; i++) {
       const key = sorted[i];
-      const prevDate = parseKey(rangeKeys[rangeKeys.length - 1]);
-      const expected = new Date(prevDate);
-      expected.setDate(expected.getDate() + 1);
-      if (keyFromDate(expected) === key) {
+      if (dayAfter(rangeKeys[rangeKeys.length - 1]) === key) {
         rangeKeys.push(key);
       } else {
         ranges.push({
@@ -120,13 +149,68 @@
     return out;
   }
 
+  function connectedBlock(key, set) {
+    if (!set.has(key)) return [];
+    let start = parseKey(key);
+    let end = parseKey(key);
+
+    for (;;) {
+      const prev = new Date(start);
+      prev.setDate(prev.getDate() - 1);
+      const prevKey = keyFromDate(prev);
+      if (!set.has(prevKey)) break;
+      start = prev;
+    }
+
+    for (;;) {
+      const next = new Date(end);
+      next.setDate(next.getDate() + 1);
+      const nextKey = keyFromDate(next);
+      if (!set.has(nextKey)) break;
+      end = next;
+    }
+
+    return keysInRange(start, end);
+  }
+
+  const MODE_KEY = "cal-mode";
+  const MODES = new Set(["view", "edit"]);
+
+  function loadMode() {
+    try {
+      const saved = localStorage.getItem(MODE_KEY);
+      if (saved === "agent") return "view";
+      return MODES.has(saved) ? saved : "view";
+    } catch {
+      return "view";
+    }
+  }
+
+  function saveMode(next) {
+    try {
+      localStorage.setItem(MODE_KEY, next);
+    } catch {
+      /* ignore */
+    }
+  }
+
   const now = new Date();
   let view = new Date(now.getFullYear(), now.getMonth(), 1);
-  let mode = "view";
+  let mode = loadMode();
+  let pickerYear = view.getFullYear();
   const selected = new Set();
-  let focused = keyFromDate(now);
+  let focused = mode === "edit" ? null : keyFromDate(now);
   let openedPost = null;
+  let editingPost = null;
   let drag = null;
+
+  function isEditMode() {
+    return mode === "edit";
+  }
+
+  function isViewMode() {
+    return mode === "view";
+  }
 
   function setFocusedDay(key) {
     if (focused !== key) openedPost = null;
@@ -136,7 +220,7 @@
   function renderDayPanel() {
     if (!dayPanel) return;
 
-    if (mode === "agent") {
+    if (isEditMode()) {
       dayPanel.innerHTML = `
         <div class="cal-day-empty">
           Select dates on the calendar, then describe what you want the AI agent to create.
@@ -161,15 +245,17 @@
     }
 
     dayPanel.innerHTML = "";
-    const canEdit = mode === "edit";
 
     if (openedPost != null && posts[openedPost]) {
       const post = posts[openedPost];
       const detail = document.createElement("div");
-      detail.className = `cal-post-detail is-${platformKey(post.platforms[0] || "")}`;
+      detail.className = `cal-post-detail is-${platformKey(primaryPlatform(post))}`;
 
-      // A slot can only be moved while the video is still waiting to go out.
-      const canReschedule = canEdit && post.jobStatus !== "posted";
+      // The panel reads as a summary by default; "Edit post" swaps the
+      // editable fields in. A slot can only be moved while the video is
+      // still waiting to go out.
+      const editing = editingPost === openedPost;
+      const canReschedule = editing && post.jobStatus !== "posted";
       const slotValue = post.scheduledAt
         ? new Date(post.scheduledAt - new Date().getTimezoneOffset() * 60000)
             .toISOString().slice(0, 16)
@@ -181,7 +267,9 @@
           All posts
         </button>
         <header class="cal-post-detail-head">
-          ${canEdit ? `<input class="cal-post-title-input" data-field="title" type="text">` : `<h3 class="cal-post-title"></h3>`}
+          ${editing
+            ? `<input class="cal-post-title-input" data-field="title" type="text">`
+            : `<h3 class="cal-post-title"></h3>`}
           <p class="cal-post-summary"></p>
         </header>
         <div class="cal-post-fields">
@@ -194,7 +282,7 @@
             <p class="cal-post-model"></p>
           </section>
           <section>
-            <h4>${post.scheduledAt ? "Scheduled for" : "Posted"}</h4>
+            <h4>${post.scheduledAt ? "Scheduled for" : "Date posted"}</h4>
             ${canReschedule
               ? `<input class="cal-post-field-input" data-field="scheduledAt" type="datetime-local" value="${slotValue}">`
               : `<p class="cal-post-date"></p>`}
@@ -205,19 +293,30 @@
           </section>
           <section>
             <h4>Caption</h4>
-            ${canEdit ? `<textarea class="cal-post-field-input" data-field="caption" rows="3"></textarea>` : `<p class="cal-post-caption"></p>`}
+            ${editing
+              ? `<textarea class="cal-post-field-input" data-field="caption" rows="3"></textarea>`
+              : `<p class="cal-post-caption"></p>`}
           </section>
           <section>
             <h4>Hashtags</h4>
-            ${canEdit ? `<textarea class="cal-post-field-input" data-field="hashtags" rows="2"></textarea>` : `<p class="cal-post-hashtags"></p>`}
+            ${editing
+              ? `<textarea class="cal-post-field-input" data-field="hashtags" rows="2"></textarea>`
+              : `<p class="cal-post-hashtags"></p>`}
           </section>
           <section>
             <h4>Prompt</h4>
             <p class="cal-post-prompt"></p>
           </section>
-          ${post.videoUrl ? `<section><h4>Video</h4><video class="cal-post-video" src="${escapeHtml(post.videoUrl)}" controls playsinline></video></section>` : ""}
+          ${post.videoUrl
+            ? `<section><h4>Video</h4><video class="cal-post-video" src="${escapeHtml(post.videoUrl)}" controls playsinline preload="metadata"></video></section>`
+            : ""}
         </div>
-        ${canEdit ? `<div class="cal-post-actions"><button type="button" class="pf-btn" data-action="save">Save changes</button><span class="cal-post-saved" hidden>Saved</span></div>` : ""}
+        <div class="cal-post-actions">
+          ${editing
+            ? `<button type="button" class="pf-btn" data-action="save">Save changes</button>
+               <button type="button" class="pf-btn ghost" data-action="cancel">Cancel</button>`
+            : `<button type="button" class="pf-btn ghost" data-action="edit">Edit post</button>`}
+        </div>
       `;
 
       detail.querySelector(".cal-post-summary").textContent =
@@ -228,11 +327,12 @@
         post.provider === "heygen" ? "HeyGen avatar" : "Built-in renderer";
       detail.querySelector(".cal-post-status").textContent =
         `${post.jobStatus}${post.accountCount ? ` \u00b7 ${post.accountCount} account(s)` : ""}`;
-      detail.querySelector(".cal-post-prompt").textContent = post.prompt || "Script not generated yet.";
+      detail.querySelector(".cal-post-prompt").textContent =
+        post.prompt || "Script not generated yet.";
       const dateEl = detail.querySelector(".cal-post-date");
       if (dateEl) dateEl.textContent = `${formatLong(focused)} \u00b7 ${post.time}`;
 
-      if (canEdit) {
+      if (editing) {
         detail.querySelector('[data-field="title"]').value = post.title || "";
         detail.querySelector('[data-field="caption"]').value = post.caption || "";
         detail.querySelector('[data-field="hashtags"]').value = post.hashtags || "";
@@ -253,22 +353,32 @@
           try {
             await api(`/api/jobs/${post.id}`, { method: "PATCH", body });
             toast("Saved");
+            editingPost = null;
             await loadEvents();
             render();
           } catch (err) {
             toast(err.message, "error");
-          } finally {
             saveBtn.disabled = false;
           }
+        });
+
+        detail.querySelector('[data-action="cancel"]').addEventListener("click", () => {
+          editingPost = null;
+          renderDayPanel();
         });
       } else {
         detail.querySelector(".cal-post-title").textContent = post.title;
         detail.querySelector(".cal-post-caption").textContent = post.caption || "\u2014";
         detail.querySelector(".cal-post-hashtags").textContent = post.hashtags || "\u2014";
+        detail.querySelector('[data-action="edit"]').addEventListener("click", () => {
+          editingPost = openedPost;
+          renderDayPanel();
+        });
       }
 
       detail.querySelector("#cal-post-back").addEventListener("click", () => {
         openedPost = null;
+        editingPost = null;
         renderDayPanel();
       });
       dayPanel.appendChild(detail);
@@ -280,7 +390,7 @@
     posts.forEach((post, index) => {
       const btn = document.createElement("button");
       btn.type = "button";
-      btn.className = `cal-post-item is-${platformKey(post.platforms[0] || "")}`;
+      btn.className = `cal-post-item is-${platformKey(primaryPlatform(post))}`;
       btn.innerHTML = `
         <i class="cal-post-item-bar" aria-hidden="true"></i>
         <span class="cal-post-item-copy">
@@ -307,7 +417,7 @@
   function renderDateChips() {
     if (!dateChips) return;
 
-    if (mode !== "agent") {
+    if (!isEditMode()) {
       dateChips.hidden = true;
       dateChips.innerHTML = "";
       return;
@@ -348,39 +458,93 @@
     });
   }
 
-  function updateChrome() {
-    const isAgent = mode === "agent";
-    const isBrowse = mode === "view" || mode === "edit";
+  function syncModeSwitcher() {
+    if (modeSwitcherLabel) {
+      modeSwitcherLabel.textContent = mode === "edit" ? "Edit" : "View";
+    }
+    if (modeSwitcherIcon) {
+      modeSwitcherIcon.innerHTML = mode === "edit" ? EDIT_ICON : VIEW_ICON;
+    }
+    modeMenu?.querySelectorAll("[data-cal-mode]").forEach((btn) => {
+      const on = btn.getAttribute("data-cal-mode") === mode;
+      btn.setAttribute("aria-checked", on ? "true" : "false");
+    });
+  }
 
-    shell?.classList.toggle("is-agent", isAgent);
-    shell?.classList.toggle("is-edit", mode === "edit");
-    shell?.classList.toggle("is-view", mode === "view");
-    grid.classList.toggle("edit-mode", isAgent);
-    grid.classList.toggle("view-mode", isBrowse);
+  function setModeMenuOpen(open) {
+    if (!modeSwitcher || !modeSwitcherBtn || !modeMenu) return;
+    modeSwitcher.classList.toggle("open", open);
+    modeSwitcherBtn.setAttribute("aria-expanded", open ? "true" : "false");
+    modeMenu.hidden = !open;
+  }
+
+  function renderMonthMenu() {
+    if (!monthMenuGrid || !yearText) return;
+    yearText.textContent = String(pickerYear);
+    monthMenuGrid.innerHTML = "";
+    MONTHS_SHORT.forEach((label, index) => {
+      const btn = document.createElement("button");
+      btn.type = "button";
+      btn.className = "cal-month-option";
+      btn.textContent = label;
+      btn.setAttribute("role", "option");
+      const active = pickerYear === view.getFullYear() && index === view.getMonth();
+      btn.classList.toggle("active", active);
+      btn.setAttribute("aria-selected", active ? "true" : "false");
+      btn.addEventListener("click", () => {
+        view = new Date(pickerYear, index, 1);
+        setMonthMenuOpen(false);
+        render();
+        loadEvents().then(render);
+      });
+      monthMenuGrid.appendChild(btn);
+    });
+  }
+
+  function setMonthMenuOpen(open) {
+    if (!monthPicker || !monthLabelBtn || !monthMenu) return;
+    if (open) {
+      pickerYear = view.getFullYear();
+      renderMonthMenu();
+      setModeMenuOpen(false);
+    }
+    monthPicker.classList.toggle("open", open);
+    monthLabelBtn.setAttribute("aria-expanded", open ? "true" : "false");
+    monthMenu.hidden = !open;
+  }
+
+  function updateChrome() {
+    const editing = isEditMode();
+    const viewing = isViewMode();
+
+    shell?.classList.toggle("is-agent", editing);
+    shell?.classList.toggle("is-edit", editing);
+    shell?.classList.toggle("is-view", viewing);
+    grid.classList.toggle("edit-mode", editing);
+    grid.classList.toggle("view-mode", viewing);
 
     modeButtons.forEach((btn) => {
-      const on = btn.dataset.calMode === mode;
+      const on = btn.getAttribute("data-cal-mode") === mode;
       btn.classList.toggle("active", on);
       btn.setAttribute("aria-selected", on ? "true" : "false");
     });
+    syncModeSwitcher();
 
     if (hint) {
-      if (mode === "agent") {
-        hint.textContent = "AI Agent · click or drag across days to select · ⌘/Ctrl-drag to add";
-      } else if (mode === "edit") {
-        hint.textContent = "Edit mode · open a post to edit title, caption, prompt, and more";
+      if (editing) {
+        hint.textContent = "Edit mode · drag to select a range · click a highlighted block to clear all connected days";
       } else {
-        hint.textContent = "View mode · today’s posts open automatically · click any day to inspect";
+        hint.textContent = "View mode · click any day to inspect posts";
       }
     }
 
     if (chatTitle) {
-      chatTitle.textContent = isAgent ? "AI Agent" : mode === "edit" ? "Edit posts" : "Day posts";
+      chatTitle.textContent = editing ? "AI Agent" : "Day posts";
     }
 
     renderDateChips();
 
-    if (isBrowse) {
+    if (viewing) {
       selectionLabel.textContent = focused
         ? formatLong(focused)
         : "Select a day";
@@ -398,27 +562,32 @@
   function applySelectionClasses() {
     grid.querySelectorAll(".cal-cell").forEach((cell) => {
       const key = cell.dataset.date;
-      cell.classList.toggle("selected", mode === "agent" && selected.has(key));
-      cell.classList.toggle("focused", (mode === "view" || mode === "edit") && focused === key);
+      cell.classList.toggle("selected", isEditMode() && selected.has(key));
+      cell.classList.toggle("focused", isViewMode() && focused === key);
     });
     updateChrome();
   }
 
   function setMode(next) {
-    if (next === mode) return;
+    if (!MODES.has(next)) return;
+    if (next === mode) {
+      saveMode(mode);
+      return;
+    }
     mode = next;
+    saveMode(mode);
     drag = null;
     grid.classList.remove("is-dragging");
+    openedPost = null;
 
-    if (mode === "view" || mode === "edit") {
+    if (isViewMode()) {
       selected.clear();
-      openedPost = null;
       if (!focused) focused = keyFromDate(new Date());
       const d = parseKey(focused);
       view = new Date(d.getFullYear(), d.getMonth(), 1);
     } else {
       focused = null;
-      openedPost = null;
+      selected.clear();
     }
     render();
   }
@@ -448,8 +617,8 @@
       cell.setAttribute("role", "gridcell");
       if (!inMonth) cell.classList.add("muted");
       if (key === todayKey) cell.classList.add("today");
-      if (mode === "agent" && selected.has(key)) cell.classList.add("selected");
-      if ((mode === "view" || mode === "edit") && focused === key) cell.classList.add("focused");
+      if (isEditMode() && selected.has(key)) cell.classList.add("selected");
+      if (isViewMode() && focused === key) cell.classList.add("focused");
 
       const num = document.createElement("span");
       num.className = "cal-cell-num";
@@ -465,7 +634,7 @@
         list.addEventListener("wheel", (e) => e.stopPropagation(), { passive: true });
         dayEvents.forEach((ev) => {
           const row = document.createElement("div");
-          row.className = `cal-event-row is-${platformKey(ev.platforms[0] || "")}`;
+          row.className = `cal-event-row is-${platformKey(primaryPlatform(ev))}`;
           row.innerHTML = `
             <i class="cal-event-bar" aria-hidden="true"></i>
             <span class="cal-event-title"></span>
@@ -490,31 +659,40 @@
     return el?.closest?.(".cal-cell") || null;
   }
 
-  function beginDrag(key, e) {
-    if (mode !== "agent") return;
-    const additive = e.metaKey || e.ctrlKey;
+  function applyDragSelection(endKey) {
+    if (!drag || !endKey) return;
+    drag.current = endKey;
+    selected.clear();
+    drag.snapshot.forEach((k) => selected.add(k));
+    keysInRange(parseKey(drag.anchor), parseKey(endKey)).forEach((k) => selected.add(k));
+    applySelectionClasses();
+  }
+
+  function beginDrag(key) {
+    if (!isEditMode()) return;
+
+    // Clicking any day in a connected highlighted block clears the whole block.
+    if (selected.has(key)) {
+      const block = connectedBlock(key, selected);
+      block.forEach((k) => selected.delete(k));
+      drag = null;
+      applySelectionClasses();
+      return;
+    }
+
     drag = {
       anchor: key,
       current: key,
-      additive,
-      snapshot: additive ? new Set(selected) : new Set(),
+      snapshot: new Set(selected),
     };
 
-    if (!additive) selected.clear();
-    selected.add(key);
-    applySelectionClasses();
+    applyDragSelection(key);
     grid.classList.add("is-dragging");
   }
 
   function updateDrag(key) {
-    if (mode !== "agent" || !drag || !key || key === drag.current) return;
-    drag.current = key;
-
-    const range = keysInRange(parseKey(drag.anchor), parseKey(key));
-    selected.clear();
-    drag.snapshot.forEach((k) => selected.add(k));
-    range.forEach((k) => selected.add(k));
-    applySelectionClasses();
+    if (!isEditMode() || !drag || !key || key === drag.current) return;
+    applyDragSelection(key);
   }
 
   function endDrag() {
@@ -528,7 +706,7 @@
     const cell = e.target.closest(".cal-cell");
     if (!cell) return;
 
-    if (mode === "view" || mode === "edit") {
+    if (isViewMode()) {
       setFocusedDay(cell.dataset.date);
       applySelectionClasses();
       return;
@@ -536,11 +714,11 @@
 
     e.preventDefault();
     grid.setPointerCapture?.(e.pointerId);
-    beginDrag(cell.dataset.date, e);
+    beginDrag(cell.dataset.date);
   });
 
   grid.addEventListener("pointermove", (e) => {
-    if (!drag || mode !== "agent") return;
+    if (!drag || !isEditMode()) return;
     const cell = cellFromPoint(e.clientX, e.clientY);
     if (cell?.dataset.date) updateDrag(cell.dataset.date);
   });
@@ -550,34 +728,65 @@
   window.addEventListener("pointerup", endDrag);
 
   modeButtons.forEach((btn) => {
-    btn.addEventListener("click", () => setMode(btn.dataset.calMode));
+    btn.addEventListener("click", () => {
+      setMode(btn.getAttribute("data-cal-mode"));
+      setModeMenuOpen(false);
+    });
   });
 
-  document.getElementById("cal-prev")?.addEventListener("click", async () => {
+  modeSwitcherBtn?.addEventListener("click", (e) => {
+    e.stopPropagation();
+    const open = modeSwitcherBtn.getAttribute("aria-expanded") !== "true";
+    setModeMenuOpen(open);
+    if (open) setMonthMenuOpen(false);
+  });
+
+  modeMenu?.addEventListener("click", (e) => e.stopPropagation());
+
+  monthLabelBtn?.addEventListener("click", (e) => {
+    e.stopPropagation();
+    const open = monthLabelBtn.getAttribute("aria-expanded") !== "true";
+    setMonthMenuOpen(open);
+  });
+
+  monthMenu?.addEventListener("click", (e) => e.stopPropagation());
+
+  document.getElementById("cal-year-prev")?.addEventListener("click", (e) => {
+    e.stopPropagation();
+    pickerYear -= 1;
+    renderMonthMenu();
+  });
+
+  document.getElementById("cal-year-next")?.addEventListener("click", (e) => {
+    e.stopPropagation();
+    pickerYear += 1;
+    renderMonthMenu();
+  });
+
+  document.addEventListener("click", () => {
+    setModeMenuOpen(false);
+    setMonthMenuOpen(false);
+  });
+  document.addEventListener("keydown", (e) => {
+    if (e.key === "Escape") {
+      setModeMenuOpen(false);
+      setMonthMenuOpen(false);
+    }
+  });
+
+  syncModeSwitcher();
+  saveMode(mode);
+
+  document.getElementById("cal-prev")?.addEventListener("click", () => {
     view = new Date(view.getFullYear(), view.getMonth() - 1, 1);
     render();
-    await loadEvents();
-    render();
+    loadEvents().then(render);
   });
 
-  document.getElementById("cal-next")?.addEventListener("click", async () => {
+  document.getElementById("cal-next")?.addEventListener("click", () => {
     view = new Date(view.getFullYear(), view.getMonth() + 1, 1);
     render();
-    await loadEvents();
-    render();
-  });
-
-  document.getElementById("cal-today")?.addEventListener("click", () => {
-    const current = new Date();
-    view = new Date(current.getFullYear(), current.getMonth(), 1);
-    const key = keyFromDate(current);
-    if (mode === "agent") {
-      selected.clear();
-      selected.add(key);
-    } else {
-      setFocusedDay(key);
-    }
-    render();
+    loadEvents().then(render);
   });
 
   function syncSendState() {
@@ -604,25 +813,34 @@
     }
   });
 
-  // The agent box turns a product URL plus a set of selected days into one
+  // Edit mode turns a product URL plus a set of selected days into one
   // scheduled video per day. The pipeline needs a real product page to
-  // scrape, so a prompt without a URL can't be actioned.
+  // scrape, so a message without a URL can't be actioned.
   const URL_PATTERN = /https?:\/\/[^\s]+/i;
 
-  function agentMessage(html, kind = "info") {
+  function agentMessage(text, kind = "info") {
     if (!dayPanel) return;
-    dayPanel.innerHTML = `<div class="cal-day-empty ${kind === "error" ? "is-error" : ""}">${html}</div>`;
+    dayPanel.innerHTML =
+      `<div class="cal-day-empty ${kind === "error" ? "is-error" : ""}">${escapeHtml(text)}</div>`;
   }
 
   form?.addEventListener("submit", async (e) => {
     e.preventDefault();
     if (!field || !field.value.trim()) return;
 
+    if (!isEditMode()) {
+      toast("Switch to Edit mode to plan new videos", "error");
+      return;
+    }
+
     const text = field.value.trim();
     const match = text.match(URL_PATTERN);
     if (!match) {
       toast("Include the product URL you want a video made from", "error");
-      agentMessage("Paste the product page URL in your message - the generator scrapes it for the name, price and images.", "error");
+      agentMessage(
+        "Paste the product page URL in your message - the generator scrapes it for the name, price and images.",
+        "error"
+      );
       return;
     }
 
@@ -633,7 +851,7 @@
     }
 
     const productUrl = match[0];
-    // Keep whatever the user wrote around the URL as the video's title.
+    // Whatever the user wrote around the URL becomes the video's title.
     const title = text.replace(URL_PATTERN, "").trim().slice(0, 120) || undefined;
 
     if (sendBtn) sendBtn.disabled = true;
@@ -641,7 +859,7 @@
 
     const results = [];
     for (const key of days) {
-      // 9am local on each selected day, unless that has already passed today.
+      // 9am local on each selected day, unless that has already passed.
       const when = parseKey(key);
       when.setHours(9, 0, 0, 0);
       const scheduledAt = when.getTime() > Date.now() ? when.getTime() : Date.now() + 60000;
@@ -650,9 +868,9 @@
           method: "POST",
           body: { productUrl, title, scheduledAt, platforms: [] },
         });
-        results.push({ key, ok: true });
+        results.push({ ok: true });
       } catch (err) {
-        results.push({ key, ok: false, error: err.message });
+        results.push({ ok: false, error: err.message });
       }
     }
 
@@ -673,7 +891,7 @@
   });
 
   // Pulls the jobs for the visible month plus a month of padding either
-  // side, so scrolling between months rarely needs a fetch.
+  // side, so stepping between months rarely needs a fetch.
   async function loadEvents() {
     const start = new Date(view.getFullYear(), view.getMonth() - 1, 1).getTime();
     const end = new Date(view.getFullYear(), view.getMonth() + 2, 0, 23, 59, 59).getTime();

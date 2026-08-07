@@ -1,0 +1,17 @@
+---
+description: Always pull partner changes first, then commit and push — never overwrite remote work
+alwaysApply: true
+---
+
+# Safe auto-sync with partner
+
+Before committing or pushing anything:
+
+1. Run `git fetch origin` then `git pull --rebase --autostash origin HEAD`
+2. If pull/rebase conflicts, **stop and tell the user** — do not push
+3. Only then `git add` / `git commit` / `git push origin HEAD`
+4. **Never** use `git push --force` or `--force-with-lease` unless the user explicitly asks
+
+Remote: `raitenhenry-ai/NEW-Postfin` (`main`).
+
+This keeps your partner’s pushed edits and layers yours on top instead of wiping theirs.

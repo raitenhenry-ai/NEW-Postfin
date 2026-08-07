@@ -533,6 +533,11 @@
       ]);
 
       calendarDays = calendar.days;
+      // "Start" vs "Edit my automated plan" depends on whether anything is
+      // actually planned.
+      window.PostfinPlanButton?.sync(
+        Object.values(calendarDays).some((day) => day.posts.length)
+      );
       fillStats(dashboard.stats);
       renderAccounts(dashboard.topAccounts);
       renderVideos(dashboard.topVideos);

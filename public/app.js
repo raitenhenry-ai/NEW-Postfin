@@ -74,3 +74,31 @@ dayModal?.querySelectorAll("[data-close-modal]").forEach((el) => {
 document.addEventListener("keydown", (e) => {
   if (e.key === "Escape") closeDayModal();
 });
+
+/* ---------- automated plan button ----------
+   Sits in the dashboard's calendar toolbar and links through to the
+   calendar's edit mode. Its label depends on whether anything is planned,
+   which is only known once dashboard.js has loaded the calendar - so that
+   script calls syncAutomatedPlanBtn() with the real count. */
+
+const automatedPlanBtn = document.getElementById("automated-plan-btn");
+
+function syncAutomatedPlanBtn(hasPlan) {
+  if (!automatedPlanBtn) return;
+  const label = hasPlan ? "Edit my automated plan" : "Start my automated plan";
+  const labelEl = automatedPlanBtn.querySelector(".automated-plan-label");
+  if (labelEl) labelEl.textContent = label;
+  automatedPlanBtn.setAttribute("aria-label", label);
+}
+
+window.PostfinPlanButton = { sync: syncAutomatedPlanBtn };
+
+if (automatedPlanBtn) {
+  automatedPlanBtn.addEventListener("click", () => {
+    try {
+      localStorage.setItem("cal-mode", "edit");
+    } catch {
+      /* ignore */
+    }
+  });
+}
