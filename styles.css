@@ -2083,14 +2083,6 @@ body.sidebar-expanded {
   font-size: 12px;
 }
 
-.cal-topbar-right {
-  display: flex;
-  align-items: center;
-  justify-content: flex-end;
-  gap: 8px;
-  min-height: 32px;
-}
-
 .cal-chat-toggle {
   width: 34px;
   height: 34px;
