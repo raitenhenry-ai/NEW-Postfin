@@ -919,42 +919,11 @@
     render();
   });
 
-  const CHAT_KEY = "cal-chat-collapsed";
-  const calBody = document.querySelector(".cal-body");
-  const chatToggleBtn = document.getElementById("cal-chat-toggle");
-
-  function setChatCollapsed(collapsed) {
-    calBody?.classList.toggle("chat-collapsed", collapsed);
-    const open = !collapsed;
-    chatToggleBtn?.classList.toggle("is-on", open);
-    chatToggleBtn?.setAttribute("aria-pressed", open ? "true" : "false");
-    chatToggleBtn?.setAttribute(
-      "aria-label",
-      collapsed ? "Show chat panel" : "Hide chat and expand calendar"
-    );
-    try {
-      localStorage.setItem(CHAT_KEY, collapsed ? "1" : "0");
-    } catch {
-      /* ignore */
-    }
-  }
-
-  function loadChatCollapsed() {
-    try {
-      return localStorage.getItem(CHAT_KEY) === "1";
-    } catch {
-      return false;
-    }
-  }
-
-  chatToggleBtn?.addEventListener("click", () => {
-    const collapsed = !calBody?.classList.contains("chat-collapsed");
-    setChatCollapsed(collapsed);
-  });
-  setChatCollapsed(loadChatCollapsed());
+  // Chat panel follows mode: open in Edit, collapsed in View
+  setChatCollapsed(isViewMode());
 
   viewToolBtn?.addEventListener("click", () => setMode("view"));
-  editToolBtn?.addEventListener("click", () => setMode("edit"));
+  chatToggleBtn?.addEventListener("click", () => setMode("edit"));
 
   // Pulls the jobs for the visible month plus a month of padding either
   // side, so stepping between months rarely needs a fetch.
