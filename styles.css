@@ -2522,6 +2522,10 @@ body.sidebar-expanded {
   }
 
   .cal-shell {
+    height: auto;
+  }
+
+  .cal-body {
     grid-template-columns: 1fr;
     height: auto;
   }
