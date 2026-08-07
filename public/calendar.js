@@ -598,7 +598,6 @@
     if (!MODES.has(next)) return;
     if (next === mode) {
       saveMode(mode);
-      setChatCollapsed(isViewMode());
       return;
     }
     mode = next;
@@ -612,10 +611,10 @@
       if (!focused) focused = keyFromDate(new Date());
       const d = parseKey(focused);
       view = new Date(d.getFullYear(), d.getMonth(), 1);
-      setChatCollapsed(true);
     } else {
       focused = null;
       selected.clear();
+      // Edit needs the side panel for the composer
       setChatCollapsed(false);
     }
     render();
