@@ -170,37 +170,40 @@
               <svg viewBox="0 0 12 12" fill="none" aria-hidden="true"><path d="M3 4.5L6 7.5L9 4.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
             </button>
           </div>
-        </header>
+      </header>
 
-        <div class="cal-board">
-          <div class="cal-weekdays" aria-hidden="true">
-            <span>SUN</span><span>MON</span><span>TUE</span><span>WED</span><span>THU</span><span>FRI</span><span>SAT</span>
-          </div>
-          <div class="cal-grid" id="cal-grid" role="grid" aria-label="June 2026"></div>
-        </div>
-
-        <p class="cal-hint" id="cal-hint">View mode · browse your schedule</p>
-      </section>
-
-      <aside class="cal-chat" aria-label="Day posts" id="cal-chat">
-        <div class="cal-chat-header">
-          <h2 id="cal-chat-title">Day posts</h2>
-          <span class="cal-chat-sub" id="cal-selection-label">Loading…</span>
-        </div>
-        <div class="cal-chat-messages" id="cal-chat-messages"></div>
-        <form class="cal-composer" id="cal-chat-form">
-          <div class="cal-composer-chips" id="cal-date-chips" hidden></div>
-          <textarea id="cal-chat-field" rows="3" placeholder="Describe your idea" autocomplete="off"></textarea>
-          <div class="cal-composer-toolbar">
-            <button type="button" class="cal-composer-plus" aria-label="Add attachment">+</button>
-            <div class="cal-composer-actions">
-              <button type="submit" class="cal-composer-send" id="cal-chat-send" aria-label="Send" disabled>
-                <svg viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M8 12.5V3.5M8 3.5L4.5 7M8 3.5L11.5 7" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
-              </button>
+      <div class="cal-body">
+        <section class="cal-main" aria-label="Content calendar">
+          <div class="cal-board">
+            <div class="cal-weekdays" aria-hidden="true">
+              <span>SUN</span><span>MON</span><span>TUE</span><span>WED</span><span>THU</span><span>FRI</span><span>SAT</span>
             </div>
+            <div class="cal-grid" id="cal-grid" role="grid" aria-label="June 2026"></div>
           </div>
-        </form>
-      </aside>
+
+          <p class="cal-hint" id="cal-hint">View mode · browse your schedule</p>
+        </section>
+
+        <aside class="cal-chat" aria-label="Day posts" id="cal-chat">
+          <div class="cal-chat-header">
+            <h2 id="cal-chat-title">Day posts</h2>
+            <span class="cal-chat-sub" id="cal-selection-label">Loading…</span>
+          </div>
+          <div class="cal-chat-messages" id="cal-chat-messages"></div>
+          <form class="cal-composer" id="cal-chat-form">
+            <div class="cal-composer-chips" id="cal-date-chips" hidden></div>
+            <textarea id="cal-chat-field" rows="3" placeholder="Describe your idea" autocomplete="off"></textarea>
+            <div class="cal-composer-toolbar">
+              <button type="button" class="cal-composer-plus" aria-label="Add attachment">+</button>
+              <div class="cal-composer-actions">
+                <button type="submit" class="cal-composer-send" id="cal-chat-send" aria-label="Send" disabled>
+                  <svg viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M8 12.5V3.5M8 3.5L4.5 7M8 3.5L11.5 7" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                </button>
+              </div>
+            </div>
+          </form>
+        </aside>
+      </div>
     </div>
   </main>
 
