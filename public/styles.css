@@ -166,6 +166,24 @@ body.sidebar-expanded {
   margin: 16px 0;
 }
 
+.sidebar-foot {
+  margin-top: auto;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+.sidebar.expanded .sidebar-foot {
+  align-items: stretch;
+}
+
+.sidebar-foot .divider {
+  margin-top: 16px;
+  margin-bottom: 16px;
+}
+
 .profile {
   border: none;
   background: transparent;
