@@ -3490,13 +3490,6 @@ body.sidebar-expanded {
 
 .connector-action:not(span) { text-decoration: none; }
 
-.connector-hint {
-  color: #6a6a72;
-  font-size: 11.5px;
-  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
-  word-break: break-all;
-}
-
 .connector-accounts {
   list-style: none;
   margin: 8px 0 0;
