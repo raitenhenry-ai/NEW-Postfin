@@ -381,13 +381,9 @@ router.get("/connectors", wrap(async (req, res) => {
       description: PLATFORM_DESCRIPTIONS[key],
       configured: platforms[key].isConfigured(),
       connectUrl: `/auth/${key}`,
-      redirectUri: `${config.baseUrl}/auth/${key}/callback`,
       accounts: byPlatform[key],
     })),
     maxAccountsPerPlatform: config.maxAccountsPerPlatform,
-    // Shown on the Connectors page so App URL can be copied from the
-    // running deployment rather than guessed.
-    baseUrl: config.baseUrl,
   });
 }));
 
