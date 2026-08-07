@@ -1504,6 +1504,15 @@ body.sidebar-expanded {
   gap: 12px;
   align-items: stretch;
   overflow: hidden;
+  transition: grid-template-columns 0.2s ease;
+}
+
+.cal-body.chat-collapsed {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+.cal-body.chat-collapsed .cal-chat {
+  display: none;
 }
 
 .cal-main {
