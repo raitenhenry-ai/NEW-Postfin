@@ -918,8 +918,8 @@
     render();
   });
 
-  // Chat panel follows mode: open in Edit, collapsed in View
-  setChatCollapsed(isViewMode());
+  // Keep the side panel visible so View can show day posts
+  setChatCollapsed(false);
 
   viewToolBtn?.addEventListener("click", () => setMode("view"));
   chatToggleBtn?.addEventListener("click", () => setMode("edit"));
