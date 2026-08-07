@@ -458,7 +458,8 @@
     });
   }
 
-  const viewToolBtn = document.getElementById("cal-view-btn");
+  const viewToolBtn = document.getElementById("cal-view-tool");
+  const editToolBtn = document.getElementById("cal-edit-tool");
 
   function syncModeSwitcher() {
     if (modeSwitcherLabel) {
@@ -471,7 +472,14 @@
       const on = btn.getAttribute("data-cal-mode") === mode;
       btn.setAttribute("aria-checked", on ? "true" : "false");
     });
-    viewToolBtn?.setAttribute("aria-pressed", isViewMode() ? "true" : "false");
+
+    // Top-right icon buttons switch + reflect the active mode
+    const onView = isViewMode();
+    const onEdit = isEditMode();
+    viewToolBtn?.classList.toggle("is-on", onView);
+    viewToolBtn?.setAttribute("aria-pressed", onView ? "true" : "false");
+    editToolBtn?.classList.toggle("is-on", onEdit);
+    editToolBtn?.setAttribute("aria-pressed", onEdit ? "true" : "false");
   }
 
   function setModeMenuOpen(open) {
@@ -899,7 +907,9 @@
 
   function setChatCollapsed(collapsed) {
     calBody?.classList.toggle("chat-collapsed", collapsed);
-    chatToggleBtn?.setAttribute("aria-pressed", collapsed ? "false" : "true");
+    const open = !collapsed;
+    chatToggleBtn?.classList.toggle("is-on", open);
+    chatToggleBtn?.setAttribute("aria-pressed", open ? "true" : "false");
     chatToggleBtn?.setAttribute(
       "aria-label",
       collapsed ? "Show chat panel" : "Hide chat and expand calendar"
@@ -926,6 +936,7 @@
   setChatCollapsed(loadChatCollapsed());
 
   viewToolBtn?.addEventListener("click", () => setMode("view"));
+  editToolBtn?.addEventListener("click", () => setMode("edit"));
 
   // Pulls the jobs for the visible month plus a month of padding either
   // side, so stepping between months rarely needs a fetch.
