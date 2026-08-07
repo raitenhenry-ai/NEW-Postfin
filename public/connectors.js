@@ -24,7 +24,35 @@
     history.replaceState(null, "", location.pathname);
   }
 
+  // The values the platform dashboards ask for, taken from the running
+  // deployment - if BASE_URL is wrong, it is wrong here too and visibly so.
+  function renderSetup(data) {
+    const setup = document.getElementById("connectors-setup");
+    if (!setup) return;
+    setup.innerHTML = `
+      <div class="connector-setup">
+        <h2>Set-up details</h2>
+        <p>Paste these into each platform's developer dashboard. They come from
+           this deployment's <code>BASE_URL</code>.</p>
+        <dl class="connector-setup-defs">
+          <dt>App URL</dt>
+          <dd><code>${escapeHtml(data.baseUrl)}</code></dd>
+          <dt>Redirect URI</dt>
+          <dd><code>${escapeHtml(data.baseUrl)}/auth/&lt;platform&gt;/callback</code>
+              <span class="pf-hint">the exact value per platform is listed below</span></dd>
+          <dt>Meta webhook<br><span class="pf-hint">Instagram · Facebook · Threads</span></dt>
+          <dd><code>${escapeHtml(data.metaWebhook.url)}</code>
+              <span class="pf-hint">verify token: <code>${escapeHtml(data.metaWebhook.verifyToken)}</code></span></dd>
+        </dl>
+        ${data.baseUrl.includes("localhost")
+          ? `<div class="pf-empty pf-error">BASE_URL is still localhost, so these
+             redirect URIs will not work. Set it to this deployment's public URL.</div>`
+          : ""}
+      </div>`;
+  }
+
   function render(data) {
+    renderSetup(data);
     list.innerHTML = data.platforms.map((p) => {
       const atLimit = p.accounts.length >= data.maxAccountsPerPlatform;
       const accounts = p.accounts.map((a) => `
@@ -48,6 +76,7 @@
           <div class="connector-copy">
             <span class="connector-name">${escapeHtml(p.label)}</span>
             <span class="connector-desc">${escapeHtml(p.description)}</span>
+            <code class="connector-hint">redirect URI: ${escapeHtml(p.redirectUri)}</code>
             ${accounts ? `<ul class="connector-accounts">${accounts}</ul>` : ""}
           </div>
           ${action}
