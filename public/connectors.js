@@ -37,16 +37,10 @@
         <dl class="connector-setup-defs">
           <dt>App URL</dt>
           <dd><code>${escapeHtml(data.baseUrl)}</code></dd>
-          <dt>Redirect URI</dt>
-          <dd><code>${escapeHtml(data.baseUrl)}/auth/&lt;platform&gt;/callback</code>
-              <span class="pf-hint">the exact value per platform is listed below</span></dd>
-          <dt>Meta webhook<br><span class="pf-hint">Instagram · Facebook · Threads</span></dt>
-          <dd><code>${escapeHtml(data.metaWebhook.url)}</code>
-              <span class="pf-hint">verify token: <code>${escapeHtml(data.metaWebhook.verifyToken)}</code></span></dd>
         </dl>
         ${data.baseUrl.includes("localhost")
-          ? `<div class="pf-empty pf-error">BASE_URL is still localhost, so these
-             redirect URIs will not work. Set it to this deployment's public URL.</div>`
+          ? `<div class="pf-empty pf-error">BASE_URL is still localhost. Set it to this
+             deployment's public URL so OAuth can complete.</div>`
           : ""}
       </div>`;
   }
