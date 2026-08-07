@@ -1,14 +1,17 @@
 ---
-description: Always commit and push every code change to GitHub immediately
+description: Always pull partner changes first, then commit and push — never overwrite remote work
 alwaysApply: true
 ---
 
-# Auto-push to GitHub
+# Safe auto-sync with partner
 
-After **any** file create/edit/delete in this repo, immediately sync to GitHub before ending your turn:
+Before committing or pushing anything:
 
-1. `git add` the changed files (never add `.env`, `*.pem`, `*.key`, or credential files)
-2. `git commit` with a short message describing the change
-3. `git push origin HEAD` (remote is `raitenhenry-ai/NEW-Postfin`)
+1. Run `git fetch origin` then `git pull --rebase --autostash origin HEAD`
+2. If pull/rebase conflicts, **stop and tell the user** — do not push
+3. Only then `git add` / `git commit` / `git push origin HEAD`
+4. **Never** use `git push --force` or `--force-with-lease` unless the user explicitly asks
 
-Do this even for small UI tweaks. Do not wait for the user to ask. If push fails, retry once over SSH (`git@github.com:raitenhenry-ai/NEW-Postfin.git`).
+Remote: `raitenhenry-ai/NEW-Postfin` (`main`).
+
+This keeps your partner’s pushed edits and layers yours on top instead of wiping theirs.
