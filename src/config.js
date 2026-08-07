@@ -117,8 +117,13 @@ const config = {
   ugc: {
     provider: env("UGC_PROVIDER", "auto"), // auto | heygen | local
     heygenApiKey: env("HEYGEN_API_KEY"),
+    heygenApiBase: env("HEYGEN_API_BASE", "https://api.heygen.com").replace(/\/+$/, ""),
+    // Fallbacks only - the create form lists the avatars and voices this
+    // account actually has, and a job stores the pair it was made with.
     heygenAvatarId: env("HEYGEN_AVATAR_ID", "Daisy-inskirt-20220818"),
     heygenVoiceId: env("HEYGEN_VOICE_ID", "2d5b0e6cf36f460aa7fc47e3eee4ba54"),
+    heygenBackground: env("HEYGEN_BACKGROUND", "#0b0d12"),
+    heygenSpeed: Number(process.env.HEYGEN_SPEED || 1.05),
     ttsModel: env("UGC_TTS_MODEL", "gpt-4o-mini-tts"),
     ttsVoice: env("UGC_TTS_VOICE", "nova"),
     videoSeconds: Number(process.env.UGC_VIDEO_SECONDS || 24),

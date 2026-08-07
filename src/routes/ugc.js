@@ -4,7 +4,7 @@ import { q, q1, run as dbRun } from "../db.js";
 import { platforms } from "../accounts.js";
 import { toneOptions, styleOptions } from "../ugc/script.js";
 import { planContent, normalizeSettings } from "../ugc/plan.js";
-import { heygenConfigured } from "../ugc/heygen.js";
+import { heygenConfigured, heygenCatalog, testConnection } from "../ugc/heygen.js";
 import { collectMetrics } from "../metrics.js";
 import { reschedule } from "../schedule.js";
 import {
@@ -103,6 +103,7 @@ router.post("/jobs", wrap(async (req, res) => {
     platforms: wanted,
     provider: ["heygen", "local", "auto"].includes(req.body.provider) ? req.body.provider : undefined,
     voice: typeof req.body.voice === "string" ? req.body.voice.slice(0, 40) : undefined,
+    ...avatarSettings(req.body),
   };
   const autoPost = req.body.autoPost === false ? 0 : 1;
   const title = typeof req.body.title === "string" ? req.body.title.slice(0, 120) : null;
@@ -168,7 +169,7 @@ router.post("/plan", wrap(async (req, res) => {
     // A slot in the past would publish the moment it renders; nudge it just
     // far enough out that the video finishes first.
     const scheduledAt = slots[i] > now ? slots[i] : now + 60000;
-    const settings = { tone, style, platforms: wanted };
+    const settings = { tone, style, platforms: wanted, ...avatarSettings(req.body) };
     const row = await q1(
       `INSERT INTO ugc_jobs (product_url, settings_json, status, auto_post, title,
          brief, concept_json, scheduled_at, created_at, updated_at)
@@ -189,6 +190,21 @@ router.post("/plan", wrap(async (req, res) => {
     videos: created,
   });
 }));
+
+// HeyGen avatar/voice selection. Stored per job so re-rendering a video
+// months later still uses the avatar it was made with, even if the
+// workspace default has moved on.
+function avatarSettings(body) {
+  const out = {};
+  if (typeof body.avatarId === "string" && body.avatarId.trim()) {
+    out.avatarId = body.avatarId.trim().slice(0, 120);
+  }
+  if (body.avatarKind === "talking_photo") out.avatarKind = "talking_photo";
+  if (typeof body.voiceId === "string" && body.voiceId.trim()) {
+    out.voiceId = body.voiceId.trim().slice(0, 120);
+  }
+  return out;
+}
 
 // null = no schedule, a number = a valid future slot, undefined = invalid.
 function parseScheduledAt(raw) {
@@ -307,6 +323,33 @@ router.delete("/jobs/:id", wrap(async (req, res) => {
   await deleteJobFiles(job);
   await dbRun("DELETE FROM ugc_jobs WHERE id = ?", [job.id]);
   res.json({ ok: true });
+}));
+
+// The avatars and voices this HeyGen account can actually use, so the
+// create form offers a picker instead of asking for raw IDs.
+router.get("/heygen", wrap(async (req, res) => {
+  const catalog = await heygenCatalog({ force: req.query.refresh === "1" });
+  res.json({
+    ...catalog,
+    defaults: {
+      avatarId: config.ugc.heygenAvatarId,
+      voiceId: config.ugc.heygenVoiceId,
+    },
+    provider: pickProvider(),
+  });
+}));
+
+// Explicit key check for the settings UI - tells you the key works before
+// you wait on a render to find out it doesn't.
+router.post("/heygen/test", wrap(async (req, res) => {
+  if (!heygenConfigured()) {
+    return res.status(400).json({ ok: false, error: "HEYGEN_API_KEY is not set" });
+  }
+  try {
+    res.json(await testConnection());
+  } catch (err) {
+    res.status(502).json({ ok: false, error: String(err.message || err) });
+  }
 }));
 
 // Pull fresh numbers from the platform APIs on demand, so the analytics page

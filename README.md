@@ -15,9 +15,10 @@ all driven by this app's own API. There is no mock data anywhere in the UI.
 2. **Script** — hook, spoken scenes, CTA, caption and hashtags via OpenAI, in
    a chosen tone (casual / hyped / pro / storytelling) and style (Product POV,
    GRWM, Unboxing, Before-After, Demo). Falls back to templates without a key.
-3. **Render** — either the **HeyGen avatar API** (`HEYGEN_API_KEY`) for a
-   talking-creator video, or the **built-in ffmpeg renderer**: 1080×1920 from
-   the product images with burned-in captions and an OpenAI TTS voiceover.
+3. **Render** — either the **HeyGen avatar API** for a talking-creator video,
+   or the **built-in ffmpeg renderer**: 1080×1920 from the product images
+   with burned-in captions and an OpenAI TTS voiceover. Both output 1080×1920.
+   See [Avatar videos with HeyGen](#avatar-videos-with-heygen).
 4. **Schedule** — a job with a `scheduledAt` renders immediately and then
    waits at `ready`, so the finished video is previewable on the calendar
    before its slot. Without one it posts as soon as it has rendered.
@@ -36,6 +37,33 @@ npm start              # http://localhost:3000
 ```
 
 Requirements: Node 18+, ffmpeg + ffprobe on PATH (for the built-in renderer).
+
+## Avatar videos with HeyGen
+
+Set `HEYGEN_API_KEY` and every video is rendered as a talking avatar
+speaking the generated script, at 1080×1920. Without it, the built-in
+ffmpeg renderer is used instead. `UGC_PROVIDER` forces one or the other
+(`auto` | `heygen` | `local`); `auto` means "HeyGen when a key is set".
+
+The key is in HeyGen under **Settings → API**. API access requires a paid
+HeyGen plan, and each render spends credits from that plan.
+
+**Picking an avatar.** You don't need to hunt for IDs. The scheduler dialog
+lists the avatars and voices this HeyGen account actually has — including
+uploaded talking photos — with a preview image, and the pair you choose is
+stored on the video. Re-rendering it later reuses the same avatar even if
+the workspace default has changed since. `HEYGEN_AVATAR_ID` and
+`HEYGEN_VOICE_ID` are only the fallback for videos that don't specify one.
+
+**Check the key works** from the Profile page → Generation → *Test HeyGen
+connection*, which lists the avatar count. Worth doing before scheduling a
+week of posts, since otherwise a bad key surfaces as a failed render at
+publish time.
+
+Two limits worth knowing: the script is truncated to 1500 characters, which
+is HeyGen's per-request cap, and HeyGen output has no burned-in captions —
+it's the avatar speaking. The built-in renderer is the one that burns
+captions in.
 
 ## The API
 
@@ -57,6 +85,9 @@ Everything under `/api` requires the login when `ADMIN_PASSWORD` is set.
 | `POST /api/jobs/:id/regenerate` | Discard script + video and start over |
 | `POST /api/jobs/:id/post` | Publish now. `{ onlyFailed: true }` retries failures |
 | `DELETE /api/jobs/:id` | Delete a job, its posts and its files |
+| `GET /api/heygen` | Avatars and voices on the HeyGen account, for the picker |
+| `POST /api/heygen/test` | Check the HeyGen key works |
+| `POST /api/plan` | Plan a set of videos from a brief. `{ brief, slots: [epochMs], productUrl?, platforms?, avatarId?, voiceId? }` |
 | `POST /api/metrics/refresh` | Collect fresh numbers from the platform APIs now |
 | `GET /healthz` | Unauthenticated health probe |
 

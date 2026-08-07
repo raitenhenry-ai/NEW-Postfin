@@ -70,8 +70,13 @@
         <h2>Generation</h2>
         <div class="profile-flags">
           ${statusDot(data.integrations.openai, data.integrations.openai ? "OpenAI connected" : "No OpenAI key - template scripts")}
-          ${statusDot(data.integrations.heygen, data.integrations.heygen ? "HeyGen connected" : "No HeyGen key")}
+          ${statusDot(data.integrations.heygen, data.integrations.heygen ? "HeyGen key set" : "No HeyGen key - built-in renderer")}
         </div>
+        ${data.integrations.heygen ? `
+          <div class="profile-heygen">
+            <button type="button" class="pf-btn ghost" id="heygen-test">Test HeyGen connection</button>
+            <span class="profile-heygen-result" id="heygen-result"></span>
+          </div>` : ""}
       </section>
 
       <section class="profile-section">
@@ -82,8 +87,30 @@
       </section>`;
   }
 
+  // Checks the key works now, rather than finding out when a render fails
+  // 15 minutes into a scheduled post.
+  function bindHeygenTest() {
+    const btn = document.getElementById("heygen-test");
+    const out = document.getElementById("heygen-result");
+    btn?.addEventListener("click", async () => {
+      btn.disabled = true;
+      out.textContent = "Checking…";
+      out.className = "profile-heygen-result";
+      try {
+        const result = await api("/api/heygen/test", { method: "POST", body: {} });
+        out.textContent = `Connected · ${result.avatarCount} avatar(s) available`;
+        out.className = "profile-heygen-result is-ok";
+      } catch (err) {
+        out.textContent = err.message;
+        out.className = "profile-heygen-result is-error";
+      } finally {
+        btn.disabled = false;
+      }
+    });
+  }
+
   api("/api/profile")
-    .then(render)
+    .then((data) => { render(data); bindHeygenTest(); })
     .catch((err) => {
       page.innerHTML = errorBlock(`Couldn't load your profile: ${err.message}`);
       toast(err.message, "error");

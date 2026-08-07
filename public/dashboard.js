@@ -432,6 +432,20 @@
           </div>
         </div>
 
+        <div id="sched-heygen" hidden>
+          <div class="pf-form-row">
+            <div>
+              <label class="post-field-label" for="sched-avatar">Avatar</label>
+              <select class="pf-input" id="sched-avatar"></select>
+            </div>
+            <div>
+              <label class="post-field-label" for="sched-voice">Voice</label>
+              <select class="pf-input" id="sched-voice"></select>
+            </div>
+          </div>
+          <div class="sched-avatar-preview" id="sched-avatar-preview"></div>
+        </div>
+
         <p class="pf-hint" id="sched-hint"></p>
         <button class="pf-btn" type="submit" id="sched-submit">Create &amp; schedule</button>
       </form>`;
@@ -465,6 +479,8 @@
         ? `Scripts written by AI · ${overview.generator.provider === "heygen" ? "HeyGen avatar" : "built-in"} renderer`
         : "No OpenAI key set - scripts fall back to templates.";
 
+      if (overview.generator.provider === "heygen") loadHeygenPickers();
+
       if (!connected.length) {
         document.getElementById("sched-submit").disabled = true;
       }
@@ -488,6 +504,7 @@
             platforms,
             tone: document.getElementById("sched-tone").value,
             style: document.getElementById("sched-style").value,
+            ...avatarChoice(),
           },
         });
         toast("Scheduled - generating the video now");
@@ -501,7 +518,69 @@
     });
   }
 
+  // Lists the avatars and voices this HeyGen account actually has, so the
+  // operator picks one instead of pasting an ID from HeyGen's dashboard.
+  async function loadHeygenPickers() {
+    const wrap = document.getElementById("sched-heygen");
+    const avatarSel = document.getElementById("sched-avatar");
+    const voiceSel = document.getElementById("sched-voice");
+    const preview = document.getElementById("sched-avatar-preview");
+    if (!wrap || !avatarSel || !voiceSel) return;
+
+    wrap.hidden = false;
+    avatarSel.innerHTML = `<option>Loading…</option>`;
+    voiceSel.innerHTML = `<option>Loading…</option>`;
+
+    try {
+      const catalog = await api("/api/heygen");
+      if (catalog.error && !catalog.avatars.length) {
+        wrap.hidden = true;
+        toast(`HeyGen: ${catalog.error}`, "error");
+        return;
+      }
+
+      avatarSel.innerHTML = catalog.avatars.map((a) =>
+        `<option value="${escapeHtml(a.id)}" data-kind="${escapeHtml(a.kind)}"
+                 data-preview="${escapeHtml(a.preview || "")}"
+                 ${a.id === catalog.defaults.avatarId ? "selected" : ""}>
+           ${escapeHtml(a.name)}${a.gender ? ` (${escapeHtml(a.gender)})` : ""}
+         </option>`).join("") || `<option value="">No avatars on this account</option>`;
+
+      voiceSel.innerHTML = catalog.voices.map((v) =>
+        `<option value="${escapeHtml(v.id)}" ${v.id === catalog.defaults.voiceId ? "selected" : ""}>
+           ${escapeHtml(v.name)}${v.language ? ` · ${escapeHtml(v.language)}` : ""}
+         </option>`).join("") || `<option value="">No voices on this account</option>`;
+
+      const showPreview = () => {
+        const opt = avatarSel.selectedOptions[0];
+        const src = opt?.dataset.preview;
+        preview.innerHTML = src
+          ? `<img src="${escapeHtml(src)}" alt="" loading="lazy">`
+          : "";
+      };
+      avatarSel.addEventListener("change", showPreview);
+      showPreview();
+    } catch (err) {
+      wrap.hidden = true;
+      toast(`Couldn't load HeyGen avatars: ${err.message}`, "error");
+    }
+  }
+
   document.getElementById("dash-schedule-btn")?.addEventListener("click", openScheduleDialog);
+
+  // Whatever the HeyGen pickers are set to, when they are showing.
+  function avatarChoice() {
+    const wrap = document.getElementById("sched-heygen");
+    if (!wrap || wrap.hidden) return {};
+    const avatarSel = document.getElementById("sched-avatar");
+    const voiceSel = document.getElementById("sched-voice");
+    const opt = avatarSel?.selectedOptions[0];
+    return {
+      avatarId: avatarSel?.value || undefined,
+      avatarKind: opt?.dataset.kind || undefined,
+      voiceId: voiceSel?.value || undefined,
+    };
+  }
 
   /* ---------- view switching ---------- */
 
