@@ -123,9 +123,42 @@ publish by downloading the clip from `BASE_URL/ugc-media/...` — so it has to
 be internet-reachable, or publishing fails with a container error.
 
 Storage is SQLite in `data/app.db` by default; set `DATABASE_URL` to use
-Postgres/Neon instead. The schema migrates itself on boot for both. If you
-use SQLite, the volume is not optional: without it the database and every
+Postgres instead. The schema migrates itself on boot for both. If you use
+SQLite, the volume is not optional: without it the database and every
 rendered video are wiped on each deploy.
+
+### Supabase (or any Postgres)
+
+Set `DATABASE_URL` and restart — the app creates and migrates its own tables
+on boot. Then **run `supabase.sql` once in the Supabase SQL Editor.**
+
+That step is not optional on Supabase. Supabase publishes every table in the
+`public` schema through its REST API and grants the `anon` role access.
+Postfin's `accounts` table holds live OAuth access and refresh tokens for
+every connected social account, and the anon key is designed to ship in
+client-side code. `supabase.sql` enables row-level security on Postfin's
+tables and revokes those grants; the app connects as the table owner, which
+bypasses RLS, so nothing breaks. It also adds indexes the metrics tables
+need once they have real history.
+
+**Which connection string:** Supabase offers a direct connection and a
+pooler. Take the **Session pooler** string from Settings → Database — it is
+reachable over IPv4, whereas the direct `db.<ref>.supabase.co` host is
+IPv6-only unless you have the IPv4 add-on, which many hosts cannot reach.
+The transaction pooler (port 6543) also works: the app never uses named
+prepared statements, which is the usual thing that breaks under it.
+
+```
+DATABASE_URL=postgresql://postgres.<ref>:<password>@aws-0-<region>.pooler.supabase.com:5432/postgres
+```
+
+SSL is enabled automatically for any non-localhost host. Keep the connection
+count modest — the pool is capped at 5, which suits Supabase's free tier.
+
+You still need the volume at `/app/data` even on Postgres: the database
+holds the job and metric rows, but the rendered `.mp4` files live on disk,
+and Instagram, Facebook and Threads publish by downloading them from your
+`BASE_URL`.
 
 ### Run exactly one instance
 
