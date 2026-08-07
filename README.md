@@ -83,21 +83,57 @@ simply stop adding points; nothing else breaks.
 
 ## Deploy
 
-Needs a persistent server (disk + background jobs), not serverless. Use the
-included Dockerfile on Railway/Render/Fly/VPS and attach a volume at
-`/app/data`:
+**This app cannot run on serverless hosting.** It needs a writable disk for
+the SQLite database and generated videos, `ffmpeg` for rendering, and a
+process that stays alive between requests for the job queue, the scheduler
+and the metrics collector. A static or serverless host will serve the pages
+from `public/` and answer every `/api/*` call with its own 404 — the UI
+loads but nothing works.
+
+Config files for the three usual hosts are in the repo; all three build the
+included Dockerfile, which installs `ffmpeg` and the caption fonts.
+
+**Railway** — `railway.json`. New Project → Deploy from repo. Add a volume
+mounted at `/app/data`, then set the variables below.
+
+**Render** — `render.yaml`. New → Blueprint, point it at this repo. The disk
+and health check are declared already; it will prompt for the secrets.
+
+**Fly** — `fly.toml`:
+
+```bash
+fly launch --no-deploy          # keeps the committed fly.toml
+fly volumes create postfin_data --size 10
+fly secrets set BASE_URL=https://<app>.fly.dev ADMIN_PASSWORD=... OPENAI_API_KEY=...
+fly deploy
+```
+
+**Any Docker host / VPS**:
 
 ```bash
 docker build -t postfin .
 docker run -d -p 3000:3000 --env-file .env -v postfin-data:/app/data postfin
 ```
 
-Set `BASE_URL` to the public URL — OAuth callbacks are
-`BASE_URL/auth/<platform>/callback`, and platforms fetch generated videos from
-`BASE_URL/ugc-media/...`, so it must be internet-reachable.
+### Required settings
+
+`BASE_URL` must be the public URL of the deployment. OAuth callbacks are
+`BASE_URL/auth/<platform>/callback`, and Instagram, Facebook and Threads
+publish by downloading the clip from `BASE_URL/ugc-media/...` — so it has to
+be internet-reachable, or publishing fails with a container error.
 
 Storage is SQLite in `data/app.db` by default; set `DATABASE_URL` to use
-Postgres/Neon instead. The schema migrates itself on boot for both.
+Postgres/Neon instead. The schema migrates itself on boot for both. If you
+use SQLite, the volume is not optional: without it the database and every
+rendered video are wiped on each deploy.
+
+### Run exactly one instance
+
+The job queue, the scheduler and the metrics collector all run inside the web
+process and hold no cross-instance locks. Two replicas would both pick up the
+same due jobs, so a scheduled video can go out twice. The bundled configs all
+pin a single instance; keep it that way unless the queue is moved out into a
+shared worker.
 
 ## Auth
 

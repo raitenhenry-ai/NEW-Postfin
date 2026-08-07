@@ -1,0 +1,39 @@
+app = "postfin"
+primary_region = "iad"
+
+[build]
+  dockerfile = "Dockerfile"
+
+[env]
+  PORT = "3000"
+
+[http_service]
+  internal_port = 3000
+  force_https = true
+
+  # The scheduler and the metrics collector are in-process timers, so the
+  # machine has to stay up between requests rather than suspend.
+  auto_stop_machines = false
+  auto_start_machines = true
+
+  # Exactly one machine: the job queue and scheduler are not distributed, so
+  # a second instance would pick up the same due jobs - see README.
+  min_machines_running = 1
+
+  [[http_service.checks]]
+    method = "GET"
+    path = "/healthz"
+    interval = "30s"
+    timeout = "5s"
+    grace_period = "15s"
+
+# Generated videos and the SQLite database. Create it once with:
+#   fly volumes create postfin_data --size 10
+[[mounts]]
+  source = "postfin_data"
+  destination = "/app/data"
+
+[[vm]]
+  size = "shared-cpu-1x"
+  # Video encoding is memory-hungry; 256MB will OOM mid-render.
+  memory = "1gb"

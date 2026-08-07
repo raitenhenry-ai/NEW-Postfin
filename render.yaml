@@ -1,0 +1,54 @@
+# Render blueprint. Create a new Blueprint instance from this repo and fill
+# in the secrets it prompts for.
+services:
+  - type: web
+    name: postfin
+    runtime: docker
+    dockerfilePath: ./Dockerfile
+    plan: starter
+    healthCheckPath: /healthz
+
+    # The job queue, scheduler and metrics collector all run inside the web
+    # process, so exactly one instance must be running - see README.
+    numInstances: 1
+
+    # Generated videos and the SQLite database live here. Without a disk they
+    # vanish on every deploy, and platforms can't fetch clips that no longer
+    # exist.
+    disk:
+      name: postfin-data
+      mountPath: /app/data
+      sizeGB: 10
+
+    envVars:
+      # Must be the public URL of this service: OAuth callbacks and the video
+      # URLs platforms download from are both built off it.
+      - key: BASE_URL
+        sync: false
+      - key: ADMIN_PASSWORD
+        generateValue: true
+
+      # Leave DATABASE_URL unset to use the SQLite file on the disk above,
+      # or point it at Postgres/Neon.
+      - key: DATABASE_URL
+        sync: false
+
+      - key: OPENAI_API_KEY
+        sync: false
+      - key: HEYGEN_API_KEY
+        sync: false
+
+      # Set the credentials for whichever platforms you publish to; the rest
+      # can stay empty and simply show as "not configured" in the UI.
+      - key: TIKTOK_CLIENT_KEY
+        sync: false
+      - key: TIKTOK_CLIENT_SECRET
+        sync: false
+      - key: INSTAGRAM_CLIENT_ID
+        sync: false
+      - key: INSTAGRAM_CLIENT_SECRET
+        sync: false
+      - key: YOUTUBE_CLIENT_ID
+        sync: false
+      - key: YOUTUBE_CLIENT_SECRET
+        sync: false
