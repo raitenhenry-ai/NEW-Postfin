@@ -890,6 +890,34 @@
     render();
   });
 
+  const CHAT_KEY = "cal-chat-collapsed";
+  const calBody = document.querySelector(".cal-body");
+  const chatHideBtn = document.getElementById("cal-chat-hide");
+  const chatShowBtn = document.getElementById("cal-chat-show");
+
+  function setChatCollapsed(collapsed) {
+    calBody?.classList.toggle("chat-collapsed", collapsed);
+    if (chatHideBtn) chatHideBtn.hidden = collapsed;
+    if (chatShowBtn) chatShowBtn.hidden = !collapsed;
+    try {
+      localStorage.setItem(CHAT_KEY, collapsed ? "1" : "0");
+    } catch {
+      /* ignore */
+    }
+  }
+
+  function loadChatCollapsed() {
+    try {
+      return localStorage.getItem(CHAT_KEY) === "1";
+    } catch {
+      return false;
+    }
+  }
+
+  chatHideBtn?.addEventListener("click", () => setChatCollapsed(true));
+  chatShowBtn?.addEventListener("click", () => setChatCollapsed(false));
+  setChatCollapsed(loadChatCollapsed());
+
   // Pulls the jobs for the visible month plus a month of padding either
   // side, so stepping between months rarely needs a fetch.
   async function loadEvents() {
