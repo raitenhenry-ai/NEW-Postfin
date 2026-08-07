@@ -459,7 +459,18 @@
   }
 
   const viewToolBtn = document.getElementById("cal-view-tool");
-  const editToolBtn = document.getElementById("cal-edit-tool");
+  const chatToggleBtn = document.getElementById("cal-chat-toggle");
+  const calBody = document.querySelector(".cal-body");
+  const CHAT_KEY = "cal-chat-collapsed";
+
+  function setChatCollapsed(collapsed) {
+    calBody?.classList.toggle("chat-collapsed", collapsed);
+    try {
+      localStorage.setItem(CHAT_KEY, collapsed ? "1" : "0");
+    } catch {
+      /* ignore */
+    }
+  }
 
   function syncModeSwitcher() {
     if (modeSwitcherLabel) {
@@ -473,13 +484,17 @@
       btn.setAttribute("aria-checked", on ? "true" : "false");
     });
 
-    // Top-right icon buttons switch + reflect the active mode
+    // Eye = View, chat = Edit
     const onView = isViewMode();
     const onEdit = isEditMode();
     viewToolBtn?.classList.toggle("is-on", onView);
     viewToolBtn?.setAttribute("aria-pressed", onView ? "true" : "false");
-    editToolBtn?.classList.toggle("is-on", onEdit);
-    editToolBtn?.setAttribute("aria-pressed", onEdit ? "true" : "false");
+    chatToggleBtn?.classList.toggle("is-on", onEdit);
+    chatToggleBtn?.setAttribute("aria-pressed", onEdit ? "true" : "false");
+    chatToggleBtn?.setAttribute(
+      "aria-label",
+      onEdit ? "Edit mode" : "Switch to Edit mode"
+    );
   }
 
   function setModeMenuOpen(open) {
