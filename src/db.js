@@ -1,0 +1,225 @@
+import config from "./config.js";
+
+// Async database adapter with two drivers:
+//   - SQLite (default): zero-config, stored in data/app.db.
+//   - Postgres (Neon or any other): set DATABASE_URL.
+// All queries use ?-placeholders; they're translated to $n for Postgres.
+//
+//   q(sql, params)   -> all rows
+//   q1(sql, params)  -> first row or undefined
+//   run(sql, params) -> { changes } (use q1 with RETURNING for insert ids)
+
+export let dbKind = "sqlite";
+
+let _q, _q1, _run, _close;
+
+function toPg(sql) {
+  let i = 0;
+  return sql.replace(/\?/g, () => `$${++i}`);
+}
+
+const PG_SCHEMA = `
+CREATE TABLE IF NOT EXISTS accounts (
+  id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+  platform TEXT NOT NULL,
+  access_token TEXT NOT NULL,
+  refresh_token TEXT,
+  expires_at BIGINT,
+  external_id TEXT,
+  display_name TEXT,
+  connected_at BIGINT NOT NULL,
+  UNIQUE (platform, external_id)
+);
+CREATE TABLE IF NOT EXISTS users (
+  id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+  email TEXT NOT NULL UNIQUE,
+  password_hash TEXT NOT NULL,
+  role TEXT NOT NULL DEFAULT 'member',
+  created_at BIGINT NOT NULL
+);
+CREATE TABLE IF NOT EXISTS ugc_jobs (
+  id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+  product_url TEXT NOT NULL,
+  product_json TEXT,
+  settings_json TEXT,
+  script_json TEXT,
+  status TEXT NOT NULL DEFAULT 'queued',
+  error TEXT,
+  provider TEXT,
+  video_filename TEXT,
+  auto_post INTEGER NOT NULL DEFAULT 1,
+  title TEXT,
+  scheduled_at BIGINT,
+  created_at BIGINT NOT NULL,
+  updated_at BIGINT NOT NULL
+);
+CREATE TABLE IF NOT EXISTS ugc_posts (
+  id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+  job_id BIGINT NOT NULL REFERENCES ugc_jobs(id) ON DELETE CASCADE,
+  account_id BIGINT NOT NULL REFERENCES accounts(id) ON DELETE CASCADE,
+  platform TEXT NOT NULL,
+  status TEXT NOT NULL DEFAULT 'pending',
+  error TEXT,
+  platform_video_id TEXT,
+  public_post_id TEXT,
+  posted_at BIGINT,
+  UNIQUE (job_id, account_id)
+);
+-- One row per post per collection run: the analytics charts read view /
+-- like / comment counts straight out of here, so the series survives
+-- restarts and does not depend on the platform APIs being reachable.
+CREATE TABLE IF NOT EXISTS post_metrics (
+  id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+  post_id BIGINT NOT NULL REFERENCES ugc_posts(id) ON DELETE CASCADE,
+  collected_at BIGINT NOT NULL,
+  views BIGINT NOT NULL DEFAULT 0,
+  likes BIGINT NOT NULL DEFAULT 0,
+  comments BIGINT NOT NULL DEFAULT 0,
+  shares BIGINT NOT NULL DEFAULT 0,
+  saves BIGINT NOT NULL DEFAULT 0
+);
+CREATE INDEX IF NOT EXISTS post_metrics_post_idx ON post_metrics (post_id, collected_at);
+-- Follower counts per connected account, same snapshot model.
+CREATE TABLE IF NOT EXISTS account_metrics (
+  id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+  account_id BIGINT NOT NULL REFERENCES accounts(id) ON DELETE CASCADE,
+  collected_at BIGINT NOT NULL,
+  followers BIGINT NOT NULL DEFAULT 0
+);
+CREATE INDEX IF NOT EXISTS account_metrics_account_idx ON account_metrics (account_id, collected_at);
+`;
+
+// Columns added after the first release. Postgres supports IF NOT EXISTS on
+// ADD COLUMN, so this is safe to re-run on every boot.
+const PG_MIGRATIONS = `
+ALTER TABLE ugc_jobs ADD COLUMN IF NOT EXISTS title TEXT;
+ALTER TABLE ugc_jobs ADD COLUMN IF NOT EXISTS scheduled_at BIGINT;
+`;
+
+if (config.databaseUrl) {
+  dbKind = "postgres";
+  const { default: pg } = await import("pg");
+  // BIGINT (ids, epoch-ms timestamps) comes back as strings by default;
+  // our values all fit safely in JS numbers.
+  pg.types.setTypeParser(20, (v) => Number(v));
+  const needsSsl = !/localhost|127\.0\.0\.1/.test(config.databaseUrl);
+  const pool = new pg.Pool({
+    connectionString: config.databaseUrl,
+    ssl: needsSsl ? { rejectUnauthorized: false } : undefined,
+    max: 5,
+  });
+  pool.on("error", (err) => console.error("[db] postgres pool error:", err.message));
+
+  _q = async (sql, params = []) => (await pool.query(toPg(sql), params)).rows;
+  _q1 = async (sql, params = []) => (await pool.query(toPg(sql), params)).rows[0];
+  _run = async (sql, params = []) => {
+    const result = await pool.query(toPg(sql), params);
+    return { changes: result.rowCount };
+  };
+  _close = () => pool.end();
+
+  await pool.query(PG_SCHEMA);
+  await pool.query(PG_MIGRATIONS);
+  console.log("[db] connected to Postgres");
+} else {
+  const { default: Database } = await import("better-sqlite3");
+  const sdb = new Database(config.dbPath);
+  sdb.pragma("journal_mode = WAL");
+  sdb.pragma("foreign_keys = ON");
+  initSqlite(sdb);
+
+  _q = async (sql, params = []) => sdb.prepare(sql).all(...params);
+  _q1 = async (sql, params = []) => sdb.prepare(sql).get(...params);
+  _run = async (sql, params = []) => {
+    const info = sdb.prepare(sql).run(...params);
+    return { changes: info.changes };
+  };
+  _close = () => sdb.close();
+}
+
+export const q = (sql, params) => _q(sql, params);
+export const q1 = (sql, params) => _q1(sql, params);
+export const run = (sql, params) => _run(sql, params);
+export const closeDb = () => _close();
+
+function initSqlite(db) {
+  const version = db.pragma("user_version", { simple: true });
+  if (version < 1) {
+    db.exec(`
+CREATE TABLE IF NOT EXISTS accounts (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  platform TEXT NOT NULL,
+  access_token TEXT NOT NULL,
+  refresh_token TEXT,
+  expires_at INTEGER,
+  external_id TEXT,
+  display_name TEXT,
+  connected_at INTEGER NOT NULL,
+  UNIQUE (platform, external_id)
+);
+CREATE TABLE IF NOT EXISTS users (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  email TEXT NOT NULL UNIQUE,
+  password_hash TEXT NOT NULL,
+  role TEXT NOT NULL DEFAULT 'member',
+  created_at INTEGER NOT NULL
+);
+CREATE TABLE IF NOT EXISTS ugc_jobs (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  product_url TEXT NOT NULL,
+  product_json TEXT,
+  settings_json TEXT,
+  script_json TEXT,
+  status TEXT NOT NULL DEFAULT 'queued',
+  error TEXT,
+  provider TEXT,
+  video_filename TEXT,
+  auto_post INTEGER NOT NULL DEFAULT 1,
+  created_at INTEGER NOT NULL,
+  updated_at INTEGER NOT NULL
+);
+CREATE TABLE IF NOT EXISTS ugc_posts (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  job_id INTEGER NOT NULL REFERENCES ugc_jobs(id) ON DELETE CASCADE,
+  account_id INTEGER NOT NULL REFERENCES accounts(id) ON DELETE CASCADE,
+  platform TEXT NOT NULL,
+  status TEXT NOT NULL DEFAULT 'pending',
+  error TEXT,
+  platform_video_id TEXT,
+  public_post_id TEXT,
+  posted_at INTEGER,
+  UNIQUE (job_id, account_id)
+);`);
+    db.pragma("user_version = 1");
+  }
+
+  // v2: scheduling (a job can be parked until its slot) + the metric
+  // snapshots the dashboard and analytics charts are built from.
+  if (version < 2) {
+    const columns = db.prepare("PRAGMA table_info(ugc_jobs)").all().map((c) => c.name);
+    if (!columns.includes("title")) db.exec("ALTER TABLE ugc_jobs ADD COLUMN title TEXT");
+    if (!columns.includes("scheduled_at")) {
+      db.exec("ALTER TABLE ugc_jobs ADD COLUMN scheduled_at INTEGER");
+    }
+    db.exec(`
+CREATE TABLE IF NOT EXISTS post_metrics (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  post_id INTEGER NOT NULL REFERENCES ugc_posts(id) ON DELETE CASCADE,
+  collected_at INTEGER NOT NULL,
+  views INTEGER NOT NULL DEFAULT 0,
+  likes INTEGER NOT NULL DEFAULT 0,
+  comments INTEGER NOT NULL DEFAULT 0,
+  shares INTEGER NOT NULL DEFAULT 0,
+  saves INTEGER NOT NULL DEFAULT 0
+);
+CREATE INDEX IF NOT EXISTS post_metrics_post_idx ON post_metrics (post_id, collected_at);
+CREATE TABLE IF NOT EXISTS account_metrics (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  account_id INTEGER NOT NULL REFERENCES accounts(id) ON DELETE CASCADE,
+  collected_at INTEGER NOT NULL,
+  followers INTEGER NOT NULL DEFAULT 0
+);
+CREATE INDEX IF NOT EXISTS account_metrics_account_idx ON account_metrics (account_id, collected_at);`);
+    db.pragma("user_version = 2");
+  }
+}

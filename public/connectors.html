@@ -4,6 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Connectors</title>
+  <link rel="icon" href="logo.png">
   <link rel="stylesheet" href="styles.css">
 </head>
 <body>
@@ -81,34 +82,12 @@
       <p>Connect your social accounts to manage and publish content.</p>
     </div>
 
-    <ul class="connectors-list">
-      <li class="connector-row">
-        <img class="connector-icon" src="icons/tiktok.png" alt="">
-        <div class="connector-copy">
-          <span class="connector-name">TikTok</span>
-          <span class="connector-desc">Connect your TikTok account</span>
-        </div>
-        <button type="button" class="connector-action">Connect</button>
-      </li>
-      <li class="connector-row">
-        <img class="connector-icon" src="icons/instagram.png" alt="">
-        <div class="connector-copy">
-          <span class="connector-name">Instagram</span>
-          <span class="connector-desc">Connect your Instagram account</span>
-        </div>
-        <button type="button" class="connector-action">Connect</button>
-      </li>
-      <li class="connector-row">
-        <img class="connector-icon" src="icons/youtube.png" alt="">
-        <div class="connector-copy">
-          <span class="connector-name">YouTube</span>
-          <span class="connector-desc">Connect your YouTube channel</span>
-        </div>
-        <button type="button" class="connector-action">Connect</button>
-      </li>
-    </ul>
+    <div class="connectors-status" id="connectors-status"></div>
+    <ul class="connectors-list" id="connectors-list"></ul>
   </main>
 
+  <script src="api.js"></script>
   <script src="app.js"></script>
+  <script src="connectors.js"></script>
 </body>
 </html>
