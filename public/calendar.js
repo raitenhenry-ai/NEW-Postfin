@@ -603,7 +603,9 @@
     syncModeSwitcher();
 
     if (hint) {
-      if (editing) {
+      if (editing && selectionLocked) {
+        hint.textContent = "Dates locked for this chat · Cancel chat to pick different days";
+      } else if (editing) {
         hint.textContent = "Edit mode · drag to select a range · click a highlighted block to clear all connected days";
       } else {
         hint.textContent = "View mode · click any day to inspect posts";
@@ -614,6 +616,7 @@
       chatTitle.textContent = editing ? "AI Agent" : "Day posts";
     }
 
+    syncChatCancel();
     renderDateChips();
 
     if (viewing) {
@@ -625,7 +628,11 @@
     }
 
     const keys = [...selected].sort();
-    if (!keys.length) selectionLabel.textContent = "No dates selected";
+    if (selectionLocked && keys.length) {
+      selectionLabel.textContent = keys.length === 1
+        ? `Locked · ${formatShort(keys[0])}`
+        : `Locked · ${keys.length} dates`;
+    } else if (!keys.length) selectionLabel.textContent = "No dates selected";
     else if (keys.length === 1) selectionLabel.textContent = `Planning ${formatShort(keys[0])}`;
     else selectionLabel.textContent = `${keys.length} dates selected`;
     renderDayPanel();
