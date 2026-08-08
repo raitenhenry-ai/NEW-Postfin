@@ -4414,6 +4414,14 @@ html:has(body.theme-light),
 body.theme-light {
   background: #f4f4f6;
   color: #3a3a42;
+  --cal-field-bg: #ffffff;
+  --cal-field-border: #dde0e6;
+  --cal-field-label: #6a6a72;
+  --cal-field-text: #1a1a1f;
+  --cal-field-input-bg: #ffffff;
+  --cal-field-input-border: #d0d0d6;
+  --cal-field-hashtag: #3b6ef5;
+  --cal-field-prompt: #2a2a30;
 }
 
 body.theme-light .sidebar {
@@ -5318,4 +5326,39 @@ body.theme-light .cal-post-item-meta,
 body.theme-light .cal-post-item-time,
 body.theme-light .cal-post-item-platform {
   color: #6a6a72 !important;
+}
+
+/* Light View panel: force field cards white (beats any leftover dark rules) */
+html body.theme-light .cal-chat .cal-post-fields section,
+html body.theme-light #cal-chat-messages .cal-post-fields section,
+html body.theme-light .cal-post-detail .cal-post-fields > section {
+  background: #ffffff !important;
+  background-color: #ffffff !important;
+  border: 1px solid #dde0e6 !important;
+  color: #1a1a1f !important;
+}
+
+html body.theme-light .cal-chat .cal-post-fields h4,
+html body.theme-light #cal-chat-messages .cal-post-fields h4 {
+  color: #6a6a72 !important;
+}
+
+html body.theme-light .cal-chat .cal-post-fields p,
+html body.theme-light #cal-chat-messages .cal-post-fields p,
+html body.theme-light .cal-chat .cal-post-fields .cal-post-product,
+html body.theme-light .cal-chat .cal-post-fields .cal-post-model,
+html body.theme-light .cal-chat .cal-post-fields .cal-post-date,
+html body.theme-light .cal-chat .cal-post-fields .cal-post-status,
+html body.theme-light .cal-chat .cal-post-fields .cal-post-caption,
+html body.theme-light .cal-chat .cal-post-fields .cal-post-prompt {
+  color: #1a1a1f !important;
+}
+
+html body.theme-light .cal-chat .cal-post-fields .cal-post-hashtags {
+  color: #3b6ef5 !important;
+}
+
+html body.theme-light .cal-chat .cal-post-title,
+html body.theme-light .cal-chat .cal-post-back {
+  color: #1a1a1f !important;
 }
