@@ -4271,14 +4271,15 @@ body.sidebar-expanded {
 }
 
 .cal-msg.is-user .cal-msg-body {
-  background: #1d2942;
-  color: #e6ecff;
+  background: #2a2a2e;
+  color: #f0f0f4;
   max-width: 88%;
 }
 
 .cal-msg.is-assistant .cal-msg-body {
-  background: #1a1a1a;
-  border: 1px solid #232328;
+  background: transparent;
+  border: none;
+  padding: 0;
   color: #d8d8de;
 }
 
