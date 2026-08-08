@@ -2,7 +2,7 @@ import { Router } from "express";
 import crypto from "node:crypto";
 import config from "../config.js";
 import { q1, run as dbRun } from "../db.js";
-import { createState, consumeState } from "../oauthState.js";
+import { createState, consumeState, stateErrorMessage } from "../oauthState.js";
 import * as youtube from "../platforms/youtube.js";
 import * as instagram from "../platforms/instagram.js";
 import * as tiktok from "../platforms/tiktok.js";
@@ -50,7 +50,7 @@ router.get("/:platform", async (req, res) => {
     if (row) await facebook.resetGrant(row.access_token).catch(() => {});
   }
 
-  res.redirect(platform.authUrl(createState(name, stateData), extras));
+  res.redirect(platform.authUrl(await createState(name, stateData), extras));
 });
 
 router.get("/:platform/callback", async (req, res) => {
@@ -62,9 +62,19 @@ router.get("/:platform/callback", async (req, res) => {
   if (error) {
     return res.redirect(`/connectors.html?connect_error=${encodeURIComponent(errorDescription || error)}`);
   }
-  const stateCheck = consumeState(state, name);
-  if (!code || !stateCheck.ok) {
-    return res.redirect(`/connectors.html?connect_error=${encodeURIComponent("Invalid OAuth state, try again")}`);
+  const stateCheck = await consumeState(state, name);
+  if (!stateCheck.ok) {
+    console.warn(`[auth] ${name} callback rejected: state ${stateCheck.reason}`);
+    return res.redirect(
+      `/connectors.html?connect_error=${encodeURIComponent(stateErrorMessage(stateCheck.reason))}`
+    );
+  }
+  if (!code) {
+    return res.redirect(
+      `/connectors.html?connect_error=${encodeURIComponent(
+        `${name} did not return an authorization code. Try connecting again.`
+      )}`
+    );
   }
 
   try {

@@ -1,6 +1,5 @@
 import express from "express";
 import path from "node:path";
-import { spawnSync } from "node:child_process";
 import config from "./config.js";
 import { q1, closeDb, dbKind } from "./db.js";
 import authRoutes from "./routes/auth.js";
@@ -15,18 +14,6 @@ import { startScheduler, stopScheduler } from "./schedule.js";
 for (const level of ["log", "warn", "error"]) {
   const original = console[level].bind(console);
   console[level] = (...args) => original(new Date().toISOString(), ...args);
-}
-
-function checkFfmpeg() {
-  const result = spawnSync(config.ffmpegPath, ["-version"], { stdio: "ignore" });
-  if (result.error || result.status !== 0) {
-    console.error(
-      `[startup] ffmpeg not found at "${config.ffmpegPath}" - install it or set FFMPEG_PATH. ` +
-        "The built-in video renderer WILL fail until this is fixed (HeyGen still works)."
-    );
-    return false;
-  }
-  return true;
 }
 
 const app = express();
@@ -86,7 +73,6 @@ const server = app.listen(config.port, async () => {
         "Set it in .env before exposing this server to the internet."
     );
   }
-  checkFfmpeg();
   const recovered = await recoverStuckUgcJobs().catch((e) => {
     console.error("[startup] recovery failed:", e);
     return 0;

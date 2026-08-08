@@ -87,6 +87,14 @@ CREATE TABLE IF NOT EXISTS account_metrics (
   followers BIGINT NOT NULL DEFAULT 0
 );
 CREATE INDEX IF NOT EXISTS account_metrics_account_idx ON account_metrics (account_id, collected_at);
+-- OAuth handshake state. In the database rather than in memory so a restart
+-- between starting a connection and its callback does not fail it.
+CREATE TABLE IF NOT EXISTS oauth_states (
+  state TEXT PRIMARY KEY,
+  platform TEXT NOT NULL,
+  data_json TEXT,
+  expires_at BIGINT NOT NULL
+);
 `;
 
 // Columns added after the first release. Postgres supports IF NOT EXISTS on
@@ -322,5 +330,17 @@ CREATE INDEX IF NOT EXISTS account_metrics_account_idx ON account_metrics (accou
       db.exec("ALTER TABLE ugc_jobs ADD COLUMN concept_json TEXT");
     }
     db.pragma("user_version = 3");
+  }
+
+  // v4: OAuth handshake state moved out of process memory.
+  if (version < 4) {
+    db.exec(`
+CREATE TABLE IF NOT EXISTS oauth_states (
+  state TEXT PRIMARY KEY,
+  platform TEXT NOT NULL,
+  data_json TEXT,
+  expires_at INTEGER NOT NULL
+);`);
+    db.pragma("user_version = 4");
   }
 }

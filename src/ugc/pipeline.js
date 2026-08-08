@@ -6,7 +6,6 @@ import { platforms, freshAccount } from "../accounts.js";
 import { scrapeProduct, downloadImages } from "./scrape.js";
 import { generateScript, captionText, spokenText } from "./script.js";
 import { heygenConfigured, startAvatarVideo, waitAndDownload } from "./heygen.js";
-import { renderLocalVideo } from "./render.js";
 
 // UGC job lifecycle:
 //   queued -> scraping -> scripting -> rendering -> ready -> posting -> posted
@@ -55,11 +54,10 @@ async function setJob(id, fields) {
   );
 }
 
-export function pickProvider(settings = {}) {
-  const wanted = settings.provider || config.ugc.provider;
-  if (wanted === "heygen") return "heygen";
-  if (wanted === "local") return "local";
-  return heygenConfigured() ? "heygen" : "local";
+// HeyGen is the only renderer. Without a key a job fails with that reason
+// rather than quietly producing something else.
+export function pickProvider() {
+  return "heygen";
 }
 
 async function processJob(jobId) {
@@ -104,18 +102,31 @@ async function processJob(jobId) {
     const filename = `ugc-job${job.id}.mp4`;
     const outputPath = path.join(config.ugcDir, filename);
 
-    if (provider === "heygen") {
-      const videoId = await startAvatarVideo({ text: spokenText(script), settings });
-      console.log(`[ugc] job ${job.id}: HeyGen render started (${videoId})`);
-      await waitAndDownload(videoId, outputPath);
-    } else {
-      // Brief-planned videos have no product imagery; the renderer falls
-      // back to captions on a plain background.
-      const images = product?.images?.length
-        ? await downloadImages(product.images, path.join(workDir, "images"))
-        : [];
-      await renderLocalVideo({ script, images, workDir, outputPath, settings });
+    if (!heygenConfigured()) {
+      throw new Error(
+        "HeyGen is not configured - set HEYGEN_API_KEY to generate videos"
+      );
     }
+
+    // Product photos are downloaded once into a durable per-job directory,
+    // not the scratch dir: HeyGen fetches them over HTTP as scene
+    // backgrounds, so they have to outlive the render and stay reachable.
+    const assetDir = path.join(config.ugcDir, "assets", `job${job.id}`);
+    const localImages = product?.images?.length
+      ? await downloadImages(product.images, assetDir)
+      : [];
+    const sceneImages = localImages.map(
+      (file) => `${config.baseUrl}/ugc-media/assets/job${job.id}/${path.basename(file)}`
+    );
+
+    const videoId = await startAvatarVideo({
+      text: spokenText(script), script, sceneImages, settings,
+    });
+    console.log(
+      `[ugc] job ${job.id}: HeyGen render started (${videoId}), ` +
+        `${script.storyboard?.length || 1} scene(s), ${sceneImages.length} product photo(s)`
+    );
+    await waitAndDownload(videoId, outputPath);
     await setJob(job.id, { status: "ready", video_filename: filename });
     console.log(`[ugc] job ${job.id}: video ready (${provider})`);
 
@@ -240,4 +251,8 @@ export async function deleteJobFiles(job) {
     fs.rmSync(path.join(config.ugcDir, job.video_filename), { force: true });
   }
   fs.rmSync(path.join(config.ugcDir, `job${job.id}`), { recursive: true, force: true });
+  // The scraped product photos kept for HeyGen scene backgrounds.
+  fs.rmSync(path.join(config.ugcDir, "assets", `job${job.id}`), {
+    recursive: true, force: true,
+  });
 }

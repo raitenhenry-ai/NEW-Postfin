@@ -9,13 +9,6 @@ const rootDir = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..")
 // newlines, which platforms reject as "incorrect secret". Always trim.
 const env = (name, fallback = "") => (process.env[name] ?? fallback).trim();
 
-function firstExisting(candidates) {
-  for (const p of candidates) {
-    if (p && fs.existsSync(p)) return p;
-  }
-  return null;
-}
-
 // Trailing slashes and a pasted-in page path ("…/index.html") both produce
 // redirect URIs the platforms reject, so strip them.
 function normalizeBaseUrl(raw) {
@@ -123,15 +116,8 @@ const config = {
   // How often the scheduler scans for jobs whose scheduled time has passed.
   schedulerIntervalSeconds: Number(process.env.SCHEDULER_INTERVAL_SECONDS || 30),
 
-  // Built-in renderer encode settings.
-  videoCrf: Number(process.env.VIDEO_CRF || 20),
-  videoPreset: process.env.VIDEO_PRESET || "superfast",
-  normalizeAudio: (process.env.NORMALIZE_AUDIO || "true").toLowerCase() !== "false",
-
-  // UGC generation: "heygen" uses the HeyGen avatar API; anything else (or
-  // no key) falls back to the built-in ffmpeg renderer with an AI voiceover.
+  // Video generation. HeyGen is the only renderer.
   ugc: {
-    provider: env("UGC_PROVIDER", "auto"), // auto | heygen | local
     heygenApiKey: env("HEYGEN_API_KEY"),
     heygenApiBase: env("HEYGEN_API_BASE", "https://api.heygen.com").replace(/\/+$/, ""),
     // Fallbacks only - the create form lists the avatars and voices this
@@ -140,25 +126,12 @@ const config = {
     heygenVoiceId: env("HEYGEN_VOICE_ID", "2d5b0e6cf36f460aa7fc47e3eee4ba54"),
     heygenBackground: env("HEYGEN_BACKGROUND", "#0b0d12"),
     heygenSpeed: Number(process.env.HEYGEN_SPEED || 1.05),
-    ttsModel: env("UGC_TTS_MODEL", "gpt-4o-mini-tts"),
-    ttsVoice: env("UGC_TTS_VOICE", "nova"),
     videoSeconds: Number(process.env.UGC_VIDEO_SECONDS || 24),
   },
 
   dataDir: path.join(rootDir, "data"),
   ugcDir: path.join(rootDir, "data", "ugc"),
   dbPath: path.join(rootDir, "data", "app.db"),
-
-  ffmpegPath: process.env.FFMPEG_PATH || "ffmpeg",
-  ffprobePath: process.env.FFPROBE_PATH || "ffprobe",
-  fontPath: firstExisting([
-    process.env.FONT_PATH,
-    "/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf",
-    "/usr/share/fonts/truetype/liberation/LiberationSans-Bold.ttf",
-    "/usr/share/fonts/dejavu/DejaVuSans-Bold.ttf",
-    "/System/Library/Fonts/Helvetica.ttc",
-    "C:\\Windows\\Fonts\\arialbd.ttf",
-  ]),
 
   youtube: {
     clientId: env("YOUTUBE_CLIENT_ID"),
@@ -206,7 +179,7 @@ try {
 } catch (err) {
   console.error(
     `\nFATAL: cannot create the data directory (${err.code}: ${err.message}).\n` +
-      "This app needs a persistent server with a writable disk and ffmpeg - " +
+      "This app needs a persistent server with a writable disk - " +
       "deploy the included Dockerfile to Railway, Render, Fly.io or a VPS.\n"
   );
   process.exit(1);

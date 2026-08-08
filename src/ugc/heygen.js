@@ -108,21 +108,16 @@ export async function testConnection() {
 
 /* ---------- rendering ---------- */
 
-// Kicks off the render and resolves with HeyGen's video id.
-export async function startAvatarVideo({ text, settings = {} }) {
+// HeyGen renders one clip per entry in video_inputs and stitches them, so a
+// storyboard becomes a multi-scene video: each spoken line gets its own
+// scene with the product photo the script picked behind the avatar.
+//
+// `script` carries the lines and the storyboard; `sceneImages` are public
+// URLs for the scraped product photos, indexed the way the storyboard
+// refers to them. Falls back to a single scene when there is no storyboard.
+export async function startAvatarVideo({ text, script, sceneImages = [], settings = {} }) {
   const body = {
-    video_inputs: [
-      {
-        character: buildCharacter(settings),
-        voice: {
-          type: "text",
-          input_text: text.slice(0, 1500),
-          voice_id: settings.voiceId || config.ugc.heygenVoiceId,
-          speed: config.ugc.heygenSpeed,
-        },
-        background: { type: "color", value: config.ugc.heygenBackground },
-      },
-    ],
+    video_inputs: buildScenes({ text, script, sceneImages, settings }),
     // Match the built-in renderer: full vertical 1080x1920, which is what
     // every short-form surface expects.
     dimension: { width: 1080, height: 1920 },
@@ -131,6 +126,51 @@ export async function startAvatarVideo({ text, settings = {} }) {
   const videoId = data.data?.video_id;
   if (!videoId) throw new Error(`HeyGen returned no video_id: ${JSON.stringify(data).slice(0, 300)}`);
   return videoId;
+}
+
+// The spoken lines in order: hook, each scene, then the CTA. This is the
+// same order the storyboard is generated in, so indexes line up.
+function spokenLines(script) {
+  if (!script) return [];
+  return [script.hook, ...(script.scenes || []), script.cta]
+    .map((line) => String(line || "").trim())
+    .filter(Boolean);
+}
+
+function buildScenes({ text, script, sceneImages, settings }) {
+  const character = buildCharacter(settings);
+  const voiceId = settings.voiceId || config.ugc.heygenVoiceId;
+  const voiceFor = (input) => ({
+    type: "text",
+    input_text: input.slice(0, 1500),
+    voice_id: voiceId,
+    speed: config.ugc.heygenSpeed,
+  });
+
+  const lines = spokenLines(script);
+  const storyboard = script?.storyboard || [];
+
+  // Without a per-line storyboard there is nothing to cut on, so send the
+  // whole script as one scene - the previous behaviour.
+  if (!lines.length || !storyboard.length) {
+    return [{
+      character,
+      voice: voiceFor(text || lines.join(" ")),
+      background: { type: "color", value: config.ugc.heygenBackground },
+    }];
+  }
+
+  return lines.map((line, i) => {
+    const imageIndex = storyboard[i]?.imageIndex ?? -1;
+    const url = imageIndex >= 0 ? sceneImages[imageIndex] : null;
+    return {
+      character,
+      voice: voiceFor(line),
+      background: url
+        ? { type: "image", url, fit: "cover" }
+        : { type: "color", value: config.ugc.heygenBackground },
+    };
+  });
 }
 
 // Uploaded photo avatars are a different character type to stock avatars.

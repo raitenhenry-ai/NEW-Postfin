@@ -1,5 +1,9 @@
 import config from "../config.js";
 
+// How many product photos to show the model and make available as scene
+// backgrounds. More costs vision tokens for diminishing benefit.
+const MAX_VISION_IMAGES = 5;
+
 // Turns scraped product data into a UGC-style talking script plus the
 // caption/hashtags used when posting. Uses the OpenAI chat model when a key
 // is configured; otherwise falls back to a decent template so the pipeline
@@ -56,6 +60,48 @@ function subjectBlock(product, settings) {
   return parts.join("\n\n");
 }
 
+// The user turn, with the product photos attached when there are any, so
+// the model writes copy and visual direction from what the product actually
+// looks like rather than from its name alone.
+function visionContent(product, settings) {
+  const text = subjectBlock(product, settings);
+  const images = (product?.images || []).slice(0, MAX_VISION_IMAGES);
+  if (!images.length) return text;
+
+  return [
+    {
+      type: "text",
+      text:
+        `${text}\n\nThe product photos follow, in order - photo 0 first. ` +
+        "Refer to them by index in the storyboard.",
+    },
+    ...images.map((url) => ({ type: "image_url", image_url: { url, detail: "low" } })),
+  ];
+}
+
+// One entry per spoken line, with the image index clamped to what actually
+// exists so a hallucinated index can't point at a missing photo.
+function shapeStoryboard(raw, expectedLength, product) {
+  const imageCount = Math.min(product?.images?.length || 0, MAX_VISION_IMAGES);
+  const entries = (Array.isArray(raw) ? raw : []).map((entry) => {
+    const index = Number(entry?.imageIndex);
+    return {
+      visual: String(entry?.visual || "").trim().slice(0, 300),
+      imageIndex: Number.isInteger(index) && index >= 0 && index < imageCount ? index : -1,
+    };
+  });
+
+  // Pad or trim so the storyboard lines up with the spoken lines. Padding
+  // cycles through the photos rather than repeating one.
+  while (entries.length < expectedLength) {
+    entries.push({
+      visual: "",
+      imageIndex: imageCount ? entries.length % imageCount : -1,
+    });
+  }
+  return entries.slice(0, expectedLength);
+}
+
 export async function generateScript(product, settings = {}) {
   const tone = TONES[settings.tone] ? settings.tone : "casual";
   if (!config.openaiApiKey) return templateScript(product, tone, settings);
@@ -81,7 +127,8 @@ export async function generateScript(product, settings = {}) {
               : "There is no product to show - write it as the creator talking to " +
                 "camera about the topic. ") +
             'Reply with JSON only: {"hook": string, "scenes": [{"text": string}], ' +
-            '"cta": string, "caption": string, "hashtags": string[]}. ' +
+            '"cta": string, "caption": string, "hashtags": string[], ' +
+            '"storyboard": [{"visual": string, "imageIndex": number}]}. ' +
             "hook: a scroll-stopping first line, max 12 words, no hashtags. " +
             (product
               ? "scenes: 3-4 short spoken lines (max 20 words each) covering what the product is, " +
@@ -91,6 +138,12 @@ export async function generateScript(product, settings = {}) {
                 "talking points - natural spoken language, no emoji. " +
                 "cta: one closing spoken line - a follow/save/comment prompt. ") +
             "caption: 1-2 sentences for the post text, may include 1-2 emoji. " +
+            "storyboard: one entry per line of the video, in order, covering the " +
+            "hook, then each scene, then the CTA - so its length is scenes.length + 2. " +
+            "visual: what is on screen for that line, one short sentence. " +
+            "imageIndex: which of the supplied product photos to show, as a 0-based " +
+            "index, or -1 for no photo. Pick the photo that actually matches what " +
+            "the line is talking about. " +
             "hashtags: 6-10 lowercase hashtags starting with #, mixing product-specific and " +
             "discovery tags (#tiktokmademebuyit #fyp style). " +
             `Overall voice: ${TONES[tone]}. ` +
@@ -99,7 +152,7 @@ export async function generateScript(product, settings = {}) {
         },
         {
           role: "user",
-          content: subjectBlock(product, settings),
+          content: visionContent(product, settings),
         },
       ],
     }),
@@ -120,6 +173,7 @@ export async function generateScript(product, settings = {}) {
     tone,
     hook: String(parsed.hook).trim().slice(0, 120),
     scenes,
+    storyboard: shapeStoryboard(parsed.storyboard, scenes.length + 2, product),
     cta: String(
       parsed.cta || (product?.site ? `Get yours at ${product.site}` : "Follow for more")
     ).trim().slice(0, 160),
@@ -154,6 +208,7 @@ function templateScript(product, tone, settings = {}) {
     ],
     cta: `Grab it at ${product.site} - link in bio.`,
     caption: `${name} - you need this in your life 🔥`,
+    storyboard: shapeStoryboard([], 5, product),
     hashtags: [
       "#tiktokmademebuyit", "#musthaves", "#viralproducts", "#fyp",
       "#unboxing", "#productreview", "#shopping",
@@ -182,6 +237,7 @@ function briefTemplateScript(tone, settings) {
         ],
     cta: "Follow for more like this.",
     caption: concept.title || String(settings.brief || topic).slice(0, 200),
+    storyboard: shapeStoryboard([], (points.length ? Math.min(points.length, 4) : 3) + 2, null),
     hashtags: ["#fyp", "#foryou", "#tips", "#creator", "#viral", "#howto"],
     generatedBy: "template",
   };

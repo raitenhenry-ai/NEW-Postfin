@@ -1,10 +1,5 @@
 FROM node:22-slim
 
-# ffmpeg for the built-in renderer, DejaVu fonts for the burned-in captions
-RUN apt-get update \
-    && apt-get install -y --no-install-recommends ffmpeg fonts-dejavu-core \
-    && rm -rf /var/lib/apt/lists/*
-
 WORKDIR /app
 
 COPY package.json package-lock.json ./
