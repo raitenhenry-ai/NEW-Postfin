@@ -66,7 +66,6 @@
       ? `Scheduled for ${escapeHtml(fmtDateTime(job.scheduledAt))}`
       : `Created ${escapeHtml(fmtRelative(job.createdAt))}`;
     const about = aboutText(job);
-    const failedPosts = job.posts.filter((p) => p.status === "failed").length;
 
     return `
       <article class="recent-card" data-job="${job.id}">
