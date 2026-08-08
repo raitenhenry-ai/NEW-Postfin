@@ -758,7 +758,7 @@
   }
 
   function beginDrag(key) {
-    if (!isEditMode()) return;
+    if (!isEditMode() || selectionLocked) return;
 
     // Clicking any day in a connected highlighted block clears the whole block.
     if (selected.has(key)) {
@@ -780,7 +780,7 @@
   }
 
   function updateDrag(key) {
-    if (!isEditMode() || !drag || !key || key === drag.current) return;
+    if (!isEditMode() || selectionLocked || !drag || !key || key === drag.current) return;
     applyDragSelection(key);
   }
 
