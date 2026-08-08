@@ -890,31 +890,29 @@
     field.style.height = `${next}px`;
   }
 
-  let composerTypingTimer = null;
-  function pulseComposerBorder() {
-    if (!form) return;
-    form.classList.add("is-typing");
-    clearTimeout(composerTypingTimer);
-    composerTypingTimer = setTimeout(() => {
-      form.classList.remove("is-typing");
-    }, 700);
-  }
-
   field?.addEventListener("input", () => {
     syncSendState();
     resizeField();
+    setComposerActive(true);
+  });
+
+  field?.addEventListener("focus", () => setComposerActive(true));
+
+  // Keep the gradient while using the chat; drop it when clicking elsewhere.
+  document.getElementById("cal-chat")?.addEventListener("pointerdown", () => {
+    if (isEditMode()) setComposerActive(true);
+  });
+
+  document.addEventListener("pointerdown", (e) => {
+    const chat = document.getElementById("cal-chat");
+    if (!chat || chat.contains(e.target)) return;
+    setComposerActive(false);
   });
 
   field?.addEventListener("keydown", (e) => {
     if (e.key === "Enter" && !e.shiftKey) {
       e.preventDefault();
       form?.requestSubmit();
-      return;
-    }
-    // Pulse only after finishing a word (space after non-space).
-    if (e.key === " " && !e.repeat) {
-      const before = field.value.slice(0, field.selectionStart ?? field.value.length);
-      if (/\S$/.test(before)) pulseComposerBorder();
     }
   });
 
