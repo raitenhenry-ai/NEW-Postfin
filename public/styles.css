@@ -275,6 +275,7 @@ body.sidebar-expanded {
   flex-direction: column;
   align-items: center;
   flex-shrink: 0;
+  gap: 10px;
 }
 
 .sidebar.expanded .sidebar-nav {
