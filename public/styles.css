@@ -2079,6 +2079,7 @@ body.sidebar-expanded {
 }
 
 .cal-chat {
+  position: relative;
   background: #141416;
   border: none;
   border-radius: 16px;
@@ -2088,6 +2089,46 @@ body.sidebar-expanded {
   height: 100%;
   align-self: stretch;
   overflow: hidden;
+}
+
+.cal-chat::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  padding: 1.5px;
+  background: linear-gradient(
+    120deg,
+    #4d8dff,
+    #8b5cff,
+    #d946ef,
+    #ff6aad,
+    #4d8dff
+  );
+  background-size: 300% 300%;
+  animation: cal-chat-border-throb 2.8s ease-in-out infinite;
+  -webkit-mask:
+    linear-gradient(#fff 0 0) content-box,
+    linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask:
+    linear-gradient(#fff 0 0) content-box,
+    linear-gradient(#fff 0 0);
+  mask-composite: exclude;
+  pointer-events: none;
+  z-index: 3;
+}
+
+@keyframes cal-chat-border-throb {
+  0%,
+  100% {
+    background-position: 0% 50%;
+    opacity: 0.45;
+  }
+  50% {
+    background-position: 100% 50%;
+    opacity: 1;
+  }
 }
 
 .cal-chat-header {
