@@ -180,7 +180,7 @@ body.sidebar-expanded {
 }
 
 .sidebar-foot .divider {
-  margin-top: 16px;
+  margin-top: 10px;
   margin-bottom: 12px;
 }
 
@@ -188,7 +188,7 @@ body.sidebar-expanded {
   width: 100%;
   display: flex;
   justify-content: center;
-  margin: 0 0 4px;
+  margin: 0;
   flex-shrink: 0;
 }
 
