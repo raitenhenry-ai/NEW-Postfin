@@ -203,7 +203,7 @@
   let openedPost = null;
   let editingPost = null;
   let drag = null;
-  // After the first message in a chat, selected days stay locked until Cancel.
+  // After the first message with selected days, those days stay locked until Cancel.
   let selectionLocked = false;
   let planAbort = null;
   const chatCancelBtn = document.getElementById("cal-chat-cancel");
@@ -219,6 +219,18 @@
   function setFocusedDay(key) {
     if (focused !== key) openedPost = null;
     focused = key;
+  }
+
+  function setSelectionLocked(locked) {
+    selectionLocked = locked;
+    grid.classList.toggle("selection-locked", locked);
+    syncChatCancel();
+  }
+
+  function syncChatCancel() {
+    if (!chatCancelBtn) return;
+    const show = isEditMode() && (selectionLocked || conversation.length > 0 || assistantBusy);
+    chatCancelBtn.hidden = !show;
   }
 
   function renderDayPanel() {
