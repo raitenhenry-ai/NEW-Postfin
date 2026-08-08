@@ -38,11 +38,11 @@ const sidebar = document.getElementById("sidebar");
 const logoBtn = document.getElementById("logo-btn");
 const collapseBtn = document.getElementById("collapse-btn");
 
-// Light / dark switch sits above the profile in the sidebar foot.
+// Light / dark switch sits above the foot divider (outside the profile block).
 (function mountThemeToggle() {
+  const sidebar = document.getElementById("sidebar");
   const foot = document.querySelector(".sidebar-foot");
-  const profile = foot?.querySelector(".profile");
-  if (!foot || !profile || document.getElementById("theme-toggle")) return;
+  if (!sidebar || !foot || document.getElementById("theme-toggle")) return;
 
   const wrap = document.createElement("div");
   wrap.className = "theme-toggle-wrap";
@@ -53,7 +53,7 @@ const collapseBtn = document.getElementById("collapse-btn");
       </span>
       <span class="theme-toggle-label">Dark</span>
     </button>`;
-  foot.insertBefore(wrap, profile);
+  sidebar.insertBefore(wrap, foot);
 
   const toggle = wrap.querySelector("#theme-toggle");
   toggle.addEventListener("click", () => {
