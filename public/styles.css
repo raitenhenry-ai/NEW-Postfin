@@ -4748,10 +4748,15 @@ body.theme-light .cal-month-option.active {
 }
 
 body.theme-light .recent-tile-thumb,
+body.theme-light .recent-tile-media,
 body.theme-light .recent-detail-thumb,
 body.theme-light .recent-video-thumb,
 body.theme-light .video-thumb {
   background: #ececef;
+}
+
+body.theme-light .recent-tile:hover .recent-tile-media {
+  outline: 1px solid #c8c8d0;
 }
 
 body.theme-light .recent-tile-caption,
@@ -5439,4 +5444,43 @@ html body.theme-light .recent-card-error {
 html body.theme-light .recent-post-link,
 html body.theme-light .recent-card-product {
   color: #3b6ef5 !important;
+}
+
+/* Light: chat bubbles, action notes, post item accents */
+body.theme-light .cal-chat-bubble.bot {
+  background: #ececef !important;
+  color: #222228 !important;
+}
+
+body.theme-light .cal-chat-bubble.user {
+  background: #e4e8fb !important;
+  color: #1c2440 !important;
+}
+
+body.theme-light .cal-action-note {
+  background: #f4f4f6 !important;
+  border: 1px solid #e2e2e8 !important;
+  color: #6a6a72 !important;
+}
+
+body.theme-light .cal-post-item.is-youtube {
+  color: #c62828 !important;
+}
+body.theme-light .cal-post-item.is-tiktok {
+  color: #0a7ea4 !important;
+}
+body.theme-light .cal-post-item.is-instagram {
+  color: #a21caf !important;
+}
+body.theme-light .cal-post-item.is-youtube .cal-post-item-platform {
+  color: #c62828 !important;
+}
+body.theme-light .cal-post-item.is-tiktok .cal-post-item-platform {
+  color: #0a7ea4 !important;
+}
+body.theme-light .cal-post-item.is-instagram .cal-post-item-platform {
+  background: linear-gradient(90deg, #f58529, #dd2a7b 50%, #8134af);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent !important;
 }
