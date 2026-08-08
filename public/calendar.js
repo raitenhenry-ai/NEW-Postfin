@@ -469,23 +469,21 @@
     dateChips.innerHTML = "";
     groupDateRanges(keys).forEach((range) => {
       const chip = document.createElement("div");
-      chip.className = "cal-date-chip" + (selectionLocked ? " is-locked" : "");
+      chip.className = "cal-date-chip";
       chip.innerHTML = `
         <svg viewBox="0 0 16 16" fill="none" aria-hidden="true">
           <rect x="2.5" y="3.5" width="11" height="10" rx="2" stroke="currentColor" stroke-width="1.4"/>
           <path d="M2.5 6.5h11M5.5 2v2.5M10.5 2v2.5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/>
         </svg>
         <span class="cal-date-chip-label"></span>
-        ${selectionLocked ? "" : `
         <button type="button" class="cal-date-chip-remove" aria-label="Remove dates">
           <svg viewBox="0 0 12 12" fill="none" aria-hidden="true"><path d="M3 3l6 6M9 3L3 9" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
-        </button>`}
+        </button>
       `;
       chip.querySelector(".cal-date-chip-label").textContent = formatRangeLabel(range.start, range.end);
-      chip.querySelector(".cal-date-chip-remove")?.addEventListener("click", (e) => {
+      chip.querySelector(".cal-date-chip-remove").addEventListener("click", (e) => {
         e.preventDefault();
         e.stopPropagation();
-        if (selectionLocked) return;
         range.keys.forEach((key) => selected.delete(key));
         applySelectionClasses();
       });
