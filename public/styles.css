@@ -3973,3 +3973,74 @@ body.sidebar-expanded {
 
 .profile-heygen-result.is-ok { color: #3dd68c; }
 .profile-heygen-result.is-error { color: #ff8f8f; }
+
+/* --- calendar assistant thread --- */
+
+.cal-thread {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 16px;
+}
+
+.cal-msg { display: flex; flex-direction: column; gap: 8px; max-width: 100%; }
+
+.cal-msg-body {
+  font-size: 13.5px;
+  line-height: 1.55;
+  border-radius: 12px;
+  padding: 10px 13px;
+  word-wrap: break-word;
+}
+
+.cal-msg.is-user {
+  align-items: flex-end;
+}
+
+.cal-msg.is-user .cal-msg-body {
+  background: #1d2942;
+  color: #e6ecff;
+  max-width: 88%;
+}
+
+.cal-msg.is-assistant .cal-msg-body {
+  background: #1a1a1a;
+  border: 1px solid #232328;
+  color: #d8d8de;
+}
+
+.cal-msg-body a { color: #7aa0ff; }
+
+.cal-action-note {
+  list-style: none;
+  color: #8a8a92;
+  font-size: 12.5px;
+  background: #161616;
+  border: 1px solid #232328;
+  border-radius: 8px;
+  padding: 8px 11px;
+}
+
+/* typing indicator */
+.cal-typing {
+  display: inline-flex;
+  gap: 4px;
+  align-items: center;
+  padding: 14px 15px;
+}
+
+.cal-typing span {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #6a6a72;
+  animation: cal-bounce 1.2s infinite ease-in-out;
+}
+
+.cal-typing span:nth-child(2) { animation-delay: 0.15s; }
+.cal-typing span:nth-child(3) { animation-delay: 0.3s; }
+
+@keyframes cal-bounce {
+  0%, 60%, 100% { transform: translateY(0); opacity: 0.45; }
+  30% { transform: translateY(-4px); opacity: 1; }
+}

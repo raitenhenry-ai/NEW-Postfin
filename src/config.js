@@ -57,6 +57,20 @@ export const PLATFORM_NAMES = [
   "tiktok", "instagram", "youtube", "facebook", "x", "threads", "pinterest", "linkedin",
 ];
 
+// Which of those the UI actually offers. All eight are implemented, but only
+// these are shown on Connectors, in the platform pickers and in the
+// analytics filters. Widen it with ENABLED_PLATFORMS when you want more.
+// PLATFORM_NAMES stays the full list so accounts connected under a platform
+// that is later switched off still resolve their post links and metrics.
+export const ENABLED_PLATFORMS = (() => {
+  const raw = (process.env.ENABLED_PLATFORMS || "tiktok,instagram,youtube")
+    .split(",")
+    .map((p) => p.trim().toLowerCase())
+    .filter(Boolean);
+  const valid = raw.filter((p) => PLATFORM_NAMES.includes(p));
+  return valid.length ? valid : ["tiktok", "instagram", "youtube"];
+})();
+
 const config = {
   rootDir,
   port: Number(process.env.PORT || 3000),
@@ -77,6 +91,8 @@ const config = {
   // Script generation + TTS voiceover; disabled without a key.
   openaiApiKey: env("OPENAI_API_KEY"),
   openaiChatModel: process.env.OPENAI_CHAT_MODEL || "gpt-4o-mini",
+  // Overridable so the assistant and script writer can be pointed at a stub.
+  openaiApiBase: env("OPENAI_API_BASE", "https://api.openai.com/v1").replace(/\/+$/, ""),
 
   // Postgres/Neon connection string; empty = local SQLite in data/app.db.
   databaseUrl: env("DATABASE_URL"),

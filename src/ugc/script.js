@@ -60,7 +60,7 @@ export async function generateScript(product, settings = {}) {
   const tone = TONES[settings.tone] ? settings.tone : "casual";
   if (!config.openaiApiKey) return templateScript(product, tone, settings);
 
-  const res = await fetch("https://api.openai.com/v1/chat/completions", {
+  const res = await fetch(`${config.openaiApiBase}/chat/completions`, {
     method: "POST",
     headers: {
       Authorization: `Bearer ${config.openaiApiKey}`,

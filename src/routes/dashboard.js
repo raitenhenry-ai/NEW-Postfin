@@ -1,5 +1,5 @@
 import { Router } from "express";
-import config, { PLATFORM_NAMES } from "../config.js";
+import config, { PLATFORM_NAMES, ENABLED_PLATFORMS } from "../config.js";
 import { q, q1 } from "../db.js";
 import { platforms } from "../accounts.js";
 import {
@@ -177,7 +177,7 @@ async function suggestions() {
 // analytics.html: three chart series, engagement totals and the recent grid,
 // all filtered by platform and range.
 router.get("/analytics", wrap(async (req, res) => {
-  const platform = PLATFORM_NAMES.includes(req.query.platform) ? req.query.platform : null;
+  const platform = ENABLED_PLATFORMS.includes(req.query.platform) ? req.query.platform : null;
   const range = resolveRange(req.query.range || "30d", req.query.days);
   const opts = { ...range, platform };
 
@@ -380,7 +380,7 @@ router.get("/connectors", wrap(async (req, res) => {
   }
 
   res.json({
-    platforms: PLATFORM_NAMES.map((key) => ({
+    platforms: ENABLED_PLATFORMS.map((key) => ({
       key,
       label: PLATFORM_LABELS[key],
       description: PLATFORM_DESCRIPTIONS[key],
@@ -450,7 +450,7 @@ router.get("/profile", wrap(async (req, res) => {
       openai: Boolean(config.openaiApiKey),
       heygen: heygenConfigured(),
       platforms: Object.fromEntries(
-        PLATFORM_NAMES.map((k) => [k, platforms[k].isConfigured()])
+        ENABLED_PLATFORMS.map((k) => [k, platforms[k].isConfigured()])
       ),
     },
     totals: {

@@ -221,11 +221,15 @@
     if (!dayPanel) return;
 
     if (isEditMode()) {
+      if (conversation.length) {
+        renderThread(false);
+        return;
+      }
       dayPanel.innerHTML = `
         <div class="cal-day-empty">
-          Select the days you want to post on, then describe what you want.
-          Add a product URL and it'll be used as source material - otherwise
-          the videos are built from your brief alone.
+          Ask for anything: plan a week of videos, check how last month did,
+          move a post, or fix a failed one. Select days on the calendar first
+          and they'll be used for scheduling.
         </div>
       `;
       return;
@@ -425,7 +429,7 @@
       return;
     }
 
-    if (field) field.placeholder = "Describe your idea";
+    if (field) field.placeholder = "Ask for videos, or anything about your posts";
 
     const keys = [...selected].sort();
     if (!keys.length) {
@@ -843,91 +847,135 @@
     }
   });
 
-  // Edit mode: whatever the user types is a creative brief. The planner
-  // turns it into one distinct video per selected day - a product URL is
-  // optional extra source material, not a requirement.
+  /* ---------- assistant ---------- */
+
+  // The conversation lives here and is sent back whole each turn; the server
+  // keeps no session. Cleared only by reloading the page.
+  const conversation = [];
+  let assistantBusy = false;
   const URL_PATTERN = /https?:\/\/[^\s]+/i;
 
-  function agentMessage(html, kind = "info") {
+  function renderThread(pending) {
     if (!dayPanel) return;
-    dayPanel.innerHTML =
-      `<div class="cal-agent ${kind === "error" ? "is-error" : ""}">${html}</div>`;
+    const bubbles = conversation.map((m) => `
+      <div class="cal-msg is-${m.role}">
+        <div class="cal-msg-body">${
+          m.role === "assistant" ? formatReply(m.content) : escapeHtml(m.content)
+        }</div>
+        ${m.actions?.length ? renderActions(m.actions) : ""}
+      </div>`).join("");
+
+    dayPanel.innerHTML = `
+      <div class="cal-thread">
+        ${bubbles}
+        ${pending ? `<div class="cal-msg is-assistant"><div class="cal-msg-body cal-typing"><span></span><span></span><span></span></div></div>` : ""}
+      </div>`;
+    dayPanel.scrollTop = dayPanel.scrollHeight;
   }
 
-  // Renders the planner's reply: what it decided each day's video will be.
-  function renderPlan(plan) {
-    const rows = plan.videos.map((v) => `
-      <li class="cal-plan-item">
-        <span class="cal-plan-date">${escapeHtml(
-          new Date(v.scheduledAt).toLocaleDateString("en-US", {
-            weekday: "short", month: "short", day: "numeric",
-          })
-        )}</span>
-        <span class="cal-plan-copy">
-          <strong>${escapeHtml(v.title)}</strong>
-          ${v.angle ? `<span>${escapeHtml(v.angle)}</span>` : ""}
-        </span>
-      </li>`).join("");
+  // Light formatting only - the assistant is told to answer in plain
+  // sentences, so this just keeps line breaks and links.
+  function formatReply(text) {
+    return escapeHtml(text)
+      .replace(URL_PATTERN, (u) => `<a href="${u}" target="_blank" rel="noopener">${u}</a>`)
+      .replace(/\n/g, "<br>");
+  }
 
-    agentMessage(`
-      <p class="cal-agent-lead">Planned ${plan.videos.length} video${plan.videos.length === 1 ? "" : "s"}${
-        plan.plannedBy === "template" ? " (no OpenAI key - using your brief as-is)" : ""
-      }. They're generating now and will post at their scheduled times.</p>
-      <ul class="cal-plan-list">${rows}</ul>`);
+  // A compact note of what the assistant actually changed, so the user can
+  // see the effect without trusting the prose.
+  function renderActions(actions) {
+    const done = actions.filter((a) => a.ok);
+    if (!done.length) return "";
+    const lines = done.map((a) => {
+      if (a.name === "plan_videos") {
+        return (a.result.videos || []).map((v) => `
+          <li class="cal-plan-item">
+            <span class="cal-plan-date">${escapeHtml(
+              new Date(v.scheduledAt).toLocaleDateString("en-US", {
+                weekday: "short", month: "short", day: "numeric",
+              })
+            )}</span>
+            <span class="cal-plan-copy">
+              <strong>${escapeHtml(v.title)}</strong>
+              ${v.angle ? `<span>${escapeHtml(v.angle)}</span>` : ""}
+            </span>
+          </li>`).join("");
+      }
+      if (a.name === "reschedule_video") {
+        return `<li class="cal-action-note">Moved video ${a.result.videoId} to ${
+          escapeHtml(new Date(a.result.scheduledFor).toLocaleString("en-US", {
+            weekday: "short", month: "short", day: "numeric",
+            hour: "numeric", minute: "2-digit",
+          }))}</li>`;
+      }
+      if (a.name === "edit_video") return `<li class="cal-action-note">Updated video ${a.result.videoId}</li>`;
+      if (a.name === "retry_video") return `<li class="cal-action-note">Re-queued video ${a.result.videoId}</li>`;
+      if (a.name === "post_video_now") {
+        return `<li class="cal-action-note">Posted to ${a.result.posted} account(s), ${a.result.failed} failed</li>`;
+      }
+      return "";
+    }).filter(Boolean).join("");
+    return lines ? `<ul class="cal-plan-list">${lines}</ul>` : "";
+  }
+
+  async function sendToAssistant(text) {
+    conversation.push({ role: "user", content: text });
+    renderThread(true);
+
+    try {
+      const reply = await api("/api/chat", {
+        method: "POST",
+        body: {
+          messages: conversation.map(({ role, content }) => ({ role, content })),
+          selectedDates: [...selected].sort(),
+          // Sent so "Friday" means the user's Friday, not the server's.
+          offsetMinutes: -new Date().getTimezoneOffset(),
+        },
+      });
+
+      conversation.push({
+        role: "assistant",
+        content: reply.reply || "(no reply)",
+        actions: reply.actions,
+      });
+      renderThread(false);
+
+      // Anything that touched the schedule should show on the grid.
+      if (reply.changed) {
+        selected.clear();
+        await loadEvents();
+        render();
+        renderThread(false);
+      }
+    } catch (err) {
+      conversation.push({ role: "assistant", content: `⚠ ${err.message}` });
+      renderThread(false);
+      toast(err.message, "error");
+    }
   }
 
   form?.addEventListener("submit", async (e) => {
     e.preventDefault();
-    if (!field || !field.value.trim()) return;
+    if (!field || !field.value.trim() || assistantBusy) return;
 
     if (!isEditMode()) {
-      toast("Switch to Edit mode to plan new videos", "error");
-      return;
-    }
-
-    const days = [...selected].sort();
-    if (!days.length) {
-      toast("Select the days you want to post on", "error");
-      agentMessage("Click or drag across days on the calendar first, then describe what you want.", "error");
+      toast("Switch to Edit mode to use the assistant", "error");
       return;
     }
 
     const text = field.value.trim();
-    // A URL in the message is source material; the rest is the brief.
-    const match = text.match(URL_PATTERN);
-    const productUrl = match ? match[0] : "";
-    const brief = text.replace(URL_PATTERN, "").trim();
-
-    // 9am local on each selected day.
-    const slots = days.map((key) => {
-      const when = parseKey(key);
-      when.setHours(9, 0, 0, 0);
-      return when.getTime();
-    });
-
+    field.value = "";
+    assistantBusy = true;
     if (sendBtn) sendBtn.disabled = true;
-    agentMessage(`Planning ${days.length} video${days.length === 1 ? "" : "s"}...`);
+    syncSendState();
+    resizeField();
 
     try {
-      const plan = await api("/api/plan", {
-        method: "POST",
-        body: { brief, productUrl, slots, platforms: [] },
-      });
-      renderPlan(plan);
-      toast(`Planned ${plan.videos.length} video${plan.videos.length === 1 ? "" : "s"}`);
-      field.value = "";
-      selected.clear();
-      await loadEvents();
-      render();
-      // render() repaints the panel, so put the plan back in front of it.
-      renderPlan(plan);
-    } catch (err) {
-      toast(err.message, "error");
-      agentMessage(escapeHtml(err.message), "error");
+      await sendToAssistant(text);
     } finally {
+      assistantBusy = false;
       if (sendBtn) sendBtn.disabled = false;
       syncSendState();
-      resizeField();
     }
   });
 

@@ -1,5 +1,5 @@
 import { Router } from "express";
-import config, { PLATFORM_NAMES } from "../config.js";
+import config, { PLATFORM_NAMES, ENABLED_PLATFORMS } from "../config.js";
 import { q, q1, run as dbRun } from "../db.js";
 import { platforms } from "../accounts.js";
 import { toneOptions, styleOptions } from "../ugc/script.js";
@@ -7,6 +7,7 @@ import { planContent, normalizeSettings } from "../ugc/plan.js";
 import { heygenConfigured, heygenCatalog, testConnection } from "../ugc/heygen.js";
 import { collectMetrics } from "../metrics.js";
 import { reschedule } from "../schedule.js";
+import { runAssistant, assistantAvailable } from "../agent.js";
 import {
   enqueueUgcJob, postJob, pickProvider, ugcQueueLength, deleteJobFiles,
 } from "../ugc/pipeline.js";
@@ -20,7 +21,7 @@ router.get("/overview", wrap(async (req, res) => {
   const accountRows = await q(
     "SELECT id, platform, display_name FROM accounts ORDER BY platform, id"
   );
-  const accounts = Object.fromEntries(PLATFORM_NAMES.map((k) => [k, []]));
+  const accounts = Object.fromEntries(ENABLED_PLATFORMS.map((k) => [k, []]));
   for (const a of accountRows) {
     accounts[a.platform]?.push({ id: a.id, displayName: a.display_name });
   }
@@ -29,7 +30,7 @@ router.get("/overview", wrap(async (req, res) => {
   res.json({
     accounts,
     platformsConfigured: Object.fromEntries(
-      PLATFORM_NAMES.map((k) => [k, platforms[k].isConfigured()])
+      ENABLED_PLATFORMS.map((k) => [k, platforms[k].isConfigured()])
     ),
     generator: {
       provider: pickProvider(),
@@ -95,7 +96,7 @@ router.post("/jobs", wrap(async (req, res) => {
   }
 
   const wanted = Array.isArray(req.body.platforms)
-    ? req.body.platforms.filter((p) => PLATFORM_NAMES.includes(p))
+    ? req.body.platforms.filter((p) => ENABLED_PLATFORMS.includes(p))
     : [];
   const settings = {
     tone: toneOptions().includes(req.body.tone) ? req.body.tone : "casual",
@@ -159,7 +160,7 @@ router.post("/plan", wrap(async (req, res) => {
   const plan = await planContent({ brief, count: slots.length, productUrl, tone, style });
 
   const wanted = Array.isArray(req.body.platforms)
-    ? req.body.platforms.filter((p) => PLATFORM_NAMES.includes(p))
+    ? req.body.platforms.filter((p) => ENABLED_PLATFORMS.includes(p))
     : [];
   const autoPost = req.body.autoPost === false ? 0 : 1;
   const now = Date.now();
@@ -323,6 +324,29 @@ router.delete("/jobs/:id", wrap(async (req, res) => {
   await deleteJobFiles(job);
   await dbRun("DELETE FROM ugc_jobs WHERE id = ?", [job.id]);
   res.json({ ok: true });
+}));
+
+// The calendar assistant. Stateless: the client keeps the conversation and
+// sends it back each turn, along with the days it has selected and its UTC
+// offset so relative dates resolve in the user's timezone.
+router.post("/chat", wrap(async (req, res) => {
+  if (!assistantAvailable()) {
+    return res.status(400).json({
+      error: "The assistant needs an OpenAI key - set OPENAI_API_KEY to enable it.",
+      needsKey: true,
+    });
+  }
+  const messages = Array.isArray(req.body.messages) ? req.body.messages : [];
+  if (!messages.length) return res.status(400).json({ error: "No message" });
+
+  const selectedDates = (Array.isArray(req.body.selectedDates) ? req.body.selectedDates : [])
+    .filter((d) => /^\d{4}-\d{2}-\d{2}$/.test(String(d)))
+    .slice(0, 60);
+  const offsetMinutes = Number.isFinite(req.body.offsetMinutes)
+    ? Math.max(-840, Math.min(840, req.body.offsetMinutes))
+    : 0;
+
+  res.json(await runAssistant({ messages, selectedDates, offsetMinutes }));
 }));
 
 // The avatars and voices this HeyGen account can actually use, so the

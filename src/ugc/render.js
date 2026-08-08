@@ -37,7 +37,7 @@ async function probeDuration(filePath) {
 // OpenAI text-to-speech; returns the mp3 path or null when no key is set.
 async function makeVoiceover(text, outPath, voice) {
   if (!config.openaiApiKey) return null;
-  const res = await fetch("https://api.openai.com/v1/audio/speech", {
+  const res = await fetch(`${config.openaiApiBase}/audio/speech`, {
     method: "POST",
     headers: {
       Authorization: `Bearer ${config.openaiApiKey}`,

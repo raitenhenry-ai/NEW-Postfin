@@ -24,7 +24,7 @@ export async function planContent({ brief, count, productUrl = "", tone, style }
 
   if (!config.openaiApiKey) return templatePlan(cleanBrief, slots, productUrl);
 
-  const res = await fetch("https://api.openai.com/v1/chat/completions", {
+  const res = await fetch(`${config.openaiApiBase}/chat/completions`, {
     method: "POST",
     headers: {
       Authorization: `Bearer ${config.openaiApiKey}`,
