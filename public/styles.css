@@ -3633,40 +3633,56 @@ body.sidebar-expanded {
   width: 100%;
   aspect-ratio: 9 / 16;
   border-radius: 10px;
+  background: #141416;
+}
+
+.recent-tile-media {
+  position: absolute;
+  inset: 0;
+  border-radius: 10px;
   overflow: hidden;
   background: #141416;
 }
 
-.recent-tile-thumb img,
-.recent-tile-thumb video,
-.recent-tile-thumb .video-thumb-fallback {
+.recent-tile-media img,
+.recent-tile-media video,
+.recent-tile-media .video-thumb-fallback {
   width: 100%;
   height: 100%;
   object-fit: cover;
   display: block;
 }
 
-.recent-tile:hover .recent-tile-thumb {
+.recent-tile:hover .recent-tile-media {
   outline: 1px solid #3a3a42;
 }
 
 .recent-tile-platforms {
+  position: absolute;
+  left: 8px;
+  bottom: 8px;
+  z-index: 1;
   display: flex;
   align-items: center;
-  gap: 5px;
-  min-height: 22px;
+  gap: 6px;
+  pointer-events: none;
 }
 
-.recent-tile-platforms.is-empty {
-  color: #5a5a62;
-  font-size: 12px;
-  line-height: 22px;
+.recent-tile-app {
+  width: 26px;
+  height: 26px;
+  border-radius: 7px;
+  overflow: hidden;
+  display: block;
+  box-shadow: 0 0 0 2px rgba(91, 140, 255, 0.35), 0 4px 12px rgba(59, 126, 255, 0.55);
 }
 
-.recent-tile-platforms .platform-badge {
-  width: 22px;
-  height: 22px;
-  border-radius: 6px;
+.recent-tile-app > img,
+.recent-tile-app > svg {
+  width: 100%;
+  height: 100%;
+  display: block;
+  border-radius: 7px;
 }
 
 .recent-tile-caption {
