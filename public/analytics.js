@@ -3,9 +3,9 @@
    interval it covers - the labels and the hover readout are both taken from
    that rather than reconstructed here. */
 (() => {
-  const { api, escapeHtml, platformIcon, PLATFORM_LABELS, fmtCompact, fmtDelta,
-          deltaClass, fmtDuration, fmtRelative, timeZone, toast, errorBlock,
-          emptyBlock } = window.Postfin;
+  const { api, escapeHtml, platformIcon, PLATFORM_LABELS, fmtCompact, fmtSigned,
+          fmtDelta, deltaClass, fmtDuration, fmtRelative, timeZone, toast,
+          errorBlock, emptyBlock } = window.Postfin;
 
   const RANGE_OPTIONS = {
     "1h": { label: "Last hour" },
@@ -34,25 +34,31 @@
 
   /* ---------- scale helpers ---------- */
 
-  // Round the axis maximum up to something readable (1/2/2.5/5 × 10ⁿ) so the
-  // gridlines land on sensible numbers whatever the data looks like.
-  function niceMax(value) {
-    if (!value || value <= 0) return 10;
-    const exponent = Math.floor(Math.log10(value));
-    const magnitude = Math.pow(10, exponent);
-    const normalized = value / magnitude;
-    const step = normalized <= 1 ? 1 : normalized <= 2 ? 2 : normalized <= 2.5 ? 2.5 : normalized <= 5 ? 5 : 10;
-    return step * magnitude;
+  // Pick the gridline spacing first, then derive the axis maximum from it.
+  //
+  // Fixing the count at four instead divided small maxima into fractions -
+  // a peak of 2 became 2 / 1.5 / 1 / 0.5 / 0, which the compact formatter
+  // rounded to "2, 2, 1, 1, 0": two gridlines both claiming to be 2. Every
+  // metric here is a count, so the step is always a whole number.
+  function niceStep(peak, maxLines) {
+    if (!(peak > 0)) return 1;
+    for (let exponent = 0; exponent < 15; exponent++) {
+      const magnitude = Math.pow(10, exponent);
+      for (const unit of [1, 2, 5]) {
+        const step = unit * magnitude;
+        if (Math.ceil(peak / step) <= maxLines) return step;
+      }
+    }
+    return Math.ceil(peak / maxLines);
   }
 
   function buildScale(values) {
-    const max = niceMax(Math.max(...values, 0));
-    const steps = 4;
+    const peak = Math.max(...values, 0);
+    const step = niceStep(peak, 5);
+    const steps = Math.max(1, Math.ceil(peak / step));
     const labels = [];
-    for (let i = steps; i >= 0; i--) {
-      labels.push(fmtCompact((max * i) / steps, 1));
-    }
-    return { max: max || 1, yLabels: labels };
+    for (let i = steps; i >= 0; i--) labels.push(fmtCompact(step * i, 1));
+    return { max: step * steps, yLabels: labels };
   }
 
   // A point covers [t, end). Day-wide buckets are named after the day they
@@ -85,12 +91,19 @@
   function activeConfig(chartKey) {
     const chart = payload?.charts?.[chartKey];
     if (!chart) return null;
-    const values = chart.series.map((p) => p.v);
+    // Buckets from before the first snapshot hold no reading, so they carry
+    // null rather than zero. They keep their slot on the time axis - the
+    // line just doesn't start until the data does, instead of climbing out
+    // of a zero that was never real.
+    const values = chart.series.map((p) => (p.observed === false ? null : p.v));
     return {
       ...PALETTE[chartKey],
-      ...buildScale(values),
+      ...buildScale(values.filter((v) => v != null)),
       values,
-      total: fmtCompact(chart.total, chart.total >= 1000 ? 2 : 0),
+      // The headline is the change across the selected window; the lifetime
+      // running total rides underneath it as context.
+      gain: fmtSigned(chart.gain ?? 0),
+      total: `${fmtCompact(chart.total, chart.total >= 1000 ? 2 : 0)} total`,
       delta: fmtDelta(chart.delta),
       deltaClass: deltaClass(chart.delta),
       format: (n) => fmtCompact(n, 1),
@@ -114,8 +127,12 @@
   // The smoothed curve is for the stroke only. The readout comes off the real
   // points, so a tooltip never pairs a date with an interpolated value that
   // was never collected.
+  const clamp = (v, lo, hi) => Math.min(hi, Math.max(lo, v));
+
   function buildCurve(points, samplesPerSeg = 28) {
     const curve = [];
+    const minY = Math.min(...points.map((p) => p.y));
+    const maxY = Math.max(...points.map((p) => p.y));
     for (let i = 0; i < points.length - 1; i++) {
       const p0 = points[i - 1] || points[i];
       const p1 = points[i];
@@ -125,7 +142,10 @@
         const t = s / samplesPerSeg;
         curve.push({
           x: catmullRom(p0.x, p1.x, p2.x, p3.x, t),
-          y: catmullRom(p0.y, p1.y, p2.y, p3.y, t),
+          // Smoothing overshoots on either side of a steep step, which on a
+          // follower count reads as a dip that never happened. Clamp it to
+          // the span the real points occupy.
+          y: clamp(catmullRom(p0.y, p1.y, p2.y, p3.y, t), minY, maxY),
         });
       }
     }
@@ -165,6 +185,13 @@
       ctx.stroke();
     }
 
+    // Nothing has been collected yet - gridlines only, rather than a line
+    // pinned to a zero we never measured.
+    if (!points.length) {
+      tooltip.hidden = true;
+      return;
+    }
+
     const gradient = ctx.createLinearGradient(0, pad.top, 0, pad.top + plotH);
     gradient.addColorStop(0, config.fillTop);
     gradient.addColorStop(1, config.fillBottom);
@@ -191,9 +218,10 @@
     }
 
     const clampedX = Math.min(pad.left + plotW, Math.max(pad.left, hoverX));
-    const index = nearestPointIndex(points, clampedX);
-    const hit = points[index];
-    const label = tipLabels[index] || "";
+    const hit = points[nearestPointIndex(points, clampedX)];
+    // `index` is the point's slot in the full window, which is what the
+    // labels are keyed by - `points` skips the unmeasured buckets.
+    const label = tipLabels[hit.index] || "";
     const valueText = config.format(hit.value);
 
     ctx.beginPath();
@@ -228,8 +256,9 @@
     let top = hit.y - tipH - 14;
     if (top < 4) top = hit.y + 14;
     tooltip.style.transform = `translate(${left}px, ${top}px)`;
-
-    if (instance.valueEl) instance.valueEl.textContent = valueText;
+    // The headline stays put while hovering. It's the change across the
+    // window; swapping in a point's running total would silently switch the
+    // number to a different measure.
   }
 
   function setupCard(card) {
@@ -242,6 +271,7 @@
     const plot = card.querySelector(".analytics-chart-plot");
     const xEl = card.querySelector(".analytics-chart-x");
     const valueEl = card.querySelector(".analytics-chart-value");
+    const totalEl = card.querySelector(".analytics-chart-total");
     const deltaEl = card.querySelector(".analytics-chart-delta");
     if (!canvas || !yEl || !plot) return;
 
@@ -253,7 +283,8 @@
       plot.insertBefore(tooltip, canvas.nextSibling);
     }
 
-    if (valueEl) valueEl.textContent = config.total;
+    if (valueEl) valueEl.textContent = config.gain;
+    if (totalEl) totalEl.textContent = config.total;
     if (deltaEl) {
       deltaEl.textContent = config.delta;
       deltaEl.className = `analytics-chart-delta ${config.deltaClass}`.trim();
@@ -272,28 +303,31 @@
     const plotW = cssWidth - pad.left - pad.right;
     const plotH = cssHeight - pad.top - pad.bottom;
 
+    // x comes from the position in the full window, so dropping the
+    // unmeasured buckets shortens the line instead of stretching what's left
+    // across the whole chart.
     const divisor = Math.max(1, config.values.length - 1);
-    const points = config.values.map((value, i) => ({
-      x: pad.left + (i / divisor) * plotW,
-      y: pad.top + plotH - (value / config.max) * plotH,
-      value,
-    }));
+    const xFor = (i) => pad.left + (i / divisor) * plotW;
+    const points = config.values
+      .map((value, i) => ({ x: xFor(i), y: pad.top + plotH - (value / config.max) * plotH, value, index: i }))
+      .filter((p) => p.value != null);
     const curve = buildCurve(points, 32);
 
     // Each label is placed under the point it names. Spacing them evenly
     // instead put "Aug 5" a third of the way across a chart whose fifth point
     // sits at 28%, so the axis disagreed with the line above it.
     if (xEl) {
-      xEl.innerHTML = axisPicks(points.length).map((i) => {
-        const anchor = i === 0 ? "0" : i === points.length - 1 ? "-100%" : "-50%";
-        const left = ((points[i].x / cssWidth) * 100).toFixed(3);
+      const count = config.values.length;
+      xEl.innerHTML = axisPicks(count).map((i) => {
+        const anchor = i === 0 ? "0" : i === count - 1 ? "-100%" : "-50%";
+        const left = ((xFor(i) / cssWidth) * 100).toFixed(3);
         return `<span style="left:${left}%;transform:translateX(${anchor})">${escapeHtml(axisLabels[i] || "")}</span>`;
       }).join("");
     }
 
     const instance = {
       card, canvas, ctx, config, pad, plotW, plotH, cssWidth, cssHeight,
-      points, curve, tooltip, valueEl, hoverX: null,
+      points, curve, tooltip, hoverX: null,
     };
     instances.set(card, instance);
     paint(instance, null);
@@ -307,7 +341,6 @@
     const onLeave = () => {
       instance.hoverX = null;
       paint(instance, null);
-      if (valueEl) valueEl.textContent = config.total;
     };
 
     plot.onpointerdown = (e) => {
@@ -327,8 +360,14 @@
     document.querySelectorAll(".analytics-total-card[data-total]").forEach((card) => {
       const entry = data[card.dataset.total];
       const valueEl = card.querySelector(".analytics-total-value");
+      const totalEl = card.querySelector(".analytics-total-lifetime");
       const deltaEl = card.querySelector(".analytics-total-delta");
-      if (valueEl) valueEl.textContent = entry ? fmtCompact(entry.value, entry.value >= 1000 ? 2 : 0) : "—";
+      // Like the charts: the tile leads with what moved inside the window,
+      // with the lifetime figure alongside it.
+      if (valueEl) valueEl.textContent = entry ? fmtSigned(entry.value) : "—";
+      if (totalEl) {
+        totalEl.textContent = entry ? `${fmtCompact(entry.total, entry.total >= 1000 ? 2 : 0)} total` : "";
+      }
       if (deltaEl) {
         deltaEl.textContent = entry ? fmtDelta(entry.delta) : "";
         deltaEl.className = `analytics-total-delta ${entry ? deltaClass(entry.delta) : ""}`.trim();

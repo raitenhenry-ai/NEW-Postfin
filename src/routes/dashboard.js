@@ -194,9 +194,25 @@ router.get("/analytics", wrap(async (req, res) => {
   // A point covers [t, end) and holds the running total as of `end`. The
   // final bucket is still filling, so its end is clamped to now rather than
   // advertising a reading from the future.
+  //
+  // `total` is the lifetime running total the platforms report; `gain` is
+  // what actually moved inside the selected window. The card leads with the
+  // gain, because a number sitting under "Last 24 hours" is read as a
+  // 24-hour figure - a lifetime follower count there claims growth that
+  // never happened.
   const now = Date.now();
   const chart = (series) => ({
-    series: series.map((p) => ({ t: p.start, end: Math.min(p.end, now), v: p.value })),
+    series: series.map((p) => ({
+      t: p.start, end: Math.min(p.end, now), v: p.value, observed: p.observed,
+    })),
+    total: series.at(-1)?.value ?? 0,
+    gain: seriesGain(series),
+    delta: seriesDelta(series),
+  });
+
+  // Same split for the engagement tiles.
+  const tile = (series) => ({
+    value: seriesGain(series),
     total: series.at(-1)?.value ?? 0,
     delta: seriesDelta(series),
   });
@@ -222,10 +238,10 @@ router.get("/analytics", wrap(async (req, res) => {
       comments: chart(comments),
     },
     totals: {
-      likes: { value: likes.at(-1)?.value ?? 0, delta: seriesDelta(likes) },
-      comments: { value: comments.at(-1)?.value ?? 0, delta: seriesDelta(comments) },
-      saves: { value: saves.at(-1)?.value ?? 0, delta: seriesDelta(saves) },
-      shares: { value: shares.at(-1)?.value ?? 0, delta: seriesDelta(shares) },
+      likes: tile(likes),
+      comments: tile(comments),
+      saves: tile(saves),
+      shares: tile(shares),
     },
     engagement: totals,
     recentVideos: await recentVideos(platform, 8),

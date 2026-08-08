@@ -2948,6 +2948,18 @@ body.sidebar-expanded {
   font-weight: 600;
 }
 
+/* The lifetime running total, sitting behind the window's change. */
+.analytics-chart-total,
+.analytics-total-lifetime {
+  color: #6f6f76;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.analytics-chart-total {
+  margin-left: auto;
+}
+
 .analytics-chart-body {
   display: grid;
   grid-template-columns: 36px minmax(0, 1fr);

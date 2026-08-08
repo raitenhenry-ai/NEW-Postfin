@@ -145,12 +145,18 @@ export function resolveRange(rangeKey, customDays = 14, timeZone = null) {
   }
 }
 
-// These series are running totals, and they read zero for any stretch
-// before collection started. Measuring growth from that leading zero would
+// These series are running totals, and the stretch before collection
+// started carries no information at all. Measuring growth from there would
 // count a channel's entire existing audience as "new", so the baseline is
-// the first bucket we actually observed something in.
+// the first bucket we actually collected something in.
+//
+// That bucket is the one flagged `observed`, not the first one above zero:
+// a metric that genuinely sat at 0 and then climbed - comments on a new
+// account, say - would otherwise be measured from its first non-zero
+// reading and report no growth at all.
 function baselineIndex(series) {
-  return series.findIndex((p) => p.value > 0);
+  const observed = series.findIndex((p) => p.observed);
+  return observed === -1 ? series.findIndex((p) => p.value > 0) : observed;
 }
 
 // Percentage change across the observed part of the series, or null when

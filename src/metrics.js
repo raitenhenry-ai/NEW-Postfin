@@ -216,7 +216,11 @@ function bucketize(rows, { keyField, edges, startingValues }) {
     }
     let total = 0;
     for (const value of carried.values()) total += value;
-    out.push({ start: edges[i], end, value: total });
+    // `observed` separates "nothing had been collected yet" from a real zero.
+    // Without it a bucket from before the first snapshot reads 0, and a
+    // channel that already had 1.66K followers when collection started draws
+    // a cliff from zero that looks exactly like 1.66K of growth.
+    out.push({ start: edges[i], end, value: total, observed: carried.size > 0 });
   }
   return out;
 }
