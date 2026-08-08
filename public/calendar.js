@@ -665,6 +665,7 @@
     conversation.length = 0;
     assistantBusy = false;
     setSelectionLocked(false);
+    setComposerActive(false);
 
     if (isViewMode()) {
       selected.clear();
