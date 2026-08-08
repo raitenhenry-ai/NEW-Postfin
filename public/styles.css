@@ -4490,7 +4490,6 @@ body.theme-light .ai-suggestions,
 body.theme-light .content-calendar,
 body.theme-light .analytics-chart-card,
 body.theme-light .analytics-total-card,
-body.theme-light .connector-row,
 body.theme-light .profile-card,
 body.theme-light .profile-section,
 body.theme-light .day-modal-panel,
@@ -4501,6 +4500,21 @@ body.theme-light .cal-month-menu {
   border: 1px solid #e2e2e8;
   color: #222228;
   box-shadow: none;
+}
+
+body.theme-light .connector-row {
+  background: transparent;
+  border: none;
+  border-bottom: 1px solid #e6e6ec;
+  border-radius: 0;
+  box-shadow: none;
+  color: #222228;
+  padding-left: 0;
+  padding-right: 0;
+}
+
+body.theme-light .connectors-list .connector-row:last-child {
+  border-bottom: none;
 }
 
 body.theme-light .stat-label,
