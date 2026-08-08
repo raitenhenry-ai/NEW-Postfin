@@ -96,6 +96,19 @@ ALTER TABLE ugc_jobs ADD COLUMN IF NOT EXISTS title TEXT;
 ALTER TABLE ugc_jobs ADD COLUMN IF NOT EXISTS scheduled_at BIGINT;
 ALTER TABLE ugc_jobs ADD COLUMN IF NOT EXISTS brief TEXT;
 ALTER TABLE ugc_jobs ADD COLUMN IF NOT EXISTS concept_json TEXT;
+
+-- Indexes for the queries that degrade first as history builds up: the
+-- per-post "latest snapshot" lookup behind every chart, the published-post
+-- filter on the dashboard, and the calendar's date window. Applied on boot
+-- so any Postgres gets them without a manual step.
+CREATE INDEX IF NOT EXISTS post_metrics_latest_idx
+  ON post_metrics (post_id, collected_at DESC);
+CREATE INDEX IF NOT EXISTS account_metrics_latest_idx
+  ON account_metrics (account_id, collected_at DESC);
+CREATE INDEX IF NOT EXISTS ugc_posts_posted_at_idx
+  ON ugc_posts (posted_at) WHERE status = 'done';
+CREATE INDEX IF NOT EXISTS ugc_jobs_slot_idx
+  ON ugc_jobs (COALESCE(scheduled_at, created_at));
 `;
 
 if (config.databaseUrl) {

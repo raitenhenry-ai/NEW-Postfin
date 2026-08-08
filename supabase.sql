@@ -2,7 +2,8 @@
 --
 -- The app creates and migrates its own tables on boot, so this file is not
 -- a schema definition - it is the hardening step Supabase specifically
--- needs, plus an index that pays off once you have real post history.
+-- needs. Nothing else here is required; Neon and other Postgres hosts do
+-- not need this file at all.
 --
 -- Why it matters: Supabase publishes every table in the `public` schema
 -- through PostgREST, and grants the `anon` and `authenticated` roles access
@@ -39,21 +40,7 @@ BEGIN
   END LOOP;
 END $$;
 
--- 2. The metrics tables are the ones that grow without bound - one row per
--- post per collection run. These indexes keep the analytics queries, which
--- look up each post's most recent snapshot, from scanning the whole table.
-CREATE INDEX IF NOT EXISTS post_metrics_latest_idx
-  ON public.post_metrics (post_id, collected_at DESC);
-CREATE INDEX IF NOT EXISTS account_metrics_latest_idx
-  ON public.account_metrics (account_id, collected_at DESC);
-
--- 3. Posts are filtered by publish time on every dashboard load.
-CREATE INDEX IF NOT EXISTS ugc_posts_posted_at_idx
-  ON public.ugc_posts (posted_at) WHERE status = 'done';
-
--- 4. The calendar reads a date window on every view.
-CREATE INDEX IF NOT EXISTS ugc_jobs_slot_idx
-  ON public.ugc_jobs (COALESCE(scheduled_at, created_at));
+-- Indexes are applied by the app on boot, so there is nothing else to run.
 
 -- Confirm what was hardened.
 SELECT tablename,

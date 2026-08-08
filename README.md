@@ -158,33 +158,37 @@ Postgres instead. The schema migrates itself on boot for both. If you use
 SQLite, the volume is not optional: without it the database and every
 rendered video are wiped on each deploy.
 
-### Supabase (or any Postgres)
+### Postgres (Neon, Supabase, anything)
 
-Set `DATABASE_URL` and restart — the app creates and migrates its own tables
-on boot. Then **run `supabase.sql` once in the Supabase SQL Editor.**
+Set `DATABASE_URL` and restart. The app creates its tables, applies its
+migrations and adds its indexes on boot — there is no schema to run first.
+SSL is enabled automatically for any non-localhost host, and a connection
+that is refused briefly during a deploy is retried before the app gives up.
+If it can't connect at all it says why, naming the host and the likely
+cause, rather than dying with a driver stack trace.
 
-That step is not optional on Supabase. Supabase publishes every table in the
-`public` schema through its REST API and grants the `anon` role access.
-Postfin's `accounts` table holds live OAuth access and refresh tokens for
-every connected social account, and the anon key is designed to ship in
-client-side code. `supabase.sql` enables row-level security on Postfin's
-tables and revokes those grants; the app connects as the table owner, which
-bypasses RLS, so nothing breaks. It also adds indexes the metrics tables
-need once they have real history.
-
-**Which connection string:** Supabase offers a direct connection and a
-pooler. Take the **Session pooler** string from Settings → Database — it is
-reachable over IPv4, whereas the direct `db.<ref>.supabase.co` host is
-IPv6-only unless you have the IPv4 add-on, which many hosts cannot reach.
-The transaction pooler (port 6543) also works: the app never uses named
-prepared statements, which is the usual thing that breaks under it.
+**Neon** — copy the connection string from the project dashboard:
 
 ```
-DATABASE_URL=postgresql://postgres.<ref>:<password>@aws-0-<region>.pooler.supabase.com:5432/postgres
+DATABASE_URL=postgresql://<user>:<password>@ep-<id>-pooler.<region>.aws.neon.tech/<db>?sslmode=require
 ```
 
-SSL is enabled automatically for any non-localhost host. Keep the connection
-count modest — the pool is capped at 5, which suits Supabase's free tier.
+Prefer the **pooled** endpoint (the host containing `-pooler`). Neon
+suspends an idle database and takes a few seconds to wake, which the
+startup retry already absorbs.
+
+**Supabase** — take the **Session pooler** string from Settings → Database,
+not "Direct connection": the direct `db.<ref>.supabase.co` host is IPv6-only
+without the IPv4 add-on, and many hosts can't reach it. That mismatch shows
+up as a connection timeout on deploy.
+
+On Supabase only, also **run `supabase.sql` once in the SQL Editor**.
+Supabase publishes every `public` table through its REST API and grants the
+`anon` role access to them — and Postfin's `accounts` table holds live OAuth
+access and refresh tokens, while the anon key is meant to ship in
+client-side code. That file enables row-level security and revokes those
+grants. Postfin connects as the table owner, which bypasses RLS, so nothing
+breaks. Neon has no such API, so this step does not apply there.
 
 You still need the volume at `/app/data` even on Postgres: the database
 holds the job and metric rows, but the rendered `.mp4` files live on disk,
