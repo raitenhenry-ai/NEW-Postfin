@@ -309,7 +309,7 @@ body.sidebar-expanded {
   justify-content: center;
   gap: 5px;
   padding: 9px 4px;
-  margin-bottom: 2px;
+  margin-bottom: 0;
   transition: background 0.15s, color 0.15s, width 0.2s ease;
 }
 
@@ -322,7 +322,7 @@ body.sidebar-expanded {
   gap: 12px;
   padding: 9px 12px;
   border-radius: 8px;
-  margin-bottom: 2px;
+  margin-bottom: 0;
 }
 
 .nav-btn.active .nav-box {
