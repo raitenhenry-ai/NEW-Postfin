@@ -11,31 +11,137 @@ export const wrap = (fn) => (req, res) =>
     if (!res.headersSent) res.status(500).json({ error: String(err.message || err) });
   });
 
+const MINUTE = 60000;
+const HOUR = 3600000;
+const DAY = 86400000;
+
+// Most points a chart plots. Multi-day ranges pick the smallest whole number
+// of days per bucket that keeps them at or under this.
+const MAX_POINTS = 12;
+
+/* ------------------------------------------------------------- time zones */
+
+// Day boundaries have to land on the *viewer's* midnight rather than the
+// server's. The browser formats every axis label in its own locale, so a
+// bucket cut on a UTC midnight reads as the previous day for anyone west of
+// Greenwich - the deploys run in UTC, the users mostly don't. The client
+// sends its IANA zone and the arithmetic below happens in it, which also
+// keeps buckets exactly one calendar day wide across DST changes.
+function normalizeZone(timeZone) {
+  if (!timeZone || typeof timeZone !== "string") return null;
+  try {
+    new Intl.DateTimeFormat("en-US", { timeZone });
+    return timeZone;
+  } catch {
+    return null;
+  }
+}
+
+// Milliseconds to add to a UTC instant to read it as wall clock time in `zone`.
+function zoneOffset(ms, zone) {
+  const parts = {};
+  for (const part of new Intl.DateTimeFormat("en-US", {
+    timeZone: zone, hourCycle: "h23",
+    year: "numeric", month: "2-digit", day: "2-digit",
+    hour: "2-digit", minute: "2-digit", second: "2-digit",
+  }).formatToParts(new Date(ms))) {
+    if (part.type !== "literal") parts[part.type] = Number(part.value);
+  }
+  const asUtc = Date.UTC(parts.year, parts.month - 1, parts.day, parts.hour, parts.minute, parts.second);
+  return asUtc - Math.floor(ms / 1000) * 1000;
+}
+
+// Midnight, in `zone`, of the day containing `ms`.
+function startOfLocalDay(ms, zone) {
+  if (!zone) {
+    const d = new Date(ms);
+    d.setHours(0, 0, 0, 0);
+    return d.getTime();
+  }
+  const offset = zoneOffset(ms, zone);
+  const midnight = Math.floor((ms + offset) / DAY) * DAY;
+  // The offset can differ on the far side of a DST change, so re-resolve the
+  // first guess and use the corrected offset when it does.
+  const guess = midnight - offset;
+  const corrected = zoneOffset(guess, zone);
+  return corrected === offset ? guess : midnight - corrected;
+}
+
+// `days` calendar days from a local midnight, landing on a local midnight.
+// The two-hour cushion absorbs DST shifts so a 23- or 25-hour day never
+// leaves the result on the wrong side of midnight.
+function addLocalDays(ms, days, zone) {
+  return startOfLocalDay(ms + days * DAY + 2 * HOUR, zone);
+}
+
+/* ----------------------------------------------------------------- ranges */
+
+// A rolling window ending at this instant, bucketed by the clock. Used for
+// the sub-day ranges, where "the last hour" really does mean the last sixty
+// minutes rather than the hour so far.
+function intradayRange(key, now, points, bucketMs) {
+  const edges = [];
+  for (let i = points; i >= 0; i--) edges.push(now - i * bucketMs);
+  return {
+    key, points, bucketMs, edges,
+    sinceMs: edges[0],
+    endMs: now,
+    // A bare time is ambiguous once the window spans more than a day.
+    labelStyle: points * bucketMs > DAY ? "datetime" : "time",
+  };
+}
+
+// Whole calendar days, so a point labelled "Aug 2" covers exactly Aug 2 in
+// the viewer's zone instead of a slice that drifts with the time of day. The
+// window ends at tonight's midnight, which makes the last bucket the one
+// currently in progress.
+function calendarRange(key, now, days, zone) {
+  const bucketDays = Math.max(1, Math.ceil(days / MAX_POINTS));
+  const points = Math.ceil(days / bucketDays);
+  const edges = new Array(points + 1);
+  edges[points] = addLocalDays(startOfLocalDay(now, zone), 1, zone);
+  for (let i = points - 1; i > 0; i--) edges[i] = addLocalDays(edges[i + 1], -bucketDays, zone);
+  // Pin the opening edge to exactly `days` back. When the day count isn't a
+  // multiple of the bucket size the leading bucket is short, which is honest:
+  // rounding it up instead made "Last 90 days" plot 96.
+  edges[0] = addLocalDays(edges[points], -days, zone);
+  return {
+    key, points, edges, bucketDays,
+    bucketMs: bucketDays * DAY,
+    sinceMs: edges[0],
+    endMs: edges[points],
+    labelStyle: "date",
+  };
+}
+
 // The ranges the analytics page offers, resolved to a bucketed window the
-// metrics helpers understand. `custom` carries its own day count.
-export function resolveRange(rangeKey, customDays = 14) {
+// metrics helpers understand. Every range carries explicit bucket `edges`
+// rather than a start plus a stride: month-length buckets and DST days are
+// not a fixed number of milliseconds, and rounding them was what put the
+// labels on the wrong days. `custom` carries its own day count.
+export function resolveRange(rangeKey, customDays = 14, timeZone = null) {
   const now = Date.now();
+  const zone = normalizeZone(timeZone);
+
   switch (rangeKey) {
     case "1h":
-      return { key: "1h", points: 12, bucketMs: 5 * 60 * 1000, sinceMs: now - 60 * 60 * 1000 };
+      return intradayRange("1h", now, 12, 5 * MINUTE);
     case "24h":
-      return { key: "24h", points: 12, bucketMs: 2 * 60 * 60 * 1000, sinceMs: now - 24 * 60 * 60 * 1000 };
+      return intradayRange("24h", now, 12, 2 * HOUR);
     case "7d":
-      return { key: "7d", points: 7, bucketMs: 86400000, sinceMs: now - 7 * 86400000 };
+      return calendarRange("7d", now, 7, zone);
     case "custom": {
-      const days = Math.max(1, Math.min(365, Number(customDays) || 14));
-      const points = Math.min(12, Math.max(4, Math.min(days, 12)));
-      return {
-        key: "custom",
-        days,
-        points,
-        bucketMs: Math.ceil((days * 86400000) / points),
-        sinceMs: now - days * 86400000,
-      };
+      const days = Math.max(1, Math.min(365, Math.round(Number(customDays) || 14)));
+      // Under three days there aren't enough whole days to draw a line from,
+      // so those windows bucket by the hour instead.
+      const range = days < 3
+        ? intradayRange("custom", now, MAX_POINTS, Math.ceil(days * DAY / MAX_POINTS / HOUR) * HOUR)
+        : calendarRange("custom", now, days, zone);
+      return { ...range, days };
     }
     case "30d":
     default:
-      return { key: "30d", points: 8, bucketMs: Math.ceil((30 * 86400000) / 8), sinceMs: now - 30 * 86400000 };
+      return calendarRange("30d", now, 30, zone);
   }
 }
 

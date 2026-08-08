@@ -3007,13 +3007,20 @@ body.sidebar-expanded {
   font-weight: 500;
 }
 
+/* Labels are absolutely placed by analytics.js at the x of the point they
+   name, rather than spread evenly across the axis. */
 .analytics-chart-x {
-  display: flex;
-  justify-content: space-between;
-  padding: 8px 2px 0;
+  position: relative;
+  height: 21px;
   color: #6f6f76;
   font-size: 11px;
   font-weight: 500;
+}
+
+.analytics-chart-x span {
+  position: absolute;
+  top: 8px;
+  white-space: nowrap;
 }
 
 .analytics-recent {

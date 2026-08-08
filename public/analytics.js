@@ -1,8 +1,11 @@
 /* Analytics: three live charts, engagement totals and the recent grid.
-   The drawing code is unchanged; the numbers come from /api/analytics. */
+   The numbers come from /api/analytics, which returns each point as the
+   interval it covers - the labels and the hover readout are both taken from
+   that rather than reconstructed here. */
 (() => {
   const { api, escapeHtml, platformIcon, PLATFORM_LABELS, fmtCompact, fmtDelta,
-          deltaClass, fmtDuration, fmtRelative, toast, errorBlock, emptyBlock } = window.Postfin;
+          deltaClass, fmtDuration, fmtRelative, timeZone, toast, errorBlock,
+          emptyBlock } = window.Postfin;
 
   const RANGE_OPTIONS = {
     "1h": { label: "Last hour" },
@@ -23,8 +26,10 @@
   let rangeKey = "30d";
   let customDays = 14;
   let axisLabels = [];
+  let tipLabels = [];
   let payload = null;
-  let loading = false;
+  let rangeMeta = null;
+  let requestId = 0;
   const instances = new Map();
 
   /* ---------- scale helpers ---------- */
@@ -50,18 +55,31 @@
     return { max: max || 1, yLabels: labels };
   }
 
-  function labelForTimestamp(ms) {
-    const d = new Date(ms);
-    if (rangeKey === "1h" || rangeKey === "24h") {
-      return d.toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" });
+  // A point covers [t, end). Day-wide buckets are named after the day they
+  // cover; shorter buckets are named for the instant the reading was taken,
+  // which is the bucket's end. Reading `labelStyle` off the payload rather
+  // than the range key keeps short custom windows - which bucket by the hour
+  // - from being labelled with the same date four times over.
+  function labelForPoint(point, long = false) {
+    const style = rangeMeta?.labelStyle || "date";
+    const at = new Date(style === "date" ? point.t : point.end);
+    if (style === "time") return at.toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" });
+    if (style === "datetime") {
+      return at.toLocaleString("en-US", { month: "short", day: "numeric", hour: "numeric" });
     }
-    return d.toLocaleDateString("en-US", { month: "short", day: "numeric" });
+    const label = at.toLocaleDateString("en-US", { month: "short", day: "numeric" });
+    // Long ranges bucket several days together; the tooltip names the span so
+    // the number isn't read as belonging to that one day.
+    if (!long) return label;
+    const last = new Date(point.end - 1).toLocaleDateString("en-US", { month: "short", day: "numeric" });
+    return last === label ? label : `${label} – ${last}`;
   }
 
-  function visibleAxisLabels(labels) {
-    if (labels.length <= 4) return labels;
-    const picks = [0, Math.floor((labels.length - 1) / 3), Math.floor(((labels.length - 1) * 2) / 3), labels.length - 1];
-    return picks.map((i) => labels[i]);
+  // Indices whose labels get drawn on the x axis: the ends plus two inside.
+  function axisPicks(count) {
+    if (count <= 4) return [...Array(count).keys()];
+    const last = count - 1;
+    return [...new Set([0, Math.round(last / 3), Math.round((last * 2) / 3), last])];
   }
 
   function activeConfig(chartKey) {
@@ -93,6 +111,9 @@
     );
   }
 
+  // The smoothed curve is for the stroke only. The readout comes off the real
+  // points, so a tooltip never pairs a date with an interpolated value that
+  // was never collected.
   function buildCurve(points, samplesPerSeg = 28) {
     const curve = [];
     for (let i = 0; i < points.length - 1; i++) {
@@ -105,33 +126,27 @@
         curve.push({
           x: catmullRom(p0.x, p1.x, p2.x, p3.x, t),
           y: catmullRom(p0.y, p1.y, p2.y, p3.y, t),
-          value: catmullRom(p0.value, p1.value, p2.value, p3.value, t),
-          dayIndex: i + t,
         });
       }
     }
     const last = points[points.length - 1];
-    curve.push({ x: last.x, y: last.y, value: last.value, dayIndex: points.length - 1 });
+    curve.push({ x: last.x, y: last.y });
     return curve;
   }
 
-  function nearestOnCurve(curve, x) {
-    let best = curve[0];
-    let bestDist = Math.abs(curve[0].x - x);
-    for (let i = 1; i < curve.length; i++) {
-      const dist = Math.abs(curve[i].x - x);
+  // Index of the collected point nearest the cursor. Hovering snaps to it,
+  // so the crosshair always sits on a bucket the data actually has.
+  function nearestPointIndex(points, x) {
+    let best = 0;
+    let bestDist = Infinity;
+    for (let i = 0; i < points.length; i++) {
+      const dist = Math.abs(points[i].x - x);
       if (dist < bestDist) {
         bestDist = dist;
-        best = curve[i];
+        best = i;
       }
     }
     return best;
-  }
-
-  function pointLabel(dayIndex) {
-    if (!axisLabels.length) return "";
-    const clamped = Math.min(axisLabels.length - 1, Math.max(0, dayIndex));
-    return axisLabels[Math.round(clamped)] || "";
   }
 
   function paint(instance, hoverX) {
@@ -176,8 +191,9 @@
     }
 
     const clampedX = Math.min(pad.left + plotW, Math.max(pad.left, hoverX));
-    const hit = nearestOnCurve(curve, clampedX);
-    const label = pointLabel(hit.dayIndex);
+    const index = nearestPointIndex(points, clampedX);
+    const hit = points[index];
+    const label = tipLabels[index] || "";
     const valueText = config.format(hit.value);
 
     ctx.beginPath();
@@ -243,9 +259,6 @@
       deltaEl.className = `analytics-chart-delta ${config.deltaClass}`.trim();
     }
     yEl.innerHTML = config.yLabels.map((label) => `<span>${label}</span>`).join("");
-    if (xEl) {
-      xEl.innerHTML = visibleAxisLabels(axisLabels).map((label) => `<span>${label}</span>`).join("");
-    }
 
     const dpr = Math.min(window.devicePixelRatio || 1, 2);
     const cssWidth = canvas.clientWidth || 320;
@@ -266,6 +279,17 @@
       value,
     }));
     const curve = buildCurve(points, 32);
+
+    // Each label is placed under the point it names. Spacing them evenly
+    // instead put "Aug 5" a third of the way across a chart whose fifth point
+    // sits at 28%, so the axis disagreed with the line above it.
+    if (xEl) {
+      xEl.innerHTML = axisPicks(points.length).map((i) => {
+        const anchor = i === 0 ? "0" : i === points.length - 1 ? "-100%" : "-50%";
+        const left = ((points[i].x / cssWidth) * 100).toFixed(3);
+        return `<span style="left:${left}%;transform:translateX(${anchor})">${escapeHtml(axisLabels[i] || "")}</span>`;
+      }).join("");
+    }
 
     const instance = {
       card, canvas, ctx, config, pad, plotW, plotH, cssWidth, cssHeight,
@@ -366,7 +390,9 @@
 
   function renderAll() {
     if (!payload) return;
-    axisLabels = (payload.charts.views.series || []).map((p) => labelForTimestamp(p.t));
+    const series = payload.charts?.views?.series || [];
+    axisLabels = series.map((p) => labelForPoint(p));
+    tipLabels = series.map((p) => labelForPoint(p, true));
     document.querySelectorAll(".analytics-chart-card[data-chart]").forEach(setupCard);
     updateTotals();
     renderRecent();
@@ -374,24 +400,35 @@
 
   /* ---------- data ---------- */
 
+  // Every range or platform change refetches. This used to bail out while a
+  // request was already in flight, which left the chart showing the previous
+  // timeframe's data under the new timeframe's label; the token also drops a
+  // slow earlier response so it can't land on top of a newer one.
   async function load() {
-    if (loading) return;
-    loading = true;
+    const token = ++requestId;
     document.querySelector(".analytics-charts")?.classList.add("is-loading");
     try {
       const params = new URLSearchParams({ range: rangeKey });
       if (platform !== "all") params.set("platform", platform);
       if (rangeKey === "custom") params.set("days", String(customDays));
-      payload = await api(`/api/analytics?${params}`);
+      const tz = timeZone();
+      if (tz) params.set("tz", tz);
+
+      const next = await api(`/api/analytics?${params}`);
+      if (token !== requestId) return;
+      payload = next;
+      rangeMeta = next.range || null;
       renderAll();
     } catch (err) {
+      if (token !== requestId) return;
       console.error(err);
       const grid = document.querySelector(".analytics-recent-grid");
       if (grid) grid.innerHTML = errorBlock(`Couldn't load analytics: ${err.message}`);
       toast(err.message, "error");
     } finally {
-      loading = false;
-      document.querySelector(".analytics-charts")?.classList.remove("is-loading");
+      if (token === requestId) {
+        document.querySelector(".analytics-charts")?.classList.remove("is-loading");
+      }
     }
   }
 

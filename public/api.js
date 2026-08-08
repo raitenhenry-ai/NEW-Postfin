@@ -151,6 +151,17 @@
     return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;
   }
 
+  // The browser's IANA zone, sent with any request that buckets by day. The
+  // server runs in UTC, so without it a "day" is cut on the wrong midnight
+  // and every date label lands one day off for anyone west of Greenwich.
+  function timeZone() {
+    try {
+      return Intl.DateTimeFormat().resolvedOptions().timeZone || null;
+    } catch {
+      return null;
+    }
+  }
+
   /* ---------- transient messages ---------- */
 
   let toastTimer = null;
@@ -182,7 +193,7 @@
   window.Postfin = {
     api, escapeHtml, platformIcon, PLATFORM_LABELS, PLATFORM_COLORS,
     fmtCompact, fmtInt, fmtSigned, fmtMoney, fmtDelta, deltaClass,
-    fmtDuration, fmtDateTime, fmtRelative, dateKey,
+    fmtDuration, fmtDateTime, fmtRelative, dateKey, timeZone,
     toast, errorBlock, emptyBlock,
   };
 })();

@@ -21,7 +21,7 @@ const DAY_MS = 86400000;
 // Everything index.html draws: the four stat tiles, the embedded calendar,
 // the account leaderboard, top videos and the suggestion list.
 router.get("/dashboard", wrap(async (req, res) => {
-  const range = resolveRange(req.query.range || "30d", req.query.days);
+  const range = resolveRange(req.query.range || "30d", req.query.days, req.query.tz);
   const since = range.sinceMs;
 
   const [viewSeries, followers, totals, perPlatformViews, accounts] = await Promise.all([
@@ -178,7 +178,7 @@ async function suggestions() {
 // all filtered by platform and range.
 router.get("/analytics", wrap(async (req, res) => {
   const platform = ENABLED_PLATFORMS.includes(req.query.platform) ? req.query.platform : null;
-  const range = resolveRange(req.query.range || "30d", req.query.days);
+  const range = resolveRange(req.query.range || "30d", req.query.days, req.query.tz);
   const opts = { ...range, platform };
 
   const [views, followers, comments, likes, shares, saves, totals] = await Promise.all([
@@ -191,14 +191,30 @@ router.get("/analytics", wrap(async (req, res) => {
     totalsSince(range.sinceMs, platform),
   ]);
 
+  // A point covers [t, end) and holds the running total as of `end`. The
+  // final bucket is still filling, so its end is clamped to now rather than
+  // advertising a reading from the future.
+  const now = Date.now();
   const chart = (series) => ({
-    series: series.map((p) => ({ t: p.date, v: p.value })),
+    series: series.map((p) => ({ t: p.start, end: Math.min(p.end, now), v: p.value })),
     total: series.at(-1)?.value ?? 0,
     delta: seriesDelta(series),
   });
 
   res.json({
-    range: { key: range.key, days: range.days ?? null, points: range.points, bucketMs: range.bucketMs },
+    range: {
+      key: range.key,
+      days: range.days ?? null,
+      points: range.points,
+      bucketMs: range.bucketMs,
+      bucketDays: range.bucketDays ?? null,
+      // How the client should name a point: "date" buckets are whole
+      // calendar days and are named after the day they cover, the others
+      // are named for the instant their reading was taken.
+      labelStyle: range.labelStyle,
+      startMs: range.sinceMs,
+      endMs: Math.min(range.endMs, now),
+    },
     platform: platform || "all",
     charts: {
       views: chart(views),

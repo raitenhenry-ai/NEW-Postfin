@@ -3,7 +3,8 @@
 (() => {
   const {
     api, escapeHtml, platformIcon, PLATFORM_LABELS, fmtCompact, fmtInt, fmtSigned,
-    fmtMoney, fmtDelta, deltaClass, fmtDuration, dateKey, toast, errorBlock, emptyBlock,
+    fmtMoney, fmtDelta, deltaClass, fmtDuration, dateKey, timeZone, toast, errorBlock,
+    emptyBlock,
   } = window.Postfin;
 
   const DAY_MS = 86400000;
@@ -606,8 +607,9 @@
     try {
       const start = startOfWeek(new Date()).getTime() - 40 * DAY_MS;
       const end = start + 120 * DAY_MS;
+      const tz = timeZone();
       const [dashboard, calendar] = await Promise.all([
-        api("/api/dashboard"),
+        api(`/api/dashboard${tz ? `?tz=${encodeURIComponent(tz)}` : ""}`),
         api(`/api/calendar?start=${start}&end=${end}`),
       ]);
 

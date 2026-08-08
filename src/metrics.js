@@ -198,20 +198,25 @@ export async function totalsSince(sinceMs, platform = null) {
 // summing across posts, carrying the last known value forward through
 // buckets where no collection happened. A gap in collection therefore shows
 // as a flat line, not a drop to zero.
-function bucketize(rows, { keyField, sinceMs, points, bucketMs, startingValues }) {
+//
+// Each point carries the interval it covers. It used to report only the
+// bucket's start while holding the total as of the bucket's *end*, which
+// shifted every label one bucket into the past and meant the newest point on
+// a 30-day chart was dated four days ago.
+function bucketize(rows, { keyField, edges, startingValues }) {
   const carried = new Map(startingValues || []);
   const out = [];
   let cursor = 0;
 
-  for (let i = 0; i < points; i++) {
-    const bucketEnd = sinceMs + (i + 1) * bucketMs;
-    while (cursor < rows.length && Number(rows[cursor].collected_at) < bucketEnd) {
+  for (let i = 0; i < edges.length - 1; i++) {
+    const end = edges[i + 1];
+    while (cursor < rows.length && Number(rows[cursor].collected_at) < end) {
       carried.set(rows[cursor][keyField], Number(rows[cursor].value || 0));
       cursor++;
     }
     let total = 0;
     for (const value of carried.values()) total += value;
-    out.push({ date: sinceMs + i * bucketMs, value: total });
+    out.push({ start: edges[i], end, value: total });
   }
   return out;
 }
@@ -220,10 +225,10 @@ const METRIC_COLUMNS = {
   views: "views", likes: "likes", comments: "comments", shares: "shares", saves: "saves",
 };
 
-// Time series of a post metric. `points` buckets of `bucketMs` each, ending
-// now. Readings from before the window seed the first bucket so a chart of
-// the last 24 hours still starts at the real running total.
-export async function postSeries({ metric = "views", sinceMs, points, bucketMs, platform = null }) {
+// Time series of a post metric across the bucket edges resolveRange built.
+// Readings from before the window seed the first bucket so a chart of the
+// last 24 hours still starts at the real running total.
+export async function postSeries({ metric = "views", edges, platform = null }) {
   const column = METRIC_COLUMNS[metric] || "views";
   const params = [];
   let platformFilter = "";
@@ -244,16 +249,14 @@ export async function postSeries({ metric = "views", sinceMs, points, bucketMs, 
   const seed = new Map();
   const inWindow = [];
   for (const row of rows) {
-    if (Number(row.collected_at) < sinceMs) seed.set(row.k, Number(row.value || 0));
+    if (Number(row.collected_at) < edges[0]) seed.set(row.k, Number(row.value || 0));
     else inWindow.push(row);
   }
-  return bucketize(inWindow, {
-    keyField: "k", sinceMs, points, bucketMs, startingValues: seed,
-  });
+  return bucketize(inWindow, { keyField: "k", edges, startingValues: seed });
 }
 
 // Same shape for follower counts across every connected account.
-export async function followerSeries({ sinceMs, points, bucketMs, platform = null }) {
+export async function followerSeries({ edges, platform = null }) {
   const params = [];
   let platformFilter = "";
   if (platform) {
@@ -271,12 +274,10 @@ export async function followerSeries({ sinceMs, points, bucketMs, platform = nul
   const seed = new Map();
   const inWindow = [];
   for (const row of rows) {
-    if (Number(row.collected_at) < sinceMs) seed.set(row.k, Number(row.value || 0));
+    if (Number(row.collected_at) < edges[0]) seed.set(row.k, Number(row.value || 0));
     else inWindow.push(row);
   }
-  return bucketize(inWindow, {
-    keyField: "k", sinceMs, points, bucketMs, startingValues: seed,
-  });
+  return bucketize(inWindow, { keyField: "k", edges, startingValues: seed });
 }
 
 // Estimated revenue per 1000 views, or null when the operator hasn't
