@@ -884,24 +884,20 @@
     field.style.height = `${next}px`;
   }
 
-  let composerPulseTimer = null;
-  function pulseComposer() {
-    const composer = form;
-    if (!composer) return;
-    composer.classList.remove("is-pulsing");
-    // Restart the pulse on every keystroke.
-    void composer.offsetWidth;
-    composer.classList.add("is-pulsing");
-    clearTimeout(composerPulseTimer);
-    composerPulseTimer = setTimeout(() => {
-      composer.classList.remove("is-pulsing");
-    }, 500);
+  let composerTypingTimer = null;
+  function markComposerTyping() {
+    if (!form) return;
+    form.classList.add("is-typing");
+    clearTimeout(composerTypingTimer);
+    composerTypingTimer = setTimeout(() => {
+      form.classList.remove("is-typing");
+    }, 700);
   }
 
   field?.addEventListener("input", () => {
     syncSendState();
     resizeField();
-    pulseComposer();
+    markComposerTyping();
   });
 
   field?.addEventListener("keydown", (e) => {
