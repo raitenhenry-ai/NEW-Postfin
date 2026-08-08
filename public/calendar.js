@@ -659,6 +659,14 @@
     grid.classList.remove("is-dragging");
     openedPost = null;
 
+    if (planAbort) {
+      planAbort.abort();
+      planAbort = null;
+    }
+    conversation.length = 0;
+    assistantBusy = false;
+    setSelectionLocked(false);
+
     if (isViewMode()) {
       selected.clear();
       if (!focused) focused = keyFromDate(new Date());
