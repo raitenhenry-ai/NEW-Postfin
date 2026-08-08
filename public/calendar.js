@@ -1020,9 +1020,6 @@
     const text = field.value.trim();
     field.value = "";
 
-    // First message with a selection locks those days for the rest of the chat.
-    if (selected.size) setSelectionLocked(true);
-
     assistantBusy = true;
     if (sendBtn) sendBtn.disabled = true;
     syncSendState();
