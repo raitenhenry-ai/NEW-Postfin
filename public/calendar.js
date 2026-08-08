@@ -236,6 +236,10 @@
     chatCancelBtn.hidden = !show;
   }
 
+  function setComposerActive(on) {
+    form?.classList.toggle("is-typing", Boolean(on));
+  }
+
   function cancelChat() {
     if (planAbort) {
       planAbort.abort();
@@ -247,6 +251,7 @@
     selected.clear();
     drag = null;
     grid.classList.remove("is-dragging");
+    setComposerActive(false);
     if (field) {
       field.value = "";
       resizeField();
