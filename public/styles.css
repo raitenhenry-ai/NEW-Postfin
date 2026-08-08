@@ -269,6 +269,19 @@ body.sidebar-expanded {
   display: block;
 }
 
+.sidebar-nav {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  flex-shrink: 0;
+  gap: 10px;
+}
+
+.sidebar.expanded .sidebar-nav {
+  align-items: stretch;
+}
+
 .nav-btn {
   border: none;
   background: transparent;
@@ -285,7 +298,7 @@ body.sidebar-expanded {
 }
 
 .nav-box {
-  width: 56px;
+  width: 64px;
   height: auto;
   min-height: 0;
   border-radius: 10px;
@@ -294,9 +307,9 @@ body.sidebar-expanded {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 4px;
-  padding: 8px 4px;
-  margin-bottom: 2px;
+  gap: 5px;
+  padding: 9px 4px;
+  margin-bottom: 0;
   transition: background 0.15s, color 0.15s, width 0.2s ease;
 }
 
@@ -307,9 +320,9 @@ body.sidebar-expanded {
   flex-direction: row;
   justify-content: flex-start;
   gap: 12px;
-  padding: 8px 12px;
+  padding: 9px 12px;
   border-radius: 8px;
-  margin-bottom: 2px;
+  margin-bottom: 0;
 }
 
 .nav-btn.active .nav-box {
@@ -320,27 +333,27 @@ body.sidebar-expanded {
 .home-icon {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 2.5px;
-  width: 20px;
-  height: 20px;
+  gap: 2.75px;
+  width: 24px;
+  height: 24px;
   flex-shrink: 0;
 }
 
 .home-icon span {
-  border: 1.75px solid currentColor;
+  border: 1.8px solid currentColor;
   border-radius: 3px;
 }
 
 .ads-icon {
-  width: 20px;
-  height: 20px;
+  width: 24px;
+  height: 24px;
   display: block;
   flex-shrink: 0;
 }
 
 .nav-label {
   font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display", system-ui, sans-serif;
-  font-size: 9px;
+  font-size: 10.5px;
   font-weight: 500;
   letter-spacing: -0.01em;
   line-height: 1;
@@ -349,7 +362,7 @@ body.sidebar-expanded {
 }
 
 .sidebar.expanded .nav-label {
-  font-size: 12px;
+  font-size: 13px;
   text-align: left;
 }
 
