@@ -884,9 +884,24 @@
     field.style.height = `${next}px`;
   }
 
+  let composerPulseTimer = null;
+  function pulseComposer() {
+    const composer = form;
+    if (!composer) return;
+    composer.classList.remove("is-pulsing");
+    // Restart the pulse on every keystroke.
+    void composer.offsetWidth;
+    composer.classList.add("is-pulsing");
+    clearTimeout(composerPulseTimer);
+    composerPulseTimer = setTimeout(() => {
+      composer.classList.remove("is-pulsing");
+    }, 500);
+  }
+
   field?.addEventListener("input", () => {
     syncSendState();
     resizeField();
+    pulseComposer();
   });
 
   field?.addEventListener("keydown", (e) => {
