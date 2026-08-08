@@ -29,7 +29,10 @@
     return `
       <li class="recent-post ${post.status === "failed" ? "is-failed" : ""}">
         <span class="platform-badge" aria-hidden="true">${platformIcon(post.platform)}</span>
-        <span class="recent-post-account">${escapeHtml(post.accountName || PLATFORM_LABELS[post.platform] || post.platform)}</span>
+        <div class="recent-post-copy">
+          <span class="recent-post-account">${escapeHtml(post.accountName || PLATFORM_LABELS[post.platform] || post.platform)}</span>
+          <span class="recent-post-platform">${escapeHtml(PLATFORM_LABELS[post.platform] || post.platform)}</span>
+        </div>
         ${statusChip(post.status)}
         ${metrics}
         ${link}
@@ -37,43 +40,85 @@
       </li>`;
   }
 
+  function aboutText(job) {
+    const parts = [];
+    if (job.brief) parts.push(job.brief);
+    if (job.concept?.angle) parts.push(job.concept.angle);
+    if (job.script?.caption) parts.push(job.script.caption);
+    else if (job.script?.hook && job.script.hook !== job.title) parts.push(job.script.hook);
+    if (job.product?.name) parts.push(job.product.name);
+    // Dedupe while keeping order.
+    const seen = new Set();
+    return parts.filter((p) => {
+      const key = String(p).trim().toLowerCase();
+      if (!key || seen.has(key)) return false;
+      seen.add(key);
+      return true;
+    }).join(" · ");
+  }
+
+  function mediaBlock(job) {
+    const thumb = job.product?.images?.[0];
+    const inner = job.videoUrl
+      ? `<video src="${escapeHtml(job.videoUrl)}" muted playsinline preload="metadata" ${
+          thumb ? `poster="${escapeHtml(thumb)}"` : ""
+        }></video>`
+      : thumb
+        ? `<img src="${escapeHtml(thumb)}" alt="" loading="lazy">`
+        : `<div class="video-thumb-fallback" aria-hidden="true"></div>`;
+
+    if (job.videoUrl) {
+      return `
+        <a class="recent-card-media" href="${escapeHtml(job.videoUrl)}" target="_blank" rel="noopener" aria-label="Open video">
+          ${inner}
+          <span class="recent-card-play" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none"><path d="M9 7.5v9l8-4.5-8-4.5z" fill="currentColor"/></svg>
+          </span>
+        </a>`;
+    }
+    return `<div class="recent-card-media is-static">${inner}</div>`;
+  }
+
   function jobCard(job) {
     const when = job.scheduledAt && job.status !== "posted"
       ? `Scheduled for ${escapeHtml(fmtDateTime(job.scheduledAt))}`
       : `Created ${escapeHtml(fmtRelative(job.createdAt))}`;
-
+    const provider = job.provider === "heygen" ? "HeyGen" : job.provider ? "built-in" : "";
+    const about = aboutText(job);
     const failedPosts = job.posts.filter((p) => p.status === "failed").length;
 
     return `
       <article class="recent-card" data-job="${job.id}">
-        <div class="recent-card-head">
-          ${job.product?.images?.[0]
-            ? `<img class="recent-card-thumb" src="${escapeHtml(job.product.images[0])}" alt="" loading="lazy">`
-            : `<div class="recent-card-thumb video-thumb-fallback" aria-hidden="true"></div>`}
-          <div class="recent-card-copy">
-            <h3>${escapeHtml(job.title)}</h3>
-            <p class="recent-card-meta">${when} · ${escapeHtml(job.provider === "heygen" ? "HeyGen" : "built-in")}</p>
-            <a class="recent-card-product" href="${escapeHtml(job.productUrl)}" target="_blank" rel="noopener">${escapeHtml(job.productUrl)}</a>
+        ${mediaBlock(job)}
+
+        <div class="recent-card-body">
+          <div class="recent-card-top">
+            <div class="recent-card-copy">
+              <h3>${escapeHtml(job.title)}</h3>
+              <p class="recent-card-meta">${when}${provider ? ` · ${escapeHtml(provider)}` : ""}</p>
+            </div>
+            ${statusChip(job.status)}
           </div>
-          ${statusChip(job.status)}
-        </div>
 
-        ${job.error ? `<p class="recent-card-error">${escapeHtml(job.error)}</p>` : ""}
+          ${about ? `<p class="recent-card-about">${escapeHtml(about)}</p>` : ""}
 
-        ${job.videoUrl
-          ? `<video class="recent-card-video" src="${escapeHtml(job.videoUrl)}" controls playsinline preload="metadata"></video>`
-          : ""}
+          ${job.productUrl
+            ? `<a class="recent-card-product" href="${escapeHtml(job.productUrl)}" target="_blank" rel="noopener">${escapeHtml(job.productUrl)}</a>`
+            : ""}
 
-        ${job.posts.length
-          ? `<ul class="recent-posts">${job.posts.map(postRow).join("")}</ul>`
-          : `<p class="recent-card-meta">Not published yet.</p>`}
+          ${job.error ? `<p class="recent-card-error">${escapeHtml(job.error)}</p>` : ""}
 
-        <div class="recent-card-actions">
-          ${job.status === "failed" ? `<button type="button" class="pf-btn" data-action="retry">Retry</button>` : ""}
-          ${job.videoUrl ? `<button type="button" class="pf-btn ghost" data-action="post">Post now</button>` : ""}
-          ${failedPosts ? `<button type="button" class="pf-btn ghost" data-action="post-failed">Retry ${failedPosts} failed</button>` : ""}
-          ${!ACTIVE.includes(job.status) ? `<button type="button" class="pf-btn ghost" data-action="regenerate">Regenerate</button>` : ""}
-          <button type="button" class="pf-btn danger" data-action="delete">Delete</button>
+          ${job.posts.length
+            ? `<ul class="recent-posts">${job.posts.map(postRow).join("")}</ul>`
+            : `<p class="recent-card-meta">Not published yet.</p>`}
+
+          <div class="recent-card-actions">
+            ${job.status === "failed" ? `<button type="button" class="pf-btn" data-action="retry">Retry</button>` : ""}
+            ${job.videoUrl ? `<button type="button" class="pf-btn ghost" data-action="post">Post now</button>` : ""}
+            ${failedPosts ? `<button type="button" class="pf-btn ghost" data-action="post-failed">Retry ${failedPosts} failed</button>` : ""}
+            ${!ACTIVE.includes(job.status) ? `<button type="button" class="pf-btn ghost" data-action="regenerate">Regenerate</button>` : ""}
+            <button type="button" class="pf-btn danger" data-action="delete">Delete</button>
+          </div>
         </div>
       </article>`;
   }
