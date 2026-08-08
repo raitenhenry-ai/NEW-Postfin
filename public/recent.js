@@ -186,6 +186,5 @@
     if (e.key === "Escape" && modal && !modal.hidden) closeDetail();
   });
 
-  document.getElementById("recent-refresh")?.addEventListener("click", load);
   load();
 })();
