@@ -4986,7 +4986,7 @@ body.theme-light .analytics-platform-btn[data-platform="all"].active {
   color: #111114 !important;
 }
 
-/* Force readable text in light mode */
+/* Force readable text in light mode — never white */
 body.theme-light,
 body.theme-light .page,
 body.theme-light h1,
@@ -5001,8 +5001,32 @@ body.theme-light li,
 body.theme-light td,
 body.theme-light th,
 body.theme-light input,
-body.theme-light textarea {
-  color: #222228;
+body.theme-light textarea,
+body.theme-light .stat-value,
+body.theme-light .stat-card,
+body.theme-light .stat-card *,
+body.theme-light .analytics-total-card,
+body.theme-light .analytics-total-card *,
+body.theme-light .analytics-chart-card,
+body.theme-light .analytics-chart-card *:not(svg):not(path):not(circle):not(line):not(rect),
+body.theme-light .top-accounts,
+body.theme-light .top-accounts *,
+body.theme-light .top-videos,
+body.theme-light .top-videos *,
+body.theme-light .content-calendar,
+body.theme-light .content-calendar *,
+body.theme-light .ai-suggestions,
+body.theme-light .ai-suggestions *,
+body.theme-light .connector-row,
+body.theme-light .connector-row *,
+body.theme-light .profile-card,
+body.theme-light .profile-card *,
+body.theme-light .cal-side,
+body.theme-light .cal-side *:not(svg):not(path),
+body.theme-light .date-range,
+body.theme-light .pf-btn,
+body.theme-light .view-toggle button {
+  color: #222228 !important;
 }
 
 body.theme-light .stat-label,
