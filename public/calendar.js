@@ -972,10 +972,15 @@
   async function sendToAssistant(text) {
     conversation.push({ role: "user", content: text });
     renderThread(true);
+    syncChatCancel();
+
+    planAbort = new AbortController();
+    const { signal } = planAbort;
 
     try {
       const reply = await api("/api/chat", {
         method: "POST",
+        signal,
         body: {
           messages: conversation.map(({ role, content }) => ({ role, content })),
           selectedDates: [...selected].sort(),
@@ -991,17 +996,20 @@
       });
       renderThread(false);
 
-      // Anything that touched the schedule should show on the grid.
+      // Keep locked dates highlighted; refresh events if the schedule changed.
       if (reply.changed) {
-        selected.clear();
         await loadEvents();
         render();
         renderThread(false);
       }
     } catch (err) {
+      if (err?.name === "AbortError") return;
       conversation.push({ role: "assistant", content: `⚠ ${err.message}` });
       renderThread(false);
       toast(err.message, "error");
+    } finally {
+      planAbort = null;
+      syncChatCancel();
     }
   }
 
@@ -1016,10 +1024,15 @@
 
     const text = field.value.trim();
     field.value = "";
+
+    // First message with a selection locks those days for the rest of the chat.
+    if (selected.size) setSelectionLocked(true);
+
     assistantBusy = true;
     if (sendBtn) sendBtn.disabled = true;
     syncSendState();
     resizeField();
+    syncChatCancel();
 
     try {
       await sendToAssistant(text);
@@ -1027,7 +1040,12 @@
       assistantBusy = false;
       if (sendBtn) sendBtn.disabled = false;
       syncSendState();
+      syncChatCancel();
     }
+  });
+
+  chatCancelBtn?.addEventListener("click", () => {
+    cancelChat();
   });
 
   // Pulls the jobs for the visible month plus a month of padding either
