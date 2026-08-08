@@ -2126,18 +2126,6 @@ body.sidebar-expanded {
   border-color: #3a3a42;
 }
 
-.cal-grid.selection-locked {
-  cursor: default;
-}
-
-.cal-grid.selection-locked .cal-cell {
-  cursor: default;
-}
-
-.cal-date-chip.is-locked .cal-date-chip-remove {
-  display: none;
-}
-
 .cal-chat-header h2 {
   margin: 0;
   color: #fff;

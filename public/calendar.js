@@ -590,9 +590,7 @@
     syncModeSwitcher();
 
     if (hint) {
-      if (editing && selectionLocked) {
-        hint.textContent = "Dates locked for this chat · New chat to pick different days";
-      } else if (editing) {
+      if (editing) {
         hint.textContent = "Edit mode · drag to select a range · click a highlighted block to clear all connected days";
       } else {
         hint.textContent = "View mode · click any day to inspect posts";
