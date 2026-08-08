@@ -2515,9 +2515,10 @@ body.sidebar-expanded {
   margin: 10px;
   padding: 12px;
   background: #2a2a2e;
-  border: 1px solid #3a3a40;
+  border: none;
   border-radius: 22px;
   flex-shrink: 0;
+  box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.14), 0 0 18px rgba(255, 255, 255, 0.22);
 }
 
 .cal-composer-chips {
