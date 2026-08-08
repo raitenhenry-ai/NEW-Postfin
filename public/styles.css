@@ -4532,12 +4532,20 @@ body.theme-light .account-metric-label {
 }
 
 body.theme-light .suggestion-row,
-body.theme-light .connector-account,
 body.theme-light .recent-post,
 body.theme-light .video-card {
   background: #ffffff;
   border-color: #e2e2e8;
   color: #222228;
+}
+
+body.theme-light .connector-account {
+  background: transparent !important;
+  border: none !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+  color: #222228 !important;
+  padding: 6px 0 !important;
 }
 
 body.theme-light .account-row,
@@ -5170,4 +5178,16 @@ body.theme-light .analytics-tooltip strong {
 
 body.theme-light .analytics-tooltip span {
   color: #6a6a72 !important;
+}
+
+body.theme-light .connector-account-name {
+  color: #222228 !important;
+}
+
+body.theme-light .connector-account-meta {
+  color: #6a6a72 !important;
+}
+
+body.theme-light .connector-disconnect {
+  color: #c0392b !important;
 }
