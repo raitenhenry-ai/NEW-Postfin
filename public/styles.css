@@ -3681,9 +3681,9 @@ body.sidebar-expanded {
 }
 
 .recent-tile-app {
-  width: 26px;
-  height: 26px;
-  border-radius: 7px;
+  width: 30px;
+  height: 30px;
+  border-radius: 8px;
   overflow: hidden;
   display: block;
   box-shadow: 0 0 0 2px rgba(180, 180, 188, 0.4), 0 4px 12px rgba(0, 0, 0, 0.55);
