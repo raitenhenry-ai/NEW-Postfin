@@ -458,11 +458,21 @@ const PLATFORM_DESCRIPTIONS = {
 
 /* ------------------------------------------------------------------- Recent */
 
-// recent.html: the activity feed - every job newest first with its
-// per-account publish results.
+// recent.html: only videos that have actually been posted. Scheduled /
+// still-rendering jobs stay on the calendar until they go live.
 router.get("/recent", wrap(async (req, res) => {
   const limit = Math.min(100, Math.max(1, Number(req.query.limit) || 50));
-  const jobs = await q("SELECT * FROM ugc_jobs ORDER BY created_at DESC LIMIT ?", [limit]);
+  const jobs = await q(
+    `SELECT j.* FROM ugc_jobs j
+     WHERE j.status = 'posted'
+        OR EXISTS (
+          SELECT 1 FROM ugc_posts p
+          WHERE p.job_id = j.id AND p.status = 'done'
+        )
+     ORDER BY j.created_at DESC
+     LIMIT ?`,
+    [limit]
+  );
   const postsByJob = await postsForJobs(jobs.map((j) => j.id));
   res.json(jobs.map((job) => shapeJob(job, postsByJob.get(job.id) || [])));
 }));
