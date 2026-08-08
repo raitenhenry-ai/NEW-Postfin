@@ -2514,10 +2514,10 @@ body.sidebar-expanded {
   flex-direction: column;
   gap: 10px;
   margin: 10px;
-  padding: 14px 18px;
+  padding: 12px;
   background: #2a2a2e;
   border: 3px solid transparent;
-  border-radius: 999px;
+  border-radius: 22px;
   flex-shrink: 0;
   box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.05);
 }
