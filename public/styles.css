@@ -4559,7 +4559,6 @@ body.theme-light .account-metric-label {
 }
 
 body.theme-light .suggestion-row,
-body.theme-light .recent-post,
 body.theme-light .video-card {
   background: #ffffff;
   border-color: #e2e2e8;
@@ -5361,4 +5360,83 @@ html body.theme-light .cal-chat .cal-post-fields .cal-post-hashtags {
 html body.theme-light .cal-chat .cal-post-title,
 html body.theme-light .cal-chat .cal-post-back {
   color: #1a1a1f !important;
+}
+
+/* Light: Recent detail modal */
+html body.theme-light .recent-modal-panel {
+  background: #ffffff !important;
+  border: 1px solid #e2e2e8 !important;
+  color: #1a1a1f !important;
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.12) !important;
+}
+
+html body.theme-light .recent-modal-header h3,
+html body.theme-light .recent-detail-views-value,
+html body.theme-light .recent-detail-caption,
+html body.theme-light .recent-post,
+html body.theme-light .recent-post-account {
+  color: #1a1a1f !important;
+  background: transparent !important;
+}
+
+html body.theme-light .recent-detail-views,
+html body.theme-light .recent-detail-views-value,
+html body.theme-light .recent-detail-views-label {
+  background: transparent !important;
+  box-shadow: none !important;
+}
+
+html body.theme-light .recent-detail-views-label,
+html body.theme-light .recent-detail-meta,
+html body.theme-light .recent-card-meta {
+  color: #6a6a72 !important;
+}
+
+html body.theme-light .recent-post {
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  padding: 6px 0 !important;
+}
+
+html body.theme-light .recent-status.is-green {
+  background: #e7f6ee !important;
+  color: #1f7a45 !important;
+}
+
+html body.theme-light .recent-status.is-blue {
+  background: #e8eefc !important;
+  color: #2f5bd8 !important;
+}
+
+html body.theme-light .recent-status.is-amber {
+  background: #fff4db !important;
+  color: #8a5a00 !important;
+}
+
+html body.theme-light .recent-status.is-red {
+  background: #fde8e8 !important;
+  color: #b42318 !important;
+}
+
+html body.theme-light .recent-card-actions .pf-btn.danger,
+html body.theme-light .pf-btn.danger {
+  background: #fde8e8 !important;
+  border: 1px solid #f0c2c2 !important;
+  color: #b42318 !important;
+}
+
+html body.theme-light .pf-btn.danger:hover {
+  background: #f8d4d4 !important;
+  color: #912018 !important;
+}
+
+html body.theme-light .recent-card-error {
+  background: #fde8e8 !important;
+  color: #b42318 !important;
+}
+
+html body.theme-light .recent-post-link,
+html body.theme-light .recent-card-product {
+  color: #3b6ef5 !important;
 }
