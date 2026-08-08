@@ -2519,9 +2519,8 @@ body.sidebar-expanded {
   border-radius: 22px;
   flex-shrink: 0;
   box-shadow:
-    0 0 0 1px rgba(255, 255, 255, 0.28),
-    0 0 22px rgba(255, 255, 255, 0.35),
-    0 0 48px rgba(255, 255, 255, 0.22);
+    0 0 0 1px rgba(255, 255, 255, 0.12),
+    0 0 10px rgba(255, 255, 255, 0.12);
   transition: box-shadow 0.2s ease;
 }
 
@@ -2532,21 +2531,18 @@ body.sidebar-expanded {
 @keyframes cal-composer-pulse {
   0% {
     box-shadow:
-      0 0 0 1px rgba(255, 255, 255, 0.28),
-      0 0 22px rgba(255, 255, 255, 0.35),
-      0 0 48px rgba(255, 255, 255, 0.22);
+      0 0 0 1px rgba(255, 255, 255, 0.12),
+      0 0 10px rgba(255, 255, 255, 0.12);
   }
   35% {
     box-shadow:
-      0 0 0 1px rgba(255, 255, 255, 0.55),
-      0 0 34px rgba(255, 255, 255, 0.55),
-      0 0 72px rgba(255, 255, 255, 0.38);
+      0 0 0 1px rgba(255, 255, 255, 0.22),
+      0 0 16px rgba(255, 255, 255, 0.2);
   }
   100% {
     box-shadow:
-      0 0 0 1px rgba(255, 255, 255, 0.28),
-      0 0 22px rgba(255, 255, 255, 0.35),
-      0 0 48px rgba(255, 255, 255, 0.22);
+      0 0 0 1px rgba(255, 255, 255, 0.12),
+      0 0 10px rgba(255, 255, 255, 0.12);
   }
 }
 
