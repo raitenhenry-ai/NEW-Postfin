@@ -4863,14 +4863,18 @@ body.theme-light .suggestion-icon {
 }
 
 body.theme-light .account-row {
-  background: #ffffff;
-  border: 1px solid #ececf0;
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
 }
 
 body.theme-light .account-metric,
 body.theme-light .account-views {
-  color: #3a3a42;
-  background: #f0f0f3;
+  color: #222228 !important;
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  padding: 0 !important;
 }
 
 body.theme-light .month-weekdays,
