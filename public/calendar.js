@@ -263,13 +263,7 @@
         renderThread(false);
         return;
       }
-      dayPanel.innerHTML = `
-        <div class="cal-day-empty">
-          Ask for anything: plan a week of videos, check how last month did,
-          move a post, or fix a failed one. Select days on the calendar first
-          and they'll be used for scheduling.
-        </div>
-      `;
+      dayPanel.innerHTML = "";
       return;
     }
 
