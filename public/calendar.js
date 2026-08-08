@@ -885,7 +885,7 @@
   }
 
   let composerTypingTimer = null;
-  function markComposerTyping() {
+  function pulseComposerBorder() {
     if (!form) return;
     form.classList.add("is-typing");
     clearTimeout(composerTypingTimer);
@@ -897,13 +897,18 @@
   field?.addEventListener("input", () => {
     syncSendState();
     resizeField();
-    markComposerTyping();
   });
 
   field?.addEventListener("keydown", (e) => {
     if (e.key === "Enter" && !e.shiftKey) {
       e.preventDefault();
       form?.requestSubmit();
+      return;
+    }
+    // Pulse only after finishing a word (space after non-space).
+    if (e.key === " " && !e.repeat) {
+      const before = field.value.slice(0, field.selectionStart ?? field.value.length);
+      if (/\S$/.test(before)) pulseComposerBorder();
     }
   });
 
