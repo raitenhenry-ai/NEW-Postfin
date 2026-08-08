@@ -5087,3 +5087,23 @@ body.theme-light .cal-msg.is-user .cal-msg-body {
 body.theme-light .cal-msg.is-assistant .cal-msg-body {
   color: #2a2a30 !important;
 }
+
+/* Keep accents after text catch-all */
+body.theme-light .analytics-platform-btn {
+  color: #4a4a52 !important;
+}
+body.theme-light .analytics-platform-btn.active {
+  color: #111114 !important;
+}
+body.theme-light .analytics-platform-btn[data-platform="tiktok"].active {
+  color: #0a7ea4 !important;
+}
+body.theme-light .analytics-platform-btn[data-platform="youtube"].active {
+  color: #c62828 !important;
+}
+body.theme-light .analytics-platform-btn[data-platform="instagram"].active {
+  color: #a21caf !important;
+}
+body.theme-light a:not(.schedule-btn):not(.automated-plan-btn) {
+  color: #3b6ef5 !important;
+}
