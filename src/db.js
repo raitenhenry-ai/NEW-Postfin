@@ -120,8 +120,11 @@ if (config.databaseUrl) {
   };
   _close = () => pool.end();
 
-  await pool.query(PG_SCHEMA);
-  await pool.query(PG_MIGRATIONS);
+  // A managed database can refuse connections for a few seconds while a
+  // deploy settles, so retry before giving up. Without this the process
+  // exits on the first refusal and the platform reports nothing more useful
+  // than "replicas never became healthy".
+  await connectWithRetry(pool);
   console.log("[db] connected to Postgres");
 } else {
   const { default: Database } = await import("better-sqlite3");
@@ -137,6 +140,76 @@ if (config.databaseUrl) {
     return { changes: info.changes };
   };
   _close = () => sdb.close();
+}
+
+// Opens the connection and applies the schema, retrying transient failures.
+// On a permanent failure it explains what to check instead of dumping a
+// driver stack trace, because this is the error people actually hit when
+// deploying.
+async function connectWithRetry(pool, attempts = 5) {
+  const host = safeHost(config.databaseUrl);
+  for (let i = 1; i <= attempts; i++) {
+    try {
+      await pool.query(PG_SCHEMA);
+      await pool.query(PG_MIGRATIONS);
+      return;
+    } catch (err) {
+      const last = i === attempts;
+      if (!last) {
+        const wait = i * 2000;
+        console.warn(
+          `[db] connection to ${host} failed (${err.code || err.message}), ` +
+            `retrying in ${wait / 1000}s (${i}/${attempts - 1})`
+        );
+        await new Promise((r) => setTimeout(r, wait));
+        continue;
+      }
+      console.error(
+        `\nFATAL: could not connect to the database at ${host}.\n` +
+          `  ${err.code ? err.code + ": " : ""}${err.message}\n\n` +
+          explainDbError(err) +
+          "\nThe app needs DATABASE_URL to be reachable, or unset it to use " +
+          "local SQLite instead.\n"
+      );
+      process.exit(1);
+    }
+  }
+}
+
+// Host and port only - a connection string carries the password.
+function safeHost(url) {
+  try {
+    const parsed = new URL(url);
+    return `${parsed.hostname}:${parsed.port || 5432}`;
+  } catch {
+    return "the configured host";
+  }
+}
+
+function explainDbError(err) {
+  const hints = {
+    ENOTFOUND: "The hostname does not resolve - check it for typos.",
+    ECONNREFUSED: "Nothing is accepting connections there - check the host and port.",
+    ETIMEDOUT:
+      "The connection timed out. On Supabase this usually means the direct\n" +
+      "  db.<ref>.supabase.co host, which is IPv6-only without the IPv4 add-on -\n" +
+      "  use the Session pooler connection string instead.",
+    ENETUNREACH:
+      "The network is unreachable, which usually means an IPv6-only host.\n" +
+      "  On Supabase, switch to the Session pooler connection string.",
+  };
+  if (hints[err.code]) return `  ${hints[err.code]}\n`;
+  if (/password authentication failed/i.test(err.message)) {
+    return "  The password was rejected - re-copy it, and remember the connection\n" +
+      "  string from Supabase contains a [YOUR-PASSWORD] placeholder to replace.\n";
+  }
+  if (/does not exist/i.test(err.message)) {
+    return "  That database or role does not exist - check the end of the URL.\n";
+  }
+  if (/no pg_hba|SSL/i.test(err.message)) {
+    return "  The server refused the connection settings - it may require SSL.\n";
+  }
+  return "";
 }
 
 export const q = (sql, params) => _q(sql, params);
