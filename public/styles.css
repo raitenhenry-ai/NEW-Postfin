@@ -4459,7 +4459,6 @@ body.theme-light .cal-icon-btn,
 body.theme-light .cal-mode-switcher-btn,
 body.theme-light .cal-tool-btn,
 body.theme-light .cal-chat-cancel,
-body.theme-light .analytics-platform-btn,
 body.theme-light .month-nav-btn {
   background: #f0f0f3;
   border: 1px solid #d8d8de;
@@ -4471,14 +4470,12 @@ body.theme-light .pf-btn.ghost:hover,
 body.theme-light .cal-icon-btn:hover,
 body.theme-light .cal-mode-switcher-btn:hover,
 body.theme-light .cal-tool-btn:hover,
-body.theme-light .cal-chat-cancel:hover,
-body.theme-light .analytics-platform-btn:hover {
+body.theme-light .cal-chat-cancel:hover {
   background: #e6e6ea;
   border-color: #ccccd4;
   color: #111114;
 }
 
-body.theme-light .analytics-platform-btn.active,
 body.theme-light .cal-tool-btn.is-on,
 body.theme-light .cal-mode-switcher-btn[aria-expanded="true"] {
   background: #ffffff;
@@ -4938,4 +4935,131 @@ body.theme-light .recent-video-card h3 {
 body.theme-light .video-subtitle,
 body.theme-light .recent-video-card p {
   color: #6a6a72;
+}
+
+/* Light mode: no dark chrome, no white text */
+
+body.theme-light .analytics-platform-switch,
+body.theme-light .view-toggle {
+  background: #ececef !important;
+  border: 1px solid #d8d8de !important;
+  box-shadow: none !important;
+  outline: none !important;
+  gap: 2px;
+  padding: 3px;
+}
+
+body.theme-light .analytics-platform-btn,
+body.theme-light .view-toggle button {
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  color: #4a4a52 !important;
+}
+
+body.theme-light .analytics-platform-btn:hover,
+body.theme-light .view-toggle button:hover {
+  color: #111114 !important;
+  background: rgba(255, 255, 255, 0.65) !important;
+}
+
+body.theme-light .analytics-platform-btn.active,
+body.theme-light .view-toggle button.active {
+  background: #ffffff !important;
+  color: #111114 !important;
+  box-shadow: 0 0 0 1px #d0d0d6 !important;
+}
+
+body.theme-light .analytics-platform-btn[data-platform="tiktok"].active {
+  color: #0a7ea4 !important;
+}
+
+body.theme-light .analytics-platform-btn[data-platform="youtube"].active {
+  color: #c62828 !important;
+}
+
+body.theme-light .analytics-platform-btn[data-platform="instagram"].active {
+  color: #a21caf !important;
+}
+
+body.theme-light .analytics-platform-btn[data-platform="all"].active {
+  color: #111114 !important;
+}
+
+/* Force readable text in light mode */
+body.theme-light,
+body.theme-light .page,
+body.theme-light h1,
+body.theme-light h2,
+body.theme-light h3,
+body.theme-light p,
+body.theme-light span,
+body.theme-light button,
+body.theme-light a,
+body.theme-light label,
+body.theme-light li,
+body.theme-light td,
+body.theme-light th,
+body.theme-light input,
+body.theme-light textarea {
+  color: #222228;
+}
+
+body.theme-light .stat-label,
+body.theme-light .cal-chat-sub,
+body.theme-light .cal-hint,
+body.theme-light .pf-hint,
+body.theme-light .account-handle,
+body.theme-light .video-subtitle,
+body.theme-light .connector-desc,
+body.theme-light .recent-card-meta,
+body.theme-light .calendar-day,
+body.theme-light .calendar-day span,
+body.theme-light .cal-weekdays span,
+body.theme-light .theme-toggle-label,
+body.theme-light .nav-label,
+body.theme-light .post-time,
+body.theme-light .suggestion-chevron {
+  color: #6a6a72 !important;
+}
+
+body.theme-light a:not(.schedule-btn):not(.automated-plan-btn):not(.stat-label) {
+  color: #3b6ef5;
+}
+
+body.theme-light .schedule-btn,
+body.theme-light .automated-plan-btn {
+  color: #3b6ef5 !important;
+}
+
+body.theme-light .nav-btn,
+body.theme-light .nav-btn .nav-label,
+body.theme-light .nav-btn .ads-icon,
+body.theme-light .top-icon-btn,
+body.theme-light .theme-toggle {
+  color: #3a3a42 !important;
+}
+
+body.theme-light .nav-btn.active,
+body.theme-light .nav-btn.active .nav-label {
+  color: #111114 !important;
+}
+
+body.theme-light .cal-composer-send,
+body.theme-light .cal-composer-plus,
+body.theme-light .pf-btn,
+body.theme-light .date-range,
+body.theme-light .cal-chat-cancel,
+body.theme-light .cal-tool-btn,
+body.theme-light .cal-mode-switcher-btn,
+body.theme-light .cal-icon-btn {
+  color: #222228 !important;
+}
+
+body.theme-light .cal-msg.is-user .cal-msg-body {
+  color: #111114 !important;
+}
+
+body.theme-light .cal-msg.is-assistant .cal-msg-body {
+  color: #2a2a30 !important;
 }
