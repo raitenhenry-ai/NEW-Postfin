@@ -387,8 +387,13 @@
     const heartIcon = `<svg viewBox="0 0 12 12" fill="none" aria-hidden="true"><path d="M6 10.2S2.2 7.6 2.2 4.9A2.15 2.15 0 0 1 6 3.7a2.15 2.15 0 0 1 3.8 1.2C9.8 7.6 6 10.2 6 10.2z" fill="currentColor"/></svg>`;
     const commentIcon = `<svg viewBox="0 0 12 12" fill="none" aria-hidden="true"><path d="M2.2 2.4h7.6a1 1 0 0 1 1 1v4.2a1 1 0 0 1-1 1H6.2L4 10.2V8.6H2.2a1 1 0 0 1-1-1V3.4a1 1 0 0 1 1-1z" fill="currentColor"/></svg>`;
 
-    grid.innerHTML = videos.map((v) => `
-      <article class="recent-video-card">
+    grid.innerHTML = videos.map((v) => {
+      const href = v.url || v.videoUrl || "";
+      const openAttrs = href
+        ? `href="${escapeHtml(href)}" target="_blank" rel="noopener"`
+        : `href="#" aria-disabled="true"`;
+      return `
+      <a class="recent-video-card" ${openAttrs}>
         <div class="recent-video-thumb">
           ${v.thumb
             ? `<img src="${escapeHtml(v.thumb)}" alt="" loading="lazy">`
@@ -402,7 +407,8 @@
         </div>
         <h3>${escapeHtml(v.title)}</h3>
         <p>${escapeHtml(fmtRelative(v.createdAt))} · ${fmtDuration(v.durationSeconds)}</p>
-      </article>`).join("");
+      </a>`;
+    }).join("");
   }
 
   // Only offer platform tabs for platforms that actually have an account.

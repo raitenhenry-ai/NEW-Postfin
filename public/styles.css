@@ -3090,6 +3090,18 @@ body.sidebar-expanded {
   display: flex;
   flex-direction: column;
   gap: 8px;
+  text-decoration: none;
+  color: inherit;
+  cursor: pointer;
+}
+
+.recent-video-card[aria-disabled="true"] {
+  cursor: default;
+  pointer-events: none;
+}
+
+.recent-video-card:hover h3 {
+  color: #fff;
 }
 
 .recent-video-thumb {
