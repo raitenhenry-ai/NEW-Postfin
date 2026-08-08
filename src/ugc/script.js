@@ -79,32 +79,78 @@ function visionContent(product, settings) {
   ];
 }
 
-// One entry per spoken line, with the image index clamped to what actually
-// exists so a hallucinated index can't point at a missing photo.
+// The words that name the item, used to spot a shot that shows the product
+// without saying so. The brand is dropped - it names the maker, not the
+// thing - and so are short filler words.
+function productNouns(product) {
+  const brand = String(product?.brand || "").toLowerCase();
+  return String(product?.name || "")
+    .toLowerCase()
+    .split(/[^a-z0-9]+/)
+    .filter((w) => w.length > 3 && w !== brand);
+}
+
+// One shot per spoken line. The image index is clamped to the photos that
+// actually exist, so a hallucinated index can't point at a missing asset,
+// and a shot that claims to contain the product but names no photo is
+// pointed at the first one rather than being generated from text alone -
+// text-only generation would invent a different-looking product.
 function shapeStoryboard(raw, expectedLength, product) {
   const imageCount = Math.min(product?.images?.length || 0, MAX_VISION_IMAGES);
-  const entries = (Array.isArray(raw) ? raw : []).map((entry) => {
+  const nouns = productNouns(product);
+
+  const entries = (Array.isArray(raw) ? raw : []).map((entry, i) => {
     const index = Number(entry?.imageIndex);
+    const valid = Number.isInteger(index) && index >= 0 && index < imageCount;
+    const shotText = String(entry?.shot || entry?.visual || "");
+    // A shot the model marked product-free but that describes the product
+    // anyway would be generated from text, and the generator would invent a
+    // different-looking item. If the item is named, use the real photos.
+    const mentioned = nouns.some((n) => shotText.toLowerCase().includes(n));
+    const wantsProduct = (entry?.productInShot !== false || mentioned) && imageCount > 0;
     return {
-      visual: String(entry?.visual || "").trim().slice(0, 300),
-      imageIndex: Number.isInteger(index) && index >= 0 && index < imageCount ? index : -1,
+      beat: String(entry?.beat || BEATS[i]?.[0] || "").trim().slice(0, 40),
+      shot: shotText.trim().slice(0, 500),
+      productInShot: Boolean(wantsProduct),
+      imageIndex: valid ? index : wantsProduct ? 0 : -1,
     };
   });
 
   // Pad or trim so the storyboard lines up with the spoken lines. Padding
   // cycles through the photos rather than repeating one.
   while (entries.length < expectedLength) {
+    const i = entries.length;
     entries.push({
-      visual: "",
-      imageIndex: imageCount ? entries.length % imageCount : -1,
+      beat: BEATS[i]?.[0] || "shot",
+      shot: "",
+      productInShot: imageCount > 0,
+      imageIndex: imageCount ? i % imageCount : -1,
     });
   }
   return entries.slice(0, expectedLength);
 }
 
+// UGC ad beats. The timings matter: viewers decide inside ~1.7s and 71%
+// are gone by 3s, so the hook has to land before anything else happens, and
+// the whole thing stays under 30s with the demo taking the largest share.
+const BEATS = [
+  ["hook", "0-3s",
+    "Open on the problem, a blunt claim, or an unexpected visual. Never the " +
+    "brand name or a logo. Specific beats clever."],
+  ["problem", "3-10s",
+    "The pain in the viewer's own words, with the detail that makes it theirs."],
+  ["solution", "10-16s",
+    "What the product is and the one thing it changes. The reveal."],
+  ["demo", "16-24s",
+    "It being used, close up. The longest beat. Show, do not describe."],
+  ["cta", "24-28s", "One action, said plainly."],
+];
+
 export async function generateScript(product, settings = {}) {
   const tone = TONES[settings.tone] ? settings.tone : "casual";
   if (!config.openaiApiKey) return templateScript(product, tone, settings);
+
+  const beatSpec = BEATS.map(([name, at, what]) => `${name} (${at}): ${what}`).join(" ");
 
   const res = await fetch(`${config.openaiApiBase}/chat/completions`, {
     method: "POST",
@@ -120,35 +166,61 @@ export async function generateScript(product, settings = {}) {
         {
           role: "system",
           content:
-            "You write scripts for short UGC-style videos (TikTok/Reels/Shorts), " +
-            "spoken to camera by a single creator. " +
+            "You write UGC ad scripts for TikTok/Reels/Shorts - the kind a real " +
+            "customer films on their phone. Not a brand advert, not a voiceover " +
+            "essay. " +
             (product
-              ? "The creator is holding or showing the product. "
-              : "There is no product to show - write it as the creator talking to " +
-                "camera about the topic. ") +
+              ? "The product is physically in the video, in someone's hands, being " +
+                "used. Every shot shows something happening with it. "
+              : "There is no product; the shots have to carry the topic visually. ") +
             'Reply with JSON only: {"hook": string, "scenes": [{"text": string}], ' +
             '"cta": string, "caption": string, "hashtags": string[], ' +
-            '"storyboard": [{"visual": string, "imageIndex": number}]}. ' +
-            "hook: a scroll-stopping first line, max 12 words, no hashtags. " +
+            '"storyboard": [{"beat": string, "shot": string, "productInShot": boolean, ' +
+            '"imageIndex": number}]}. ' +
+            `Beats, one storyboard entry each, in order: ${beatSpec} ` +
+            "hook is the first spoken line; scenes are the spoken lines for problem, " +
+            "solution and demo in that order; cta is the last. So scenes has exactly " +
+            "3 entries and storyboard has exactly 5. " +
+
+            // The failure mode of generated UGC is generic specificity - copy
+            // that sounds concrete but says nothing checkable. These rules
+            // exist to force detail that could only come from this product.
+            "WRITING RULES. Max 12 words per spoken line. Contractions, " +
+            "half-sentences, the way people actually talk. No emoji in the " +
+            "spoken lines. " +
+            "Ban these outright: amazing, game-changing, obsessed, literally " +
+            "changed my life, must-have, elevate, unlock, seamless, effortless, " +
+            "revolutionary, 'trust me'. " +
+            "Every claim must be checkable from the product information given - " +
+            "a number, a material, a time, a texture, something visible in the " +
+            "photos. Vague enthusiasm is worse than saying nothing. If you do " +
+            "not know a detail, describe what you can actually see. " +
+            "One small negative or hesitation somewhere in the script reads as " +
+            "honest and outperforms uniform praise. " +
+
+            // Shot direction, aimed at a video generator rather than a human
+            // crew - and at footage that reads as filmed, not produced.
+            "SHOT RULES. shot is direction for a video generator: subject, " +
+            "action, framing, lighting, in one or two sentences. It must " +
+            "describe motion, not a still frame. " +
+            "Shoot it like a phone: handheld with slight shake, a real cluttered " +
+            "room or counter, natural window light, shallow depth, vertical 9:16. " +
+            "Hands in frame doing the action. No studio lighting, no seamless " +
+            "backdrop, no product-on-white, no text overlays, no logos. " +
+            "Small imperfections are wanted - they are what makes it read as " +
+            "real rather than as an advert. " +
             (product
-              ? "scenes: 3-4 short spoken lines (max 20 words each) covering what the product is, " +
-                "the standout benefit, and a personal touch - natural spoken language, no emoji. " +
-                "cta: one closing spoken line telling viewers where to get it. "
-              : "scenes: 3-4 short spoken lines (max 20 words each) delivering the concept's " +
-                "talking points - natural spoken language, no emoji. " +
-                "cta: one closing spoken line - a follow/save/comment prompt. ") +
-            "caption: 1-2 sentences for the post text, may include 1-2 emoji. " +
-            "storyboard: one entry per line of the video, in order, covering the " +
-            "hook, then each scene, then the CTA - so its length is scenes.length + 2. " +
-            "visual: what is on screen for that line, one short sentence. " +
-            "imageIndex: which of the supplied product photos to show, as a 0-based " +
-            "index, or -1 for no photo. Pick the photo that actually matches what " +
-            "the line is talking about. " +
-            "hashtags: 6-10 lowercase hashtags starting with #, mixing product-specific and " +
-            "discovery tags (#tiktokmademebuyit #fyp style). " +
-            `Overall voice: ${TONES[tone]}. ` +
-            (STYLES[settings.style] ? `Video angle: ${STYLES[settings.style]} ` : "") +
-            "Never invent specs, medical claims or fake discounts.",
+              ? "productInShot: true for solution, demo and cta at minimum. " +
+                "imageIndex: which supplied photo shows the item for that shot, " +
+                "0-based, or -1 when the product is not in that shot. "
+              : "productInShot: always false. imageIndex: always -1. ") +
+
+            "caption: 1-2 sentences of post text, may include 1-2 emoji. " +
+            "hashtags: 6-10 lowercase hashtags starting with #, mixing " +
+            "product-specific and discovery tags. " +
+            `Voice: ${TONES[tone]}. ` +
+            (STYLES[settings.style] ? `Angle: ${STYLES[settings.style]} ` : "") +
+            "Never invent specs, medical claims, prices or discounts that were not given.",
         },
         {
           role: "user",

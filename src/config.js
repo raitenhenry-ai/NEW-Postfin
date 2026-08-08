@@ -9,6 +9,13 @@ const rootDir = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..")
 // newlines, which platforms reject as "incorrect secret". Always trim.
 const env = (name, fallback = "") => (process.env[name] ?? fallback).trim();
 
+function firstExisting(candidates) {
+  for (const p of candidates) {
+    if (p && fs.existsSync(p)) return p;
+  }
+  return null;
+}
+
 // Trailing slashes and a pasted-in page path ("…/index.html") both produce
 // redirect URIs the platforms reject, so strip them.
 function normalizeBaseUrl(raw) {
@@ -116,7 +123,45 @@ const config = {
   // How often the scheduler scans for jobs whose scheduled time has passed.
   schedulerIntervalSeconds: Number(process.env.SCHEDULER_INTERVAL_SECONDS || 30),
 
-  // Video generation. HeyGen is the only renderer.
+  // Assembling the generated shots into the finished post: stitching,
+  // captions and the voiceover mux.
+  ffmpegPath: process.env.FFMPEG_PATH || "ffmpeg",
+  ffprobePath: process.env.FFPROBE_PATH || "ffprobe",
+  videoCrf: Number(process.env.VIDEO_CRF || 20),
+  videoPreset: process.env.VIDEO_PRESET || "superfast",
+  fontPath: firstExisting([
+    process.env.FONT_PATH,
+    "/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf",
+    "/usr/share/fonts/truetype/liberation/LiberationSans-Bold.ttf",
+    "/usr/share/fonts/dejavu/DejaVuSans-Bold.ttf",
+    "/System/Library/Fonts/Helvetica.ttc",
+  ]),
+
+  // Video generation.
+  //   kling  - animates the real product photos into shots (image-to-video),
+  //            stitched together with an AI voiceover and captions.
+  //   heygen - a talking avatar reading the script.
+  // "auto" picks Kling when its keys are set, else HeyGen.
+  videoProvider: env("VIDEO_PROVIDER", "auto").toLowerCase(), // auto | kling | heygen
+
+  kling: {
+    accessKey: env("KLING_ACCESS_KEY"),
+    secretKey: env("KLING_SECRET_KEY"),
+    apiBase: env("KLING_API_BASE", "https://api-singapore.klingai.com").replace(/\/+$/, ""),
+    // Kling's model ids change between releases; overridable so a new one
+    // does not need a code change.
+    model: env("KLING_MODEL", "kling-v2-1"),
+    mode: env("KLING_MODE", "std"), // std (Standard) | pro
+    // Seconds per shot. Kling accepts 5 or 10.
+    shotSeconds: Number(process.env.KLING_SHOT_SECONDS || 5),
+    cfgScale: Number(process.env.KLING_CFG_SCALE || 0.5),
+    negativePrompt: env(
+      "KLING_NEGATIVE_PROMPT",
+      "blurry, distorted product, extra limbs, warped text, watermark, low quality"
+    ),
+    maxShots: Number(process.env.KLING_MAX_SHOTS || 5),
+  },
+
   ugc: {
     heygenApiKey: env("HEYGEN_API_KEY"),
     heygenApiBase: env("HEYGEN_API_BASE", "https://api.heygen.com").replace(/\/+$/, ""),
@@ -126,6 +171,9 @@ const config = {
     heygenVoiceId: env("HEYGEN_VOICE_ID", "2d5b0e6cf36f460aa7fc47e3eee4ba54"),
     heygenBackground: env("HEYGEN_BACKGROUND", "#0b0d12"),
     heygenSpeed: Number(process.env.HEYGEN_SPEED || 1.05),
+    // Voiceover for the assembled Kling video.
+    ttsModel: env("UGC_TTS_MODEL", "gpt-4o-mini-tts"),
+    ttsVoice: env("UGC_TTS_VOICE", "nova"),
     videoSeconds: Number(process.env.UGC_VIDEO_SECONDS || 24),
   },
 

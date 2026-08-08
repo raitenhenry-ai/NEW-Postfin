@@ -1,5 +1,11 @@
 FROM node:22-slim
 
+# ffmpeg stitches the generated shots together and burns in the captions;
+# DejaVu supplies the caption font.
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends ffmpeg fonts-dejavu-core \
+    && rm -rf /var/lib/apt/lists/*
+
 WORKDIR /app
 
 COPY package.json package-lock.json ./

@@ -5,6 +5,7 @@ import { platforms } from "../accounts.js";
 import { toneOptions, styleOptions } from "../ugc/script.js";
 import { planContent, normalizeSettings } from "../ugc/plan.js";
 import { heygenConfigured, heygenCatalog, testConnection } from "../ugc/heygen.js";
+import { klingConfigured, testConnection as klingTestConnection } from "../ugc/kling.js";
 import { collectMetrics } from "../metrics.js";
 import { reschedule } from "../schedule.js";
 import { runAssistant, assistantAvailable } from "../agent.js";
@@ -102,7 +103,7 @@ router.post("/jobs", wrap(async (req, res) => {
     tone: toneOptions().includes(req.body.tone) ? req.body.tone : "casual",
     style: styleOptions().includes(req.body.style) ? req.body.style : "product_pov",
     platforms: wanted,
-    provider: ["heygen", "local", "auto"].includes(req.body.provider) ? req.body.provider : undefined,
+    provider: ["kling", "heygen", "auto"].includes(req.body.provider) ? req.body.provider : undefined,
     voice: typeof req.body.voice === "string" ? req.body.voice.slice(0, 40) : undefined,
     ...avatarSettings(req.body),
   };
@@ -371,6 +372,19 @@ router.post("/heygen/test", wrap(async (req, res) => {
   }
   try {
     res.json(await testConnection());
+  } catch (err) {
+    res.status(502).json({ ok: false, error: String(err.message || err) });
+  }
+}));
+
+router.post("/kling/test", wrap(async (req, res) => {
+  if (!klingConfigured()) {
+    return res.status(400).json({
+      ok: false, error: "KLING_ACCESS_KEY and KLING_SECRET_KEY are not set",
+    });
+  }
+  try {
+    res.json(await klingTestConnection());
   } catch (err) {
     res.status(502).json({ ok: false, error: String(err.message || err) });
   }

@@ -6,6 +6,8 @@ import { platforms, freshAccount } from "../accounts.js";
 import { scrapeProduct, downloadImages } from "./scrape.js";
 import { generateScript, captionText, spokenText } from "./script.js";
 import { heygenConfigured, startAvatarVideo, waitAndDownload } from "./heygen.js";
+import { klingConfigured, renderShots } from "./kling.js";
+import { assembleVideo } from "./assemble.js";
 
 // UGC job lifecycle:
 //   queued -> scraping -> scripting -> rendering -> ready -> posting -> posted
@@ -54,10 +56,40 @@ async function setJob(id, fields) {
   );
 }
 
-// HeyGen is the only renderer. Without a key a job fails with that reason
-// rather than quietly producing something else.
-export function pickProvider() {
-  return "heygen";
+// Kling animates the real product photos into shots; HeyGen renders a
+// talking avatar. "auto" prefers Kling when its keys are set.
+// A job can override the deployment-wide setting; both accept "auto".
+export function pickProvider(settings = {}) {
+  const wanted = settings.provider && settings.provider !== "auto"
+    ? settings.provider
+    : config.videoProvider;
+  if (wanted === "kling") return "kling";
+  if (wanted === "heygen") return "heygen";
+  return klingConfigured() ? "kling" : "heygen";
+}
+
+// The storyboard turned into shot requests. Each shot that contains the
+// product is generated from the real photos - as references where the model
+// supports it, so the item can appear in a scene it was never photographed
+// in, rather than the photo simply being panned across.
+function buildShots({ script, sceneImages }) {
+  const lines = [script.hook, ...(script.scenes || []), script.cta]
+    .map((l) => String(l || "").trim())
+    .filter(Boolean);
+
+  return (script.storyboard || []).slice(0, lines.length).map((entry, i) => {
+    const wantsProduct = entry.productInShot && sceneImages.length;
+    const primary = entry.imageIndex >= 0 ? sceneImages[entry.imageIndex] : sceneImages[0];
+    return {
+      kind: wantsProduct ? "reference" : "text",
+      imageUrl: wantsProduct ? primary : null,
+      // Every photo goes along as reference so the model has the item from
+      // more than one angle.
+      imageUrls: wantsProduct ? [primary, ...sceneImages.filter((u) => u !== primary)] : [],
+      prompt: entry.shot || lines[i],
+      line: lines[i],
+    };
+  });
 }
 
 async function processJob(jobId) {
@@ -102,15 +134,9 @@ async function processJob(jobId) {
     const filename = `ugc-job${job.id}.mp4`;
     const outputPath = path.join(config.ugcDir, filename);
 
-    if (!heygenConfigured()) {
-      throw new Error(
-        "HeyGen is not configured - set HEYGEN_API_KEY to generate videos"
-      );
-    }
-
     // Product photos are downloaded once into a durable per-job directory,
-    // not the scratch dir: HeyGen fetches them over HTTP as scene
-    // backgrounds, so they have to outlive the render and stay reachable.
+    // not the scratch dir: the video model fetches them over HTTP during the
+    // render, so they have to outlive it and stay reachable.
     const assetDir = path.join(config.ugcDir, "assets", `job${job.id}`);
     const localImages = product?.images?.length
       ? await downloadImages(product.images, assetDir)
@@ -119,14 +145,34 @@ async function processJob(jobId) {
       (file) => `${config.baseUrl}/ugc-media/assets/job${job.id}/${path.basename(file)}`
     );
 
-    const videoId = await startAvatarVideo({
-      text: spokenText(script), script, sceneImages, settings,
-    });
-    console.log(
-      `[ugc] job ${job.id}: HeyGen render started (${videoId}), ` +
-        `${script.storyboard?.length || 1} scene(s), ${sceneImages.length} product photo(s)`
-    );
-    await waitAndDownload(videoId, outputPath);
+    if (provider === "kling") {
+      if (!klingConfigured()) {
+        throw new Error(
+          "Kling is not configured - set KLING_ACCESS_KEY and KLING_SECRET_KEY"
+        );
+      }
+      const shots = buildShots({ script, sceneImages });
+      console.log(
+        `[ugc] job ${job.id}: Kling rendering ${shots.length} shot(s), ` +
+          `${sceneImages.length} product photo(s)`
+      );
+      const rendered = await renderShots({ shots, workDir });
+      await assembleVideo({ script, shots: rendered, workDir, outputPath, settings });
+    } else {
+      if (!heygenConfigured()) {
+        throw new Error(
+          "HeyGen is not configured - set HEYGEN_API_KEY to generate videos"
+        );
+      }
+      const videoId = await startAvatarVideo({
+        text: spokenText(script), script, sceneImages, settings,
+      });
+      console.log(
+        `[ugc] job ${job.id}: HeyGen render started (${videoId}), ` +
+          `${script.storyboard?.length || 1} scene(s), ${sceneImages.length} product photo(s)`
+      );
+      await waitAndDownload(videoId, outputPath);
+    }
     await setJob(job.id, { status: "ready", video_filename: filename });
     console.log(`[ugc] job ${job.id}: video ready (${provider})`);
 

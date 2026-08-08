@@ -54,7 +54,7 @@
         <h2>Workspace</h2>
         <dl class="profile-defs">
           <dt>Public URL</dt><dd>${escapeHtml(data.workspace.baseUrl)}</dd>
-          <dt>Renderer</dt><dd>${escapeHtml(data.workspace.provider === "heygen" ? "HeyGen avatar" : "Built-in ffmpeg")}</dd>
+          <dt>Renderer</dt><dd>${escapeHtml(data.workspace.provider === "kling" ? "Kling product video" : "HeyGen avatar")}</dd>
           <dt>Video length</dt><dd>${data.workspace.videoSeconds}s</dd>
           <dt>Accounts per platform</dt><dd>${data.workspace.maxAccountsPerPlatform} max</dd>
           <dt>Metrics collection</dt><dd>${collection}</dd>
@@ -70,8 +70,14 @@
         <h2>Generation</h2>
         <div class="profile-flags">
           ${statusDot(data.integrations.openai, data.integrations.openai ? "OpenAI connected" : "No OpenAI key - template scripts")}
-          ${statusDot(data.integrations.heygen, data.integrations.heygen ? "HeyGen key set" : "No HeyGen key - built-in renderer")}
+          ${statusDot(data.integrations.kling, data.integrations.kling ? "Kling keys set" : "No Kling keys - product videos unavailable")}
+          ${statusDot(data.integrations.heygen, data.integrations.heygen ? "HeyGen key set" : "No HeyGen key - avatar videos unavailable")}
         </div>
+        ${data.integrations.kling ? `
+          <div class="profile-heygen">
+            <button type="button" class="pf-btn ghost" id="kling-test">Test Kling connection</button>
+            <span class="profile-heygen-result" id="kling-result"></span>
+          </div>` : ""}
         ${data.integrations.heygen ? `
           <div class="profile-heygen">
             <button type="button" class="pf-btn ghost" id="heygen-test">Test HeyGen connection</button>
@@ -87,18 +93,17 @@
       </section>`;
   }
 
-  // Checks the key works now, rather than finding out when a render fails
-  // 15 minutes into a scheduled post.
-  function bindHeygenTest() {
-    const btn = document.getElementById("heygen-test");
-    const out = document.getElementById("heygen-result");
+  // Checks the credentials work now, rather than finding out when a render
+  // fails 15 minutes into a scheduled post.
+  function bindTest(id, endpoint, describe) {
+    const btn = document.getElementById(`${id}-test`);
+    const out = document.getElementById(`${id}-result`);
     btn?.addEventListener("click", async () => {
       btn.disabled = true;
       out.textContent = "Checking…";
       out.className = "profile-heygen-result";
       try {
-        const result = await api("/api/heygen/test", { method: "POST", body: {} });
-        out.textContent = `Connected · ${result.avatarCount} avatar(s) available`;
+        out.textContent = describe(await api(endpoint, { method: "POST", body: {} }));
         out.className = "profile-heygen-result is-ok";
       } catch (err) {
         out.textContent = err.message;
@@ -110,7 +115,11 @@
   }
 
   api("/api/profile")
-    .then((data) => { render(data); bindHeygenTest(); })
+    .then((data) => {
+      render(data);
+      bindTest("heygen", "/api/heygen/test", (r) => `Connected · ${r.avatarCount} avatar(s) available`);
+      bindTest("kling", "/api/kling/test", () => "Connected · credentials accepted");
+    })
     .catch((err) => {
       page.innerHTML = errorBlock(`Couldn't load your profile: ${err.message}`);
       toast(err.message, "error");

@@ -8,6 +8,7 @@ import {
 } from "../metrics.js";
 import { ugcQueueLength, pickProvider } from "../ugc/pipeline.js";
 import { heygenConfigured } from "../ugc/heygen.js";
+import { klingConfigured } from "../ugc/kling.js";
 import {
   wrap, resolveRange, seriesDelta, seriesGain, shapeJob, postsForJobs, jobTimestamp, jobDotStatus,
 } from "./shared.js";
@@ -449,6 +450,7 @@ router.get("/profile", wrap(async (req, res) => {
     integrations: {
       openai: Boolean(config.openaiApiKey),
       heygen: heygenConfigured(),
+      kling: klingConfigured(),
       platforms: Object.fromEntries(
         ENABLED_PLATFORMS.map((k) => [k, platforms[k].isConfigured()])
       ),
