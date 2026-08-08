@@ -84,55 +84,13 @@
     return job.posts.reduce((sum, p) => sum + (Number(p.views) || 0), 0);
   }
 
-  function youtubeEmbed(url) {
-    if (!url) return null;
-    try {
-      const u = new URL(url);
-      if (u.hostname.includes("youtu.be")) {
-        const id = u.pathname.split("/").filter(Boolean)[0];
-        return id ? `https://www.youtube.com/embed/${encodeURIComponent(id)}` : null;
-      }
-      if (u.hostname.includes("youtube.com")) {
-        const id = u.searchParams.get("v") || u.pathname.split("/").filter(Boolean).pop();
-        return id ? `https://www.youtube.com/embed/${encodeURIComponent(id)}` : null;
-      }
-    } catch {
-      /* ignore */
-    }
-    return null;
-  }
-
-  function tiktokEmbed(url) {
-    if (!url) return null;
-    const m = String(url).match(/\/video\/(\d+)/);
-    return m ? `https://www.tiktok.com/embed/v2/${m[1]}` : null;
-  }
-
-  function detailEmbed(job) {
-    for (const post of job.posts) {
-      if (!post.url) continue;
-      if (post.platform === "youtube") {
-        const src = youtubeEmbed(post.url);
-        if (src) return src;
-      }
-      if (post.platform === "tiktok") {
-        const src = tiktokEmbed(post.url);
-        if (src) return src;
-      }
-    }
-    // Local file / other platforms: still play inside an iframe.
+  function detailThumb(job) {
+    const img = job.product?.images?.[0];
+    if (img) return `<img src="${escapeHtml(img)}" alt="">`;
     if (job.videoUrl) {
-      const src = escapeHtml(job.videoUrl);
-      return `data:text/html;charset=utf-8,${encodeURIComponent(
-        `<!doctype html><html><head><meta charset="utf-8"><style>
-          html,body{margin:0;height:100%;background:#000}
-          video{width:100%;height:100%;object-fit:contain;display:block}
-        </style></head><body>
-          <video src="${src}" controls playsinline autoplay></video>
-        </body></html>`
-      )}`;
+      return `<video src="${escapeHtml(job.videoUrl)}" muted playsinline preload="metadata"></video>`;
     }
-    return null;
+    return `<div class="video-thumb-fallback" aria-hidden="true"></div>`;
   }
 
   function openDetail(jobId) {
@@ -143,27 +101,25 @@
       ? `Scheduled for ${escapeHtml(fmtDateTime(job.scheduledAt))}`
       : `Created ${escapeHtml(fmtRelative(job.createdAt))}`;
     const text = caption(job);
-    const embed = detailEmbed(job);
     const views = totalViews(job);
+    const viewsLabel = fmtCompact(views, 1);
 
     if (modalTitle) modalTitle.textContent = job.title || "Video";
     modalBody.innerHTML = `
-      ${embed
-        ? `<div class="recent-detail-frame-wrap">
-             <iframe class="recent-detail-frame" src="${escapeHtml(embed)}" title="${escapeHtml(job.title || "Video")}"
-               allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-               allowfullscreen loading="lazy" referrerpolicy="strict-origin-when-cross-origin"></iframe>
-           </div>`
-        : `<div class="recent-detail-empty">Video isn’t ready yet.</div>`}
-      <div class="recent-detail-stats">
-        <div class="recent-detail-views">
-          <span class="recent-detail-views-value">${escapeHtml(fmtCompact(views, 1))}</span>
-          <span class="recent-detail-views-label">views</span>
+      <div class="recent-detail-views">
+        <span class="recent-detail-views-value">${escapeHtml(viewsLabel)}</span>
+        <span class="recent-detail-views-label">views</span>
+      </div>
+      <div class="recent-detail-thumb">
+        ${detailThumb(job)}
+        <div class="recent-detail-thumb-views">
+          <strong>${escapeHtml(viewsLabel)}</strong>
+          <span>views</span>
         </div>
-        <div class="recent-detail-meta">
-          ${statusChip(job.status)}
-          <span>${when} · ${escapeHtml(job.provider === "heygen" ? "HeyGen" : "built-in")}</span>
-        </div>
+      </div>
+      <div class="recent-detail-meta">
+        ${statusChip(job.status)}
+        <span>${when} · ${escapeHtml(job.provider === "heygen" ? "HeyGen" : "built-in")}</span>
       </div>
       ${text ? `<p class="recent-detail-caption">${escapeHtml(text)}</p>` : ""}
       ${job.productUrl
