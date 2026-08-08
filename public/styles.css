@@ -3899,33 +3899,6 @@ body.sidebar-expanded {
   display: block;
 }
 
-.recent-detail-thumb-views {
-  position: absolute;
-  left: 10px;
-  bottom: 10px;
-  display: flex;
-  align-items: baseline;
-  gap: 6px;
-  padding: 8px 11px;
-  border-radius: 10px;
-  background: rgba(0, 0, 0, 0.62);
-  color: #fff;
-  pointer-events: none;
-}
-
-.recent-detail-thumb-views strong {
-  font-size: 22px;
-  font-weight: 700;
-  letter-spacing: -0.02em;
-  line-height: 1;
-}
-
-.recent-detail-thumb-views span {
-  font-size: 13px;
-  font-weight: 550;
-  color: rgba(255, 255, 255, 0.8);
-}
-
 .recent-detail-meta {
   display: flex;
   align-items: center;
