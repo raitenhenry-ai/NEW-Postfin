@@ -203,6 +203,10 @@
   let openedPost = null;
   let editingPost = null;
   let drag = null;
+  // After the first message in a chat, selected days stay locked until Cancel.
+  let selectionLocked = false;
+  let planAbort = null;
+  const chatCancelBtn = document.getElementById("cal-chat-cancel");
 
   function isEditMode() {
     return mode === "edit";
