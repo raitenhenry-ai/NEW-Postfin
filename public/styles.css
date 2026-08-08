@@ -4517,14 +4517,19 @@ body.theme-light .account-metric-label {
   color: #6a6a72;
 }
 
-body.theme-light .account-row,
 body.theme-light .suggestion-row,
 body.theme-light .connector-account,
 body.theme-light .recent-post,
-body.theme-light .account-list,
 body.theme-light .video-card {
   background: #ffffff;
   border-color: #e2e2e8;
+  color: #222228;
+}
+
+body.theme-light .account-row,
+body.theme-light .account-list {
+  background: transparent;
+  border: none;
   color: #222228;
 }
 
