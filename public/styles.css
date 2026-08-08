@@ -3859,12 +3859,20 @@ body.sidebar-expanded {
   gap: 12px;
 }
 
-.recent-detail-video {
+.recent-detail-frame-wrap {
   width: 100%;
   aspect-ratio: 9 / 16;
   max-height: 58vh;
-  object-fit: contain;
   border-radius: 12px;
+  overflow: hidden;
+  background: #000;
+}
+
+.recent-detail-frame {
+  width: 100%;
+  height: 100%;
+  border: 0;
+  display: block;
   background: #000;
 }
 
@@ -3878,6 +3886,35 @@ body.sidebar-expanded {
   align-items: center;
   justify-content: center;
   font-size: 13px;
+}
+
+.recent-detail-stats {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 14px;
+  flex-wrap: wrap;
+}
+
+.recent-detail-views {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  min-width: 0;
+}
+
+.recent-detail-views-value {
+  color: #fff;
+  font-size: 34px;
+  font-weight: 700;
+  letter-spacing: -0.03em;
+  line-height: 1;
+}
+
+.recent-detail-views-label {
+  color: #8a8a92;
+  font-size: 15px;
+  font-weight: 550;
 }
 
 .recent-detail-meta {
