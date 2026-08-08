@@ -5484,3 +5484,39 @@ body.theme-light .cal-post-item.is-instagram .cal-post-item-platform {
   background-clip: text;
   color: transparent !important;
 }
+
+body.theme-light .connector-icon {
+  background: #ececef;
+}
+
+body.theme-light .pf-toast {
+  background: #ffffff;
+  border: 1px solid #d8d8de;
+  color: #1a1a1f;
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.16);
+}
+
+body.theme-light .pf-toast[data-kind="error"] {
+  border-color: #f0c2c2;
+  color: #b42318;
+}
+
+body.theme-light .pf-input,
+body.theme-light .pf-form input,
+body.theme-light .pf-form select,
+body.theme-light .pf-form textarea {
+  background: #ffffff;
+  border: 1px solid #d8d8de;
+  color: #1a1a1f;
+}
+
+body.theme-light .pf-input:focus,
+body.theme-light .pf-form input:focus,
+body.theme-light .pf-form select:focus,
+body.theme-light .pf-form textarea:focus {
+  border-color: #5b8cff;
+}
+
+body.theme-light .pf-input::placeholder {
+  color: #9a9aa2;
+}
