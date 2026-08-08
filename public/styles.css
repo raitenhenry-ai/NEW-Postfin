@@ -3859,43 +3859,6 @@ body.sidebar-expanded {
   gap: 12px;
 }
 
-.recent-detail-frame-wrap {
-  width: 100%;
-  aspect-ratio: 9 / 16;
-  max-height: 58vh;
-  border-radius: 12px;
-  overflow: hidden;
-  background: #000;
-}
-
-.recent-detail-frame {
-  width: 100%;
-  height: 100%;
-  border: 0;
-  display: block;
-  background: #000;
-}
-
-.recent-detail-empty {
-  aspect-ratio: 9 / 16;
-  max-height: 40vh;
-  border-radius: 12px;
-  background: #101014;
-  color: #8a8a92;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 13px;
-}
-
-.recent-detail-stats {
-  display: flex;
-  align-items: flex-end;
-  justify-content: space-between;
-  gap: 14px;
-  flex-wrap: wrap;
-}
-
 .recent-detail-views {
   display: flex;
   align-items: baseline;
@@ -3905,7 +3868,7 @@ body.sidebar-expanded {
 
 .recent-detail-views-value {
   color: #fff;
-  font-size: 34px;
+  font-size: 40px;
   font-weight: 700;
   letter-spacing: -0.03em;
   line-height: 1;
@@ -3913,8 +3876,54 @@ body.sidebar-expanded {
 
 .recent-detail-views-label {
   color: #8a8a92;
-  font-size: 15px;
+  font-size: 16px;
   font-weight: 550;
+}
+
+.recent-detail-thumb {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 9 / 16;
+  max-height: 42vh;
+  border-radius: 12px;
+  overflow: hidden;
+  background: #101014;
+}
+
+.recent-detail-thumb img,
+.recent-detail-thumb video,
+.recent-detail-thumb .video-thumb-fallback {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.recent-detail-thumb-views {
+  position: absolute;
+  left: 10px;
+  bottom: 10px;
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+  padding: 8px 11px;
+  border-radius: 10px;
+  background: rgba(0, 0, 0, 0.62);
+  color: #fff;
+  pointer-events: none;
+}
+
+.recent-detail-thumb-views strong {
+  font-size: 22px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  line-height: 1;
+}
+
+.recent-detail-thumb-views span {
+  font-size: 13px;
+  font-weight: 550;
+  color: rgba(255, 255, 255, 0.8);
 }
 
 .recent-detail-meta {

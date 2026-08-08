@@ -110,13 +110,7 @@
         <span class="recent-detail-views-value">${escapeHtml(viewsLabel)}</span>
         <span class="recent-detail-views-label">views</span>
       </div>
-      <div class="recent-detail-thumb">
-        ${detailThumb(job)}
-        <div class="recent-detail-thumb-views">
-          <strong>${escapeHtml(viewsLabel)}</strong>
-          <span>views</span>
-        </div>
-      </div>
+      <div class="recent-detail-thumb">${detailThumb(job)}</div>
       <div class="recent-detail-meta">
         ${statusChip(job.status)}
         <span>${when} · ${escapeHtml(job.provider === "heygen" ? "HeyGen" : "built-in")}</span>
