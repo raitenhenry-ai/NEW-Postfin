@@ -94,24 +94,13 @@
   }
 
   async function act(jobId, action, button) {
-    const calls = {
-      retry: () => api(`/api/jobs/${jobId}/retry`, { method: "POST", body: {} }),
-      post: () => api(`/api/jobs/${jobId}/post`, { method: "POST", body: {} }),
-      "post-failed": () => api(`/api/jobs/${jobId}/post`, { method: "POST", body: { onlyFailed: true } }),
-      regenerate: () => api(`/api/jobs/${jobId}/regenerate`, { method: "POST", body: {} }),
-      delete: () => api(`/api/jobs/${jobId}`, { method: "DELETE" }),
-    };
-    if (action === "delete" && !confirm("Delete this video and its post history?")) return;
-    if (action === "regenerate" && !confirm("Throw away the script and video and start over?")) return;
+    if (action !== "delete") return;
+    if (!confirm("Delete this video and its post history?")) return;
 
     button.disabled = true;
     try {
-      const result = await calls[action]();
-      if (action === "post" || action === "post-failed") {
-        toast(`Posted to ${result.posted}, failed ${result.failed}, skipped ${result.skipped}`);
-      } else {
-        toast("Done");
-      }
+      await api(`/api/jobs/${jobId}`, { method: "DELETE" });
+      toast("Done");
       await load();
     } catch (err) {
       toast(err.message, "error");
