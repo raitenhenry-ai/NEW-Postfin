@@ -4064,7 +4064,7 @@ body.sidebar-expanded {
   .profile-defs { grid-template-columns: 1fr; gap: 2px 0; }
   .profile-defs dd { margin-bottom: 8px; }
   .pf-form-row { grid-template-columns: 1fr; }
-  .recent-grid { grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); gap: 6px; }
+  .recent-grid { grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 12px; }
 }
 
 /* --- connectors set-up details --- */
