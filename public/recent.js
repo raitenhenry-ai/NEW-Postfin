@@ -87,10 +87,6 @@
               ? `<ul class="recent-posts">${job.posts.map(postRow).join("")}</ul>`
               : `<p class="recent-card-meta">Not published yet.</p>`}
             <div class="recent-card-actions">
-              ${job.status === "failed" ? `<button type="button" class="pf-btn" data-action="retry">Retry</button>` : ""}
-              ${job.videoUrl ? `<button type="button" class="pf-btn ghost" data-action="post">Post now</button>` : ""}
-              ${failedPosts ? `<button type="button" class="pf-btn ghost" data-action="post-failed">Retry ${failedPosts} failed</button>` : ""}
-              ${!ACTIVE.includes(job.status) ? `<button type="button" class="pf-btn ghost" data-action="regenerate">Regenerate</button>` : ""}
               <button type="button" class="pf-btn danger" data-action="delete">Delete</button>
             </div>
           </div>
