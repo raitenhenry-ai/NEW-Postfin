@@ -4594,12 +4594,31 @@ body.theme-light .cal-cell.focused {
   box-shadow: inset 0 0 0 1.5px #8eb0ff;
 }
 
-body.theme-light .cal-cell-event,
-body.theme-light .cal-event,
-body.theme-light .cal-post-chip {
-  background: #f0f0f3;
-  color: #33333a;
-  border-color: #e0e0e6;
+body.theme-light .cal-event-row {
+  background: #f3f3f6;
+  color: #222228;
+}
+
+body.theme-light .cal-event-title {
+  color: #222228;
+}
+
+body.theme-light .cal-event-time {
+  color: #6a6a72;
+}
+
+body.theme-light .cal-mode-menu-item {
+  color: #222228;
+}
+
+body.theme-light .cal-mode-menu-item:hover,
+body.theme-light .cal-mode-menu-item[aria-checked="true"] {
+  background: #ececef;
+  color: #111114;
+}
+
+body.theme-light .cal-cell-events::-webkit-scrollbar-thumb {
+  background: #d0d0d6;
 }
 
 body.theme-light .cal-chat {
