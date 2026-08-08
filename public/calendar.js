@@ -207,6 +207,9 @@
   let selectionLocked = false;
   let planAbort = null;
   const chatCancelBtn = document.getElementById("cal-chat-cancel");
+  // Sent back whole each turn; the server keeps no session.
+  const conversation = [];
+  let assistantBusy = false;
 
   function isEditMode() {
     return mode === "edit";
@@ -231,6 +234,25 @@
     if (!chatCancelBtn) return;
     const show = isEditMode() && (selectionLocked || conversation.length > 0 || assistantBusy);
     chatCancelBtn.hidden = !show;
+  }
+
+  function cancelChat() {
+    if (planAbort) {
+      planAbort.abort();
+      planAbort = null;
+    }
+    conversation.length = 0;
+    assistantBusy = false;
+    setSelectionLocked(false);
+    selected.clear();
+    drag = null;
+    grid.classList.remove("is-dragging");
+    if (field) {
+      field.value = "";
+      resizeField();
+      syncSendState();
+    }
+    applySelectionClasses();
   }
 
   function renderDayPanel() {
