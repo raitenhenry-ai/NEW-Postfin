@@ -613,11 +613,7 @@
     }
 
     const keys = [...selected].sort();
-    if (selectionLocked && keys.length) {
-      selectionLabel.textContent = keys.length === 1
-        ? `Locked · ${formatShort(keys[0])}`
-        : `Locked · ${keys.length} dates`;
-    } else if (!keys.length) selectionLabel.textContent = "No dates selected";
+    if (!keys.length) selectionLabel.textContent = "No dates selected";
     else if (keys.length === 1) selectionLabel.textContent = `Planning ${formatShort(keys[0])}`;
     else selectionLabel.textContent = `${keys.length} dates selected`;
     renderDayPanel();
