@@ -3770,7 +3770,6 @@ body.sidebar-expanded {
 
 .recent-post .platform-badge { width: 24px; height: 24px; border-radius: 7px; }
 .recent-post-account { font-weight: 500; }
-.recent-post-metric { color: #8a8a92; }
 .recent-post-link { color: #5b8cff; text-decoration: none; }
 
 .recent-card-actions {
@@ -3810,6 +3809,14 @@ body.sidebar-expanded {
   border: 1px solid #232328;
   border-radius: 16px;
   padding: 16px;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.recent-modal-panel::-webkit-scrollbar {
+  width: 0;
+  height: 0;
+  display: none;
 }
 
 .recent-modal-header {
