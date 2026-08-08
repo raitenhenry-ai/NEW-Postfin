@@ -30,13 +30,11 @@
 
   function platformIcons(job) {
     const keys = platformsFor(job);
-    if (!keys.length) {
-      return `<span class="recent-tile-platforms is-empty" title="Not posted yet">—</span>`;
-    }
+    if (!keys.length) return "";
     return `
       <span class="recent-tile-platforms">
         ${keys.map((key) => `
-          <span class="platform-badge" title="${escapeHtml(PLATFORM_LABELS[key] || key)}" aria-hidden="true">
+          <span class="recent-tile-app" title="${escapeHtml(PLATFORM_LABELS[key] || key)}" aria-hidden="true">
             ${platformIcon(key)}
           </span>`).join("")}
       </span>`;
@@ -54,8 +52,10 @@
   function jobTile(job) {
     return `
       <button type="button" class="recent-tile" data-open="${job.id}" aria-label="${escapeHtml(job.title)}">
-        <span class="recent-tile-thumb">${thumbMedia(job)}</span>
-        ${platformIcons(job)}
+        <span class="recent-tile-thumb">
+          <span class="recent-tile-media">${thumbMedia(job)}</span>
+          ${platformIcons(job)}
+        </span>
         <span class="recent-tile-caption">${escapeHtml(shortCaption(job))}</span>
       </button>`;
   }
