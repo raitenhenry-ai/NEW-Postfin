@@ -203,8 +203,6 @@
   let openedPost = null;
   let editingPost = null;
   let drag = null;
-  // After the first message with selected days, those days stay locked until Cancel.
-  let selectionLocked = false;
   let planAbort = null;
   const chatCancelBtn = document.getElementById("cal-chat-cancel");
   // Sent back whole each turn; the server keeps no session.
@@ -224,15 +222,9 @@
     focused = key;
   }
 
-  function setSelectionLocked(locked) {
-    selectionLocked = locked;
-    grid.classList.toggle("selection-locked", locked);
-    syncChatCancel();
-  }
-
   function syncChatCancel() {
     if (!chatCancelBtn) return;
-    const show = isEditMode() && (selectionLocked || conversation.length > 0 || assistantBusy);
+    const show = isEditMode() && (conversation.length > 0 || assistantBusy);
     chatCancelBtn.hidden = !show;
   }
 
@@ -247,8 +239,6 @@
     }
     conversation.length = 0;
     assistantBusy = false;
-    setSelectionLocked(false);
-    selected.clear();
     drag = null;
     grid.classList.remove("is-dragging");
     setComposerActive(false);
