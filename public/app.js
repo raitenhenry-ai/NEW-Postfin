@@ -1,9 +1,66 @@
 /* Sidebar chrome and the shared day/post modal.
    Page data comes from the per-page scripts; this file only owns layout. */
 
+const THEME_KEY = "pf-theme";
+
+function getTheme() {
+  try {
+    return localStorage.getItem(THEME_KEY) === "light" ? "light" : "dark";
+  } catch {
+    return "dark";
+  }
+}
+
+function applyTheme(theme) {
+  document.body.classList.toggle("theme-light", theme === "light");
+  const toggle = document.getElementById("theme-toggle");
+  if (toggle) {
+    const on = theme === "light";
+    toggle.setAttribute("aria-checked", on ? "true" : "false");
+    toggle.classList.toggle("is-light", on);
+    const label = toggle.querySelector(".theme-toggle-label");
+    if (label) label.textContent = on ? "Light" : "Dark";
+  }
+}
+
+function setTheme(theme) {
+  try {
+    localStorage.setItem(THEME_KEY, theme);
+  } catch {
+    /* ignore */
+  }
+  applyTheme(theme);
+}
+
+applyTheme(getTheme());
+
 const sidebar = document.getElementById("sidebar");
 const logoBtn = document.getElementById("logo-btn");
 const collapseBtn = document.getElementById("collapse-btn");
+
+// Light / dark switch sits above the profile in the sidebar foot.
+(function mountThemeToggle() {
+  const foot = document.querySelector(".sidebar-foot");
+  const profile = foot?.querySelector(".profile");
+  if (!foot || !profile || document.getElementById("theme-toggle")) return;
+
+  const wrap = document.createElement("div");
+  wrap.className = "theme-toggle-wrap";
+  wrap.innerHTML = `
+    <button type="button" class="theme-toggle" id="theme-toggle" role="switch" aria-checked="false" aria-label="Toggle light mode">
+      <span class="theme-toggle-track" aria-hidden="true">
+        <span class="theme-toggle-thumb"></span>
+      </span>
+      <span class="theme-toggle-label">Dark</span>
+    </button>`;
+  foot.insertBefore(wrap, profile);
+
+  const toggle = wrap.querySelector("#theme-toggle");
+  toggle.addEventListener("click", () => {
+    setTheme(getTheme() === "light" ? "dark" : "light");
+  });
+  applyTheme(getTheme());
+})();
 
 function setExpanded(expanded) {
   sidebar.classList.toggle("expanded", expanded);
