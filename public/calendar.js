@@ -904,10 +904,6 @@
 
   /* ---------- assistant ---------- */
 
-  // The conversation lives here and is sent back whole each turn; the server
-  // keeps no session. Cleared only by reloading the page.
-  const conversation = [];
-  let assistantBusy = false;
   const URL_PATTERN = /https?:\/\/[^\s]+/i;
 
   function renderThread(pending) {
