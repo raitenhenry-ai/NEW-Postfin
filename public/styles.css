@@ -5191,3 +5191,43 @@ body.theme-light .connector-account-meta {
 body.theme-light .connector-disconnect {
   color: #c0392b !important;
 }
+
+/* Light: calendar month switcher */
+body.theme-light .cal-month-label,
+body.theme-light .cal-view-btn {
+  background: #f0f0f3 !important;
+  border: 1px solid #d8d8de !important;
+  color: #111114 !important;
+  box-shadow: none !important;
+}
+
+body.theme-light .cal-month-label:hover,
+body.theme-light .cal-view-btn:hover,
+body.theme-light .cal-month-picker.open .cal-month-label {
+  background: #e6e6ea !important;
+  border-color: #ccccd4 !important;
+  color: #111114 !important;
+}
+
+body.theme-light .cal-month-label span,
+body.theme-light #cal-month-text,
+body.theme-light .cal-month-label svg {
+  color: #111114 !important;
+  opacity: 1;
+}
+
+body.theme-light .cal-month-menu {
+  background: #ffffff !important;
+  border: 1px solid #d8d8de !important;
+  box-shadow: 0 10px 28px rgba(0, 0, 0, 0.12) !important;
+}
+
+body.theme-light .cal-month-menu-year span {
+  color: #111114 !important;
+}
+
+body.theme-light .cal-month-menu-year .cal-icon-btn {
+  background: #f0f0f3 !important;
+  border: 1px solid #d8d8de !important;
+  color: #222228 !important;
+}
