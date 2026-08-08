@@ -264,17 +264,20 @@ async function recentVideos(platform, limit) {
 
   const rows = await q(
     `SELECT j.id, j.title, j.product_json, j.script_json, j.video_filename, j.created_at,
-            p.platform,
+            p.platform, p.platform_video_id, p.public_post_id, p.status AS post_status,
+            a.display_name AS account_name,
             COALESCE(SUM(m.views), 0) AS views,
             COALESCE(SUM(m.likes), 0) AS likes,
             COALESCE(SUM(m.comments), 0) AS comments
      FROM ugc_jobs j
      JOIN ugc_posts p ON p.job_id = j.id ${platformFilter}
+     LEFT JOIN accounts a ON a.id = p.account_id
      LEFT JOIN post_metrics m ON m.post_id = p.id AND m.collected_at = (
        SELECT MAX(m2.collected_at) FROM post_metrics m2 WHERE m2.post_id = p.id
      )
      WHERE j.video_filename IS NOT NULL
-     GROUP BY j.id, j.title, j.product_json, j.script_json, j.video_filename, j.created_at, p.platform
+     GROUP BY j.id, j.title, j.product_json, j.script_json, j.video_filename, j.created_at,
+              p.platform, p.platform_video_id, p.public_post_id, p.status, a.display_name
      ORDER BY j.created_at DESC`,
     params
   );
@@ -289,6 +292,7 @@ async function recentVideos(platform, limit) {
         title: row.title || script?.hook || product?.name || `Video #${row.id}`,
         thumb: product?.images?.[0] || null,
         videoUrl: `/ugc-media/${encodeURIComponent(row.video_filename)}`,
+        url: null,
         createdAt: Number(row.created_at),
         platforms: [],
         views: 0,
@@ -302,6 +306,9 @@ async function recentVideos(platform, limit) {
     entry.views += Number(row.views || 0);
     entry.likes += Number(row.likes || 0);
     entry.comments += Number(row.comments || 0);
+    if (!entry.url && row.post_status === "done") {
+      entry.url = postUrl(row);
+    }
   }
 
   return [...byJob.values()].slice(0, limit);
