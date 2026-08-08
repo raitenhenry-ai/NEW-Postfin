@@ -603,7 +603,7 @@
 
     if (hint) {
       if (editing && selectionLocked) {
-        hint.textContent = "Dates locked for this chat · Cancel chat to pick different days";
+        hint.textContent = "Dates locked for this chat · New chat to pick different days";
       } else if (editing) {
         hint.textContent = "Edit mode · drag to select a range · click a highlighted block to clear all connected days";
       } else {
