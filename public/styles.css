@@ -4745,3 +4745,197 @@ body.theme-light .cal-event-dot,
 body.theme-light .home-icon span {
   border-color: currentColor;
 }
+
+/* Dashboard light polish — readable white/grey everywhere */
+
+body.theme-light .content-calendar,
+body.theme-light .top-accounts,
+body.theme-light .top-videos,
+body.theme-light .ai-suggestions,
+body.theme-light .stat-card {
+  background: #f7f7f9;
+  border: 1px solid #e4e4ea;
+}
+
+body.theme-light .calendar-toolbar h2,
+body.theme-light .top-accounts-header h2,
+body.theme-light .top-videos-header h2,
+body.theme-light .ai-suggestions h2,
+body.theme-light .day-view-header,
+body.theme-light .month-view-header,
+body.theme-light .stat-value,
+body.theme-light .account-name,
+body.theme-light .post-title,
+body.theme-light .suggestion-text,
+body.theme-light .video-meta h3 {
+  color: #111114 !important;
+}
+
+body.theme-light .calendar-day,
+body.theme-light .calendar-day span,
+body.theme-light .post-time,
+body.theme-light .stat-label,
+body.theme-light .stat-meta,
+body.theme-light .account-handle,
+body.theme-light .account-metric-label,
+body.theme-light .suggestion-chevron,
+body.theme-light .calendar-footer {
+  color: #6a6a72 !important;
+}
+
+body.theme-light .calendar-day:hover {
+  background: #ececef;
+  color: #111114;
+}
+
+body.theme-light .calendar-day:hover span {
+  color: #4a4a52;
+}
+
+body.theme-light .view-toggle {
+  background: #ececef;
+  border: 1px solid #e0e0e6;
+}
+
+body.theme-light .view-toggle button {
+  color: #4a4a52;
+  background: transparent;
+}
+
+body.theme-light .view-toggle button.active {
+  background: #ffffff;
+  color: #111114;
+  box-shadow: 0 0 0 1px #d8d8de;
+}
+
+body.theme-light .schedule-btn,
+body.theme-light .automated-plan-btn {
+  color: #3b6ef5;
+}
+
+body.theme-light .schedule-btn:hover,
+body.theme-light .automated-plan-btn:hover {
+  color: #2554d6;
+}
+
+body.theme-light .calendar-cell {
+  background: #ffffff;
+  border: 1px solid #ececf0;
+}
+
+body.theme-light .calendar-cell:hover {
+  background: #f3f3f6;
+}
+
+body.theme-light .post-chip {
+  background: #f0f0f3;
+  border: 1px solid #e4e4ea;
+}
+
+body.theme-light .calendar-footer,
+body.theme-light .accounts-footer,
+body.theme-light .suggestions-footer {
+  border-top-color: #e4e4ea;
+  color: #5b8cff;
+}
+
+body.theme-light .calendar-footer:hover,
+body.theme-light .accounts-footer:hover,
+body.theme-light .suggestions-footer:hover {
+  color: #3b6ef5;
+}
+
+body.theme-light .suggestion-row {
+  background: #ffffff;
+  color: #111114;
+  border: 1px solid #ececf0;
+}
+
+body.theme-light .suggestion-row:hover {
+  background: #f0f0f3;
+}
+
+body.theme-light .suggestion-icon {
+  background: #ececef;
+  color: #33333a;
+}
+
+body.theme-light .account-row {
+  background: #ffffff;
+  border: 1px solid #ececf0;
+}
+
+body.theme-light .account-metric,
+body.theme-light .account-views {
+  color: #3a3a42;
+  background: #f0f0f3;
+}
+
+body.theme-light .month-weekdays,
+body.theme-light .month-weekdays span {
+  color: #6a6a72;
+  background: transparent;
+}
+
+body.theme-light .month-grid .month-cell,
+body.theme-light .month-cell {
+  background: #ffffff;
+  border-color: #ececf0;
+  color: #222228;
+}
+
+body.theme-light .day-post-btn,
+body.theme-light .day-view-list .day-post {
+  background: #ffffff;
+  border: 1px solid #ececf0;
+  color: #222228;
+}
+
+body.theme-light .stat-card {
+  background: #f7f7f9;
+}
+
+body.theme-light .stat-up {
+  color: #2f9d62;
+}
+
+body.theme-light .top-videos-header a,
+body.theme-light .top-accounts-header a,
+body.theme-light .analytics-recent-header a {
+  color: #3b6ef5;
+}
+
+body.theme-light .month-cell {
+  background: #ffffff;
+  border: 1px solid #ececf0;
+  color: #222228;
+}
+
+body.theme-light .month-cell.has-posts:hover {
+  background: #f3f3f6;
+}
+
+body.theme-light .month-cell.muted {
+  color: #a8a8b0;
+  background: #fafafb;
+}
+
+body.theme-light .accounts-footer {
+  border-top-color: #e4e4ea;
+  color: #6a6a72;
+}
+
+body.theme-light .accounts-footer:hover {
+  color: #3b6ef5;
+}
+
+body.theme-light .video-meta h3,
+body.theme-light .video-views,
+body.theme-light .recent-video-card h3 {
+  color: #111114;
+}
+
+body.theme-light .video-subtitle,
+body.theme-light .recent-video-card p {
+  color: #6a6a72;
+}
