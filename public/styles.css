@@ -3936,9 +3936,13 @@ body.sidebar-expanded {
   .profile-defs { grid-template-columns: 1fr; gap: 2px 0; }
   .profile-defs dd { margin-bottom: 8px; }
   .pf-form-row { grid-template-columns: 1fr; }
-  .recent-card-head { grid-template-columns: 48px minmax(0, 1fr); }
-  .recent-card-head .recent-status { grid-column: 2; justify-self: start; }
-  .recent-card-thumb { width: 48px; height: 48px; }
+  .recent-card {
+    grid-template-columns: 84px minmax(0, 1fr);
+    gap: 12px;
+    padding: 12px;
+  }
+  .recent-card-media { width: 84px; }
+  .recent-card-about { -webkit-line-clamp: 3; }
 }
 
 /* --- connectors set-up details --- */
