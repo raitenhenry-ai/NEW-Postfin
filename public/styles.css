@@ -4283,6 +4283,16 @@ body.sidebar-expanded {
   color: #d8d8de;
 }
 
+/* A request the assistant declined. Reads as a message, not an error - the
+   user is being told no, not shown a fault. */
+.cal-msg.is-blocked .cal-msg-body {
+  background: #17131a;
+  border: 1px solid #3a2b36;
+  border-radius: 12px;
+  padding: 10px 13px;
+  color: #cfc2c8;
+}
+
 .cal-msg-body a { color: #7aa0ff; }
 
 .cal-action-note {

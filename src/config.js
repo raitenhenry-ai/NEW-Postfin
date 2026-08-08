@@ -87,6 +87,13 @@ const config = {
   // Overridable so the assistant and script writer can be pointed at a stub.
   openaiApiBase: env("OPENAI_API_BASE", "https://api.openai.com/v1").replace(/\/+$/, ""),
 
+  // Content screening on what the assistant is asked for and on the briefs it
+  // turns into public videos. On by default and only worth switching off when
+  // pointing OPENAI_API_BASE at a stub that has no /moderations - the
+  // deterministic rules in guardrails.js keep running either way.
+  moderationEnabled: (process.env.MODERATION_ENABLED || "true").toLowerCase() !== "false",
+  moderationModel: process.env.OPENAI_MODERATION_MODEL || "omni-moderation-latest",
+
   // Postgres/Neon connection string; empty = local SQLite in data/app.db.
   databaseUrl: env("DATABASE_URL"),
 

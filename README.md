@@ -88,11 +88,43 @@ Everything under `/api` requires the login when `ADMIN_PASSWORD` is set.
 | `GET /api/heygen` | Avatars and voices on the HeyGen account, for the picker |
 | `POST /api/heygen/test` | Check the HeyGen key works |
 | `POST /api/plan` | Plan a set of videos from a brief. `{ brief, slots: [epochMs], productUrl?, platforms?, avatarId?, voiceId? }` |
+| `POST /api/chat` | The calendar assistant. `{ messages[], selectedDates?, offsetMinutes? }` |
 | `POST /api/metrics/refresh` | Collect fresh numbers from the platform APIs now |
 | `GET /healthz` | Unauthenticated health probe |
 
 OAuth lives at `/auth/<platform>` and `/auth/<platform>/callback`;
 `POST /auth/accounts/:id/disconnect` removes a linked account.
+
+## What the assistant will and won't do
+
+The chat on the Calendar page is not a general chatbot: behind it are tools
+that spend money on renders and publish to real accounts. `src/guardrails.js`
+bounds what reaches it, and `npm test` covers those rules.
+
+Requests are screened before a token is spent — size caps on the message and
+the replayed conversation, a per-client rate limit, a small set of deny rules
+(prompt injection, credential fishing, raw SQL, bulk deletion, impersonation
+and fake testimonials, guaranteed health or money claims, illegal goods,
+engagement farming and moderation evasion, harassment, adult content), and
+OpenAI's moderation endpoint. A refused turn comes back as a message in the
+thread, not an error, so the user can rephrase.
+
+Whatever the model then writes is screened again at the tool boundary,
+because a clean request can still produce a brief that shouldn't be
+published: briefs, titles, captions and hashtags all go through the same
+rules, product URLs have to point at the public internet rather than the
+server's own network, and each turn has a budget — 30 videos scheduled, 3
+published immediately, 12 tool calls, nothing further out than a year.
+
+The rules are deliberately narrow. A filter that refuses ordinary work gets
+switched off, so anything with a plausible innocent reading in a content
+planner ("select the best angle from last week", "food porn", "generate more
+engagement") is left to the system prompt rather than a regex.
+
+`MODERATION_ENABLED=false` turns off the moderation call — worth doing only
+when pointing `OPENAI_API_BASE` at a stub that has no `/moderations`. The
+deterministic rules keep running either way, and the moderation call fails
+open on a network error rather than taking the assistant down with it.
 
 ## Analytics and CPM
 

@@ -8,6 +8,7 @@ import { heygenConfigured, heygenCatalog, testConnection } from "../ugc/heygen.j
 import { collectMetrics } from "../metrics.js";
 import { reschedule } from "../schedule.js";
 import { runAssistant, assistantAvailable } from "../agent.js";
+import { screenConversation, checkRate } from "../guardrails.js";
 import {
   enqueueUgcJob, postJob, pickProvider, ugcQueueLength, deleteJobFiles,
 } from "../ugc/pipeline.js";
@@ -329,6 +330,10 @@ router.delete("/jobs/:id", wrap(async (req, res) => {
 // The calendar assistant. Stateless: the client keeps the conversation and
 // sends it back each turn, along with the days it has selected and its UTC
 // offset so relative dates resolve in the user's timezone.
+//
+// Because the client owns the transcript, none of it can be trusted to be
+// what we sent back last turn - shape, size and content are all re-checked
+// here before a single token is spent.
 router.post("/chat", wrap(async (req, res) => {
   if (!assistantAvailable()) {
     return res.status(400).json({
@@ -336,8 +341,25 @@ router.post("/chat", wrap(async (req, res) => {
       needsKey: true,
     });
   }
-  const messages = Array.isArray(req.body.messages) ? req.body.messages : [];
+
+  const messages = (Array.isArray(req.body.messages) ? req.body.messages : [])
+    .filter((m) => m && typeof m.content === "string" && ["user", "assistant"].includes(m.role))
+    .map((m) => ({ role: m.role, content: m.content }));
   if (!messages.length) return res.status(400).json({ error: "No message" });
+
+  const rate = checkRate(req.ip || "local");
+  if (!rate.ok) {
+    res.set("Retry-After", String(rate.retryAfter));
+    return res.status(429).json({ error: rate.reply });
+  }
+
+  // A refused turn is a normal reply, not an error: it belongs in the thread
+  // where the user can read it and rephrase, rather than as a red toast.
+  const verdict = await screenConversation(messages);
+  if (!verdict.allowed) {
+    console.warn(`[chat] blocked (${verdict.category})`);
+    return res.json({ reply: verdict.reply, blocked: true, actions: [], changed: false });
+  }
 
   const selectedDates = (Array.isArray(req.body.selectedDates) ? req.body.selectedDates : [])
     .filter((d) => /^\d{4}-\d{2}-\d{2}$/.test(String(d)))

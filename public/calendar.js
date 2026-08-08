@@ -920,10 +920,15 @@
 
   const URL_PATTERN = /https?:\/\/[^\s]+/i;
 
+  // Mirrors the server's cap in guardrails.js. Checked here too so a pasted
+  // wall of text is caught before the round trip - and left in the box,
+  // rather than silently truncated the way maxlength would.
+  const MAX_MESSAGE_CHARS = 2000;
+
   function renderThread(pending) {
     if (!dayPanel) return;
     const bubbles = conversation.map((m) => `
-      <div class="cal-msg is-${m.role}">
+      <div class="cal-msg is-${m.role}${m.blocked ? " is-blocked" : ""}">
         <div class="cal-msg-body">${
           m.role === "assistant" ? formatReply(m.content) : escapeHtml(m.content)
         }</div>
@@ -1007,6 +1012,9 @@
         role: "assistant",
         content: reply.reply || "(no reply)",
         actions: reply.actions,
+        // A refusal reads as a message, but styled so it is obvious the
+        // request was turned down rather than acted on.
+        blocked: Boolean(reply.blocked),
       });
       renderThread(false);
 
@@ -1037,6 +1045,13 @@
     }
 
     const text = field.value.trim();
+    if (text.length > MAX_MESSAGE_CHARS) {
+      toast(
+        `That's ${text.length} characters - keep it under ${MAX_MESSAGE_CHARS}.`,
+        "error"
+      );
+      return;
+    }
     field.value = "";
 
     // First message with a selection locks those days for the rest of the chat.
