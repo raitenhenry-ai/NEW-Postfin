@@ -2080,7 +2080,7 @@ body.sidebar-expanded {
 
 .cal-chat {
   background: #141416;
-  border: 1px solid #1c1c1f;
+  border: none;
   border-radius: 16px;
   display: flex;
   flex-direction: column;
