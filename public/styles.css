@@ -5520,3 +5520,21 @@ body.theme-light .pf-form textarea:focus {
 body.theme-light .pf-input::placeholder {
   color: #9a9aa2;
 }
+
+/* Light: AI agent plan cards */
+body.theme-light .cal-plan-item {
+  background: #ffffff;
+  border: 1px solid #e2e2e8;
+}
+
+body.theme-light .cal-plan-date {
+  color: #3b6ef5 !important;
+}
+
+body.theme-light .cal-plan-copy strong {
+  color: #1a1a1f !important;
+}
+
+body.theme-light .cal-plan-copy span {
+  color: #6a6a72 !important;
+}
