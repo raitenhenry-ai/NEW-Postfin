@@ -2052,7 +2052,7 @@ body.sidebar-expanded {
 .cal-cell-events {
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 5px;
   width: 100%;
   min-width: 0;
   flex: 1;
