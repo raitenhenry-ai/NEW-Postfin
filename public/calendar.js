@@ -691,6 +691,7 @@
       cell.dataset.date = key;
       cell.setAttribute("role", "gridcell");
       if (!inMonth) cell.classList.add("muted");
+      if (key < todayKey) cell.classList.add("past");
       if (key === todayKey) cell.classList.add("today");
       if (isEditMode() && selected.has(key)) cell.classList.add("selected");
       if (isViewMode() && focused === key) cell.classList.add("focused");
