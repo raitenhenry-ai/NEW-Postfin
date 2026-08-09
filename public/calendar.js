@@ -739,12 +739,15 @@
     drag.current = endKey;
     selected.clear();
     drag.snapshot.forEach((k) => selected.add(k));
-    keysInRange(parseKey(drag.anchor), parseKey(endKey)).forEach((k) => selected.add(k));
+    keysInRange(parseKey(drag.anchor), parseKey(endKey)).forEach((k) => {
+      if (!isPastKey(k)) selected.add(k);
+    });
     applySelectionClasses();
   }
 
   function beginDrag(key) {
     if (!isEditMode()) return;
+    if (isPastKey(key)) return;
 
     // Clicking any day in a connected highlighted block clears the whole block.
     if (selected.has(key)) {
