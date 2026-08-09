@@ -80,6 +80,11 @@
     return new Date(y, m - 1, d);
   }
 
+  // Days before today can't be scheduled, so they can't be selected either.
+  function isPastKey(key) {
+    return key < keyFromDate(new Date());
+  }
+
   function formatShort(key) {
     const d = parseKey(key);
     return d.toLocaleDateString("en-US", { month: "short", day: "numeric" });
