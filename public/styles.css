@@ -2077,18 +2077,27 @@ body.sidebar-expanded {
 
 .cal-event-row {
   display: grid;
-  grid-template-columns: 3px minmax(0, 1fr) auto auto;
+  grid-template-columns: 3px minmax(0, 1fr) auto;
+  grid-template-rows: auto auto;
+  grid-template-areas:
+    "bar title title"
+    "bar platform time";
   align-items: center;
-  column-gap: 6px;
+  column-gap: 8px;
+  row-gap: 2px;
   width: 100%;
   min-width: 0;
-  padding: 2px 0;
+  padding: 6px 8px;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.045);
   pointer-events: none;
 }
 
 .cal-event-bar {
-  width: 2px;
-  height: 11px;
+  grid-area: bar;
+  width: 3px;
+  height: 100%;
+  min-height: 26px;
   border-radius: 999px;
   background: currentColor;
   display: block;
@@ -2096,10 +2105,11 @@ body.sidebar-expanded {
 }
 
 .cal-event-title {
+  grid-area: title;
   color: #fff;
-  font-size: 8px;
-  font-weight: 550;
-  line-height: 1.2;
+  font-size: 11.5px;
+  font-weight: 600;
+  line-height: 1.25;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -2107,16 +2117,21 @@ body.sidebar-expanded {
 }
 
 .cal-event-platform {
-  font-size: 8px;
-  font-weight: 600;
+  grid-area: platform;
+  font-size: 10.5px;
+  font-weight: 650;
   line-height: 1.2;
   white-space: nowrap;
-  flex-shrink: 0;
+  justify-self: start;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .cal-event-time {
-  color: rgba(255, 255, 255, 0.92);
-  font-size: 8px;
+  grid-area: time;
+  color: rgba(255, 255, 255, 0.75);
+  font-size: 10.5px;
   font-weight: 550;
   line-height: 1.2;
   white-space: nowrap;
