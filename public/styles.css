@@ -5538,3 +5538,24 @@ body.theme-light .cal-plan-copy strong {
 body.theme-light .cal-plan-copy span {
   color: #6a6a72 !important;
 }
+
+/* Past days can't be selected in Edit mode */
+.cal-grid.edit-mode .cal-cell.past {
+  cursor: not-allowed;
+}
+
+.cal-grid.edit-mode .cal-cell.past .cal-cell-num {
+  opacity: 0.45;
+}
+
+.cal-grid.edit-mode .cal-cell.past:hover {
+  background: transparent;
+}
+
+body.theme-light .cal-grid.edit-mode .cal-cell.past {
+  background: #fafafb;
+}
+
+body.theme-light .cal-grid.edit-mode .cal-cell.past:hover {
+  background: #fafafb;
+}
