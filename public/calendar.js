@@ -889,16 +889,22 @@
         const list = document.createElement("div");
         list.className = "cal-cell-events";
         list.addEventListener("pointerdown", (e) => {
-          e.stopPropagation();
-          // Blank area inside a day that already has posts — clear event
-          // outline only; do not date-select the cell.
-          if (isEditMode() && !e.target.closest(".cal-event-row") && selectedEvent) {
-            clearSelectedEvent();
-            render();
+          // Only steal the gesture when outlining an event (no days selected).
+          // Otherwise let day select/drag work like normal.
+          if (isEditMode() && selected.size === 0 && e.target.closest(".cal-event-row")) {
+            e.stopPropagation();
           }
         });
-        list.addEventListener("mousedown", (e) => e.stopPropagation());
-        list.addEventListener("touchstart", (e) => e.stopPropagation(), { passive: true });
+        list.addEventListener("mousedown", (e) => {
+          if (isEditMode() && selected.size === 0 && e.target.closest(".cal-event-row")) {
+            e.stopPropagation();
+          }
+        });
+        list.addEventListener("touchstart", (e) => {
+          if (isEditMode() && selected.size === 0 && e.target.closest(".cal-event-row")) {
+            e.stopPropagation();
+          }
+        }, { passive: true });
         list.addEventListener("wheel", (e) => e.stopPropagation(), { passive: true });
         dayEvents.forEach((ev, index) => {
           const row = document.createElement("button");
@@ -920,8 +926,8 @@
           row.addEventListener("click", (e) => {
             e.preventDefault();
             e.stopPropagation();
-            // Edit only for now: outline one event at a time. No other behavior yet.
-            if (!isEditMode()) return;
+            // Edit only, and only when no days are highlighted.
+            if (!isEditMode() || selected.size > 0) return;
             const id = eventIdentity(ev, key, index);
             selectedEvent = selectedEvent?.id === id ? null : { id, key, index };
             render();
