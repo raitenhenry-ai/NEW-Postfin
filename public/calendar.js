@@ -652,8 +652,16 @@
         post.format === "slideshow"
           ? `AI slideshow${post.slideCount ? ` · ${post.slideCount} slides` : ""}`
           : "HeyGen avatar";
-      detail.querySelector(".cal-post-status").textContent =
+      const statusEl = detail.querySelector(".cal-post-status");
+      statusEl.textContent =
         `${post.jobStatus}${post.accountCount ? ` \u00b7 ${post.accountCount} account(s)` : ""}`;
+      // A failed video that only says "failed" sends you to the logs; say why.
+      if (post.error) {
+        const why = document.createElement("span");
+        why.className = "cal-post-error";
+        why.textContent = post.error;
+        statusEl.after(why);
+      }
       detail.querySelector(".cal-post-prompt").textContent =
         post.prompt || "Script not generated yet.";
       const dateEl = detail.querySelector(".cal-post-date");

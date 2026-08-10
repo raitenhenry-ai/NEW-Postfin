@@ -518,9 +518,15 @@ async function renderSlide({ image, overlay, audio, seconds, index, isHook, work
     ? `min(1+0.0009*on,1.10)`
     : `max(1.10-0.0009*on,1.0)`;
 
+  // Cover-fit with just enough overscan to feed the zoom. Working at 2x the
+  // output would mean a 33MB frame buffer through zoompan, which is what
+  // gets a render OOM-killed on a small instance - and it buys nothing,
+  // since the push-in tops out at 10%.
+  const overscanW = Math.round(W * 1.15);
+  const overscanH = Math.round(H * 1.15);
   const filter =
-    `[0:v]scale=${W * 2}:${H * 2}:force_original_aspect_ratio=increase,` +
-    `crop=${W * 2}:${H * 2},` +
+    `[0:v]scale=${overscanW}:${overscanH}:force_original_aspect_ratio=increase,` +
+    `crop=${overscanW}:${overscanH},` +
     `zoompan=z='${zoom}':d=1:x='iw/2-(iw/zoom/2)':y='ih/2-(ih/zoom/2)':s=${W}x${H}:fps=${FPS}[bg];` +
     `[1:v]format=rgba[scrim];` +
     `[bg][scrim]overlay=0:0` +

@@ -5113,6 +5113,18 @@ body.theme-light .cal-post-fields {
   padding: 8px 11px;
 }
 
+/* Why a video failed, under its status in the day panel. */
+.cal-post-error {
+  display: block;
+  margin-top: 6px;
+  color: #ff8f8f;
+  font-size: 12.5px;
+  line-height: 1.45;
+  word-break: break-word;
+}
+
+body.theme-light .cal-post-error { color: #b42318 !important; }
+
 /* --- assistant multiple-choice questions --- */
 
 .cal-ask {

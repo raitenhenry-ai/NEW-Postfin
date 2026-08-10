@@ -165,7 +165,9 @@ const TOOLS = [
       name: "list_videos",
       description:
         "List the user's videos with their status, schedule and view counts. " +
-        "Use to answer questions about what is scheduled or what failed.",
+        "Use to answer questions about what is scheduled or what failed, and to " +
+        "find the video a request refers to before acting on it. Every date it " +
+        "returns is in the user's own timezone.",
       parameters: {
         type: "object",
         properties: {
@@ -174,6 +176,14 @@ const TOOLS = [
             enum: ["all", "scheduled", "posted", "failed", "ready"],
             description: "Filter by state. 'scheduled' means not yet published.",
           },
+          date: {
+            type: "string",
+            description:
+              "Only videos on this local day, YYYY-MM-DD. Use it whenever the " +
+              "user names a day, e.g. 'the one on August 18'.",
+          },
+          fromDate: { type: "string", description: "Start of a local date range, YYYY-MM-DD." },
+          toDate: { type: "string", description: "End of a local date range, inclusive, YYYY-MM-DD." },
           limit: { type: "number", description: "Maximum to return (default 20)." },
         },
       },
@@ -346,6 +356,27 @@ function slotFor(date, time, offsetMinutes) {
   return Date.UTC(y, mo - 1, d, h || 0, m || 0) - offsetMinutes * 60000;
 }
 
+// The same conversion the other way. Every timestamp handed back to the model
+// goes through this: the prompt tells it today's date in the user's timezone,
+// so a UTC stamp alongside that is not just unhelpful but wrong - a video at
+// 9pm on the 18th in New York is the 19th in UTC, and the model will say the
+// 18th is empty because that is exactly what the data told it.
+function localStamp(ms, offsetMinutes) {
+  if (!ms) return null;
+  const shifted = new Date(Number(ms) + offsetMinutes * 60000);
+  return {
+    date: shifted.toISOString().slice(0, 10),
+    time: shifted.toISOString().slice(11, 16),
+  };
+}
+
+// "2026-08-18 21:00" - one string for the model to quote back, unambiguous
+// because the prompt tells it every time it sees is the user's own.
+function localLabel(ms, offsetMinutes) {
+  const stamp = localStamp(ms, offsetMinutes);
+  return stamp ? `${stamp.date} ${stamp.time}` : null;
+}
+
 // An option list can come back as ["Casual", ...] or as [{label, hint}, ...]
 // depending on how literally the model read the schema; both mean the same
 // thing to the user, so both are accepted.
@@ -440,20 +471,43 @@ const IMPLEMENTATIONS = {
     };
   },
 
-  async list_videos({ status = "all", limit = 20 }, ctx) {
+  async list_videos({ status = "all", limit = 20, date = "", fromDate = "", toDate = "" }, ctx) {
     const cap = Math.min(50, Math.max(1, Number(limit) || 20));
     const filters = {
-      scheduled: "WHERE status <> 'posted' AND scheduled_at IS NOT NULL",
-      posted: "WHERE status = 'posted'",
-      failed: "WHERE status = 'failed'",
-      ready: "WHERE status = 'ready'",
+      scheduled: "status <> 'posted' AND scheduled_at IS NOT NULL",
+      posted: "status = 'posted'",
+      failed: "status = 'failed'",
+      ready: "status = 'ready'",
       all: "",
     };
+
+    // A day filter is a local day, so it becomes the UTC window that day
+    // covers for this user rather than a string comparison that would slice
+    // the day at the wrong hour.
+    const where = [];
+    const params = [];
+    if (filters[status]) where.push(filters[status]);
+
+    const from = date || fromDate;
+    const to = date || toDate;
+    if (from || to) {
+      const start = from ? slotFor(from, "00:00", ctx.offsetMinutes) : null;
+      const end = to ? slotFor(to, "00:00", ctx.offsetMinutes) + 86400000 : null;
+      if (start !== null) {
+        where.push("COALESCE(scheduled_at, created_at) >= ?");
+        params.push(start);
+      }
+      if (end !== null) {
+        where.push("COALESCE(scheduled_at, created_at) < ?");
+        params.push(end);
+      }
+    }
+
     const jobs = await q(
       `SELECT id, title, status, scheduled_at, created_at, error, brief
-       FROM ugc_jobs ${filters[status] ?? ""}
+       FROM ugc_jobs ${where.length ? `WHERE ${where.join(" AND ")}` : ""}
        ORDER BY COALESCE(scheduled_at, created_at) DESC LIMIT ?`,
-      [cap]
+      [...params, cap]
     );
 
     const views = await q(
@@ -466,14 +520,20 @@ const IMPLEMENTATIONS = {
 
     return {
       count: jobs.length,
-      videos: jobs.map((j) => ({
-        id: j.id,
-        title: j.title || "Untitled",
-        status: j.status,
-        scheduledFor: j.scheduled_at ? new Date(Number(j.scheduled_at)).toISOString() : null,
-        views: viewsByJob[j.id] ?? 0,
-        error: j.error || undefined,
-      })),
+      // Dates are the user's local ones, matching the date in the prompt.
+      videos: jobs.map((j) => {
+        const at = localStamp(j.scheduled_at || j.created_at, ctx.offsetMinutes);
+        return {
+          id: j.id,
+          title: j.title || "Untitled",
+          status: j.status,
+          scheduled: Boolean(j.scheduled_at),
+          date: at?.date ?? null,
+          time: at?.time ?? null,
+          views: viewsByJob[j.id] ?? 0,
+          error: j.error || undefined,
+        };
+      }),
     };
   },
 
@@ -515,7 +575,7 @@ const IMPLEMENTATIONS = {
       throw new Error("That video has already been posted, so it cannot be moved");
     }
     ctx.changed = true;
-    return { videoId, scheduledFor: new Date(when).toISOString() };
+    return { videoId, scheduledFor: localLabel(when, ctx.offsetMinutes) };
   },
 
   async edit_video({ videoId, title, caption, hashtags, platforms }, ctx) {
@@ -632,7 +692,7 @@ const IMPLEMENTATIONS = {
       videoId,
       regenerating: true,
       applied,
-      scheduledFor: job.scheduled_at ? new Date(Number(job.scheduled_at)).toISOString() : null,
+      scheduledFor: localLabel(job.scheduled_at, ctx.offsetMinutes),
     };
   },
 
@@ -725,7 +785,18 @@ function systemPrompt(ctx) {
       ? `Connected accounts: ${ctx.accounts}.`
       : "No social accounts are connected yet - videos will generate but cannot publish.",
     "Use the tools rather than guessing. Never invent view counts, dates or video " +
-      "ids: read them with a tool first.",
+      "ids: read them with a tool first. Every date a tool gives you is already " +
+      "in the user's timezone - use it as-is and never convert it.",
+    // Asking "which one?" when the workspace holds exactly one answer is the
+    // fastest way to look broken.
+    "Never ask a question a tool can answer. When the user points at a video - " +
+      "'the one on August 18', 'the failed one', 'my last video' - call " +
+      "list_videos with that day or status first. If exactly one video matches, " +
+      "that is the one they mean: act on it, naming it back to them. Only ask " +
+      "which they meant when more than one genuinely matches, and then the " +
+      "options must be the actual videos, each with its title and date.",
+    "If a video failed, say what it failed with. list_videos returns the error " +
+      "on each video - quote it in plain words rather than saying it failed.",
     // Asking beats guessing on the one action that costs a render and lands on
     // a public account, so this is a rule rather than a suggestion.
     "Before generating videos, make sure you know what to make. If the request " +
@@ -762,9 +833,10 @@ function systemPrompt(ctx) {
       "caption, hashtags or platforms, regenerate_video to rewrite and re-render " +
       "the video itself - including switching it between the two formats - and " +
       "reschedule_video to move its slot.",
-    "delete_video is permanent. Always confirm first with ask_user, listing the " +
-      "titles and dates that would go, and only call it with confirm true after " +
-      "they choose to delete. Deleting a video that has already been published " +
+    "delete_video is permanent. Always confirm first with ask_user - the question " +
+      "names the video and its date ('Delete \"Shower Power Boost\", scheduled " +
+      "Aug 18?'), the options are to delete or keep, and only after they choose " +
+      "to delete do you call it with confirm true. Deleting a video that has already been published " +
       "does not remove it from the platform - say so when it applies.",
     "Be brief and concrete. Plain sentences, no headings. When you schedule " +
       "something, say what and when in one line. When you ask a question, write " +
