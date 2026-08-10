@@ -1220,31 +1220,60 @@
     }
   }
 
+  function setSelectedProduct(url) {
+    selectedProductUrl = url || "";
+    localStorage.setItem(PRODUCT_KEY, selectedProductUrl);
+    productRail?.querySelectorAll(".cal-product-dot[data-url]").forEach((btn) => {
+      btn.classList.toggle("is-on", btn.dataset.url === selectedProductUrl);
+    });
+  }
+
   async function loadProductOptions() {
-    if (!productSelect) return;
-    const saved = localStorage.getItem(PRODUCT_KEY) || "";
+    if (!productRail) return;
     try {
       const data = await api("/api/products");
-      const products = data.products || [];
-      productSelect.innerHTML = `<option value="">No product selected</option>`;
-      for (const product of products) {
-        if (!product.url) continue;
-        const label = product.name || product.site || product.url;
-        const opt = document.createElement("option");
-        opt.value = product.url;
-        opt.textContent = label.length > 56 ? `${label.slice(0, 55)}…` : label;
-        productSelect.appendChild(opt);
+      const products = (data.products || []).filter((p) => p.url);
+      if (selectedProductUrl && !products.some((p) => p.url === selectedProductUrl)) {
+        selectedProductUrl = "";
+        localStorage.setItem(PRODUCT_KEY, "");
       }
-      if (saved && [...productSelect.options].some((o) => o.value === saved)) {
-        productSelect.value = saved;
-      }
+
+      const dots = products.slice(0, 12).map((product) => {
+        const label = product.name || product.site || "Product";
+        const initial = escapeHtml((label || "?").charAt(0).toUpperCase());
+        const media = product.image
+          ? `<img src="${escapeHtml(product.image)}" alt="">`
+          : `<span class="cal-product-dot-fallback">${initial}</span>`;
+        const on = product.url === selectedProductUrl ? " is-on" : "";
+        return `
+          <button
+            type="button"
+            class="cal-product-dot${on}"
+            data-url="${escapeHtml(product.url)}"
+            title="${escapeHtml(label)}"
+            aria-label="${escapeHtml(label)}"
+            aria-pressed="${product.url === selectedProductUrl ? "true" : "false"}"
+          >${media}</button>`;
+      }).join("");
+
+      productRail.innerHTML = `
+        ${dots}
+        <a class="cal-product-dot is-add" href="products.html" title="Add product" aria-label="Add product">+</a>
+      `;
     } catch {
-      /* picker stays on the empty option */
+      productRail.innerHTML =
+        `<a class="cal-product-dot is-add" href="products.html" title="Add product" aria-label="Add product">+</a>`;
     }
   }
 
-  productSelect?.addEventListener("change", () => {
-    localStorage.setItem(PRODUCT_KEY, productSelect.value || "");
+  productRail?.addEventListener("click", (e) => {
+    const btn = e.target.closest(".cal-product-dot[data-url]");
+    if (!btn) return;
+    const url = btn.dataset.url || "";
+    setSelectedProduct(url === selectedProductUrl ? "" : url);
+    productRail.querySelectorAll(".cal-product-dot[data-url]").forEach((el) => {
+      el.setAttribute("aria-pressed", el.classList.contains("is-on") ? "true" : "false");
+    });
   });
 
   syncSendState();
