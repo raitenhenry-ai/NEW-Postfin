@@ -1141,6 +1141,7 @@
           selectedDates: [...selected].sort(),
           // Sent so "Friday" means the user's Friday, not the server's.
           offsetMinutes: -new Date().getTimezoneOffset(),
+          productUrl: productSelect?.value || "",
         },
       });
 
