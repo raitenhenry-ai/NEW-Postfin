@@ -242,21 +242,39 @@
     dayPopupList && (dayPopupList.innerHTML = "");
   }
 
-  function openDayPopup(key, cell) {
+  function modelLabel(post) {
+    if (post?.provider === "heygen") return "HeyGen avatar";
+    if (post?.provider === "local") return "Built-in renderer";
+    return post?.provider ? String(post.provider) : "Built-in renderer";
+  }
+
+  function captionWithHashtags(post) {
+    const caption = String(post?.caption || "").trim();
+    const tags = String(post?.hashtags || "").trim();
+    if (caption && tags) return `${caption}\n${tags}`;
+    return caption || tags || "—";
+  }
+
+  function openDayPopup(key, cell, eventIndex = null) {
     if (!dayPopup || !dayPopupList || !key) return;
     dayPopupKey = key;
     const posts = events[key] || [];
+    const focusIndex = Number.isInteger(eventIndex) ? eventIndex : null;
+    const shown = focusIndex != null && posts[focusIndex]
+      ? [posts[focusIndex]]
+      : posts;
+
     if (dayPopupDate) dayPopupDate.textContent = formatPopupDate(key);
     if (dayPopupCount) {
-      dayPopupCount.textContent = posts.length
-        ? `${posts.length} post${posts.length === 1 ? "" : "s"}`
-        : "No posts";
+      dayPopupCount.textContent = shown.length === 1
+        ? (shown[0].time || "1 post")
+        : (shown.length ? `${shown.length} posts` : "No posts");
     }
-    if (!posts.length) {
+    if (!shown.length) {
       dayPopupList.innerHTML = `<p class="cal-day-popup-empty">Nothing scheduled this day.</p>`;
     } else {
-      dayPopupList.innerHTML = posts.map((post) => `
-        <div class="cal-day-popup-item is-${platformKey(primaryPlatform(post))}">
+      dayPopupList.innerHTML = shown.map(() => `
+        <div class="cal-day-popup-item">
           <i class="cal-day-popup-item-bar" aria-hidden="true"></i>
           <div class="cal-day-popup-item-copy">
             <div class="cal-day-popup-item-title"></div>
@@ -264,14 +282,31 @@
               <span class="cal-day-popup-platform"></span>
               <span class="cal-day-popup-time"></span>
             </div>
+            <div class="cal-day-popup-field">
+              <span class="cal-day-popup-field-label">Model</span>
+              <p class="cal-day-popup-model"></p>
+            </div>
+            <div class="cal-day-popup-field">
+              <span class="cal-day-popup-field-label">Caption</span>
+              <p class="cal-day-popup-caption"></p>
+            </div>
+            <div class="cal-day-popup-field">
+              <span class="cal-day-popup-field-label">Prompt</span>
+              <p class="cal-day-popup-prompt"></p>
+            </div>
           </div>
         </div>
       `).join("");
       [...dayPopupList.children].forEach((row, i) => {
-        const post = posts[i];
+        const post = shown[i];
+        row.classList.add(`is-${platformKey(primaryPlatform(post))}`);
         row.querySelector(".cal-day-popup-item-title").textContent = post.title || "Untitled";
         row.querySelector(".cal-day-popup-platform").textContent = platformLabel(post);
         row.querySelector(".cal-day-popup-time").textContent = post.time || "";
+        row.querySelector(".cal-day-popup-model").textContent = modelLabel(post);
+        row.querySelector(".cal-day-popup-caption").textContent = captionWithHashtags(post);
+        row.querySelector(".cal-day-popup-prompt").textContent =
+          post.prompt || "Script not generated yet.";
       });
     }
     dayPopup.hidden = false;
