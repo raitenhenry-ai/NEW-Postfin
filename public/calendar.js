@@ -1355,7 +1355,7 @@
     );
     formatBtn?.setAttribute(
       "aria-label",
-      selectedFormat === "slideshow" ? "Image · slideshow generation" : "Video · video generation"
+      selectedFormat === "slideshow" ? "Slideshow generation" : "Video · video generation"
     );
   }
 
