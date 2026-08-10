@@ -1224,70 +1224,84 @@
     }
   }
 
+  function productLabelFor(url) {
+    const product = productCatalog.find((p) => p.url === url);
+    return product?.name || product?.site || "Link product";
+  }
+
+  function setProductMenuOpen(open) {
+    if (!productMenu || !productPillBtn) return;
+    productMenu.hidden = !open;
+    productPillBtn.setAttribute("aria-expanded", open ? "true" : "false");
+  }
+
+  function syncProductPill() {
+    if (!productPillLabel) return;
+    productPillLabel.textContent = selectedProductUrl
+      ? productLabelFor(selectedProductUrl)
+      : "Link product";
+  }
+
+  function renderProductMenu() {
+    if (!productMenu) return;
+    const items = productCatalog.slice(0, 20).map((product) => {
+      const label = product.name || product.site || product.url;
+      const initial = escapeHtml((label || "?").charAt(0).toUpperCase());
+      const media = product.image
+        ? `<img src="${escapeHtml(product.image)}" alt="">`
+        : `<span class="cal-product-menu-item-fallback">${initial}</span>`;
+      const on = product.url === selectedProductUrl ? " is-on" : "";
+      return `
+        <button type="button" class="cal-product-menu-item${on}" role="option" data-url="${escapeHtml(product.url)}" aria-selected="${product.url === selectedProductUrl ? "true" : "false"}">
+          ${media}
+          <span>${escapeHtml(label)}</span>
+        </button>`;
+    }).join("");
+
+    productMenu.innerHTML = `
+      ${items || `<p class="cal-product-menu-empty">No products yet — add one first</p>`}
+      ${selectedProductUrl ? `<button type="button" class="cal-product-menu-item" data-url="">Clear product</button>` : ""}
+      <a class="cal-product-menu-foot" href="products.html">Manage products</a>
+    `;
+  }
+
   function setSelectedProduct(url) {
     selectedProductUrl = url || "";
     localStorage.setItem(PRODUCT_KEY, selectedProductUrl);
-    productRail?.querySelectorAll(".cal-product-dot[data-url]").forEach((btn) => {
-      btn.classList.toggle("is-on", btn.dataset.url === selectedProductUrl);
-    });
+    syncProductPill();
+    renderProductMenu();
   }
 
   async function loadProductOptions() {
-    if (!productRail) return;
     try {
       const data = await api("/api/products");
-      const products = (data.products || []).filter((p) => p.url);
-      if (selectedProductUrl && !products.some((p) => p.url === selectedProductUrl)) {
+      productCatalog = (data.products || []).filter((p) => p.url);
+      if (selectedProductUrl && !productCatalog.some((p) => p.url === selectedProductUrl)) {
         selectedProductUrl = "";
         localStorage.setItem(PRODUCT_KEY, "");
       }
-
-      const dots = products.slice(0, 12).map((product) => {
-        const label = product.name || product.site || "Product";
-        const initial = escapeHtml((label || "?").charAt(0).toUpperCase());
-        const media = product.image
-          ? `<img src="${escapeHtml(product.image)}" alt="">`
-          : `<span class="cal-product-dot-fallback">${initial}</span>`;
-        const on = product.url === selectedProductUrl ? " is-on" : "";
-        return `
-          <button
-            type="button"
-            class="cal-product-dot${on}"
-            data-url="${escapeHtml(product.url)}"
-            title="${escapeHtml(label)}"
-            aria-label="${escapeHtml(label)}"
-            aria-pressed="${product.url === selectedProductUrl ? "true" : "false"}"
-          >${media}</button>`;
-      }).join("");
-
-      if (!products.length) {
-        productRail.innerHTML = `
-          <p class="cal-product-empty">No products yet</p>
-          <a class="cal-product-dot is-add" href="products.html" title="Add product" aria-label="Add product">+</a>
-        `;
-        return;
-      }
-
-      productRail.innerHTML = `
-        ${dots}
-        <a class="cal-product-dot is-add" href="products.html" title="Add product" aria-label="Add product">+</a>
-      `;
     } catch {
-      productRail.innerHTML = `
-        <p class="cal-product-empty">Couldn't load products</p>
-        <a class="cal-product-dot is-add" href="products.html" title="Add product" aria-label="Add product">+</a>
-      `;
+      productCatalog = [];
     }
+    syncProductPill();
+    renderProductMenu();
   }
 
-  productRail?.addEventListener("click", (e) => {
-    const btn = e.target.closest(".cal-product-dot[data-url]");
-    if (!btn) return;
-    const url = btn.dataset.url || "";
-    setSelectedProduct(url === selectedProductUrl ? "" : url);
-    productRail.querySelectorAll(".cal-product-dot[data-url]").forEach((el) => {
-      el.setAttribute("aria-pressed", el.classList.contains("is-on") ? "true" : "false");
-    });
+  productPillBtn?.addEventListener("click", (e) => {
+    e.stopPropagation();
+    setProductMenuOpen(productMenu?.hidden !== false);
+  });
+
+  productMenu?.addEventListener("click", (e) => {
+    const item = e.target.closest("[data-url]");
+    if (!item) return;
+    e.preventDefault();
+    setSelectedProduct(item.getAttribute("data-url") || "");
+    setProductMenuOpen(false);
+  });
+
+  document.addEventListener("click", (e) => {
+    if (!productPicker?.contains(e.target)) setProductMenuOpen(false);
   });
 
   syncSendState();
