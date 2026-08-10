@@ -2884,32 +2884,33 @@ body.theme-light .cal-post-fields {
 .cal-product-pill {
   position: relative;
   align-self: flex-start;
-  margin: 0 10px 8px;
+  margin: 0 10px 4px;
   flex-shrink: 0;
 }
 
 .cal-product-pill-btn {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
+  gap: 8px;
   max-width: 220px;
   height: 32px;
-  padding: 0 12px;
-  border: 1px solid #333339;
-  border-radius: 999px;
-  background: #1c1c20;
-  color: #f2f2f6;
+  padding: 0 10px 0 12px;
+  border: 1px solid #222226;
+  border-radius: 8px;
+  background: #1a1a1e;
+  color: #e8e8e8;
   font: inherit;
-  font-size: 13px;
+  font-size: 12px;
   font-weight: 550;
   cursor: pointer;
-  transition: border-color 0.15s, background 0.15s;
+  transition: background 0.15s, border-color 0.15s, color 0.15s;
 }
 
 .cal-product-pill-btn:hover,
 .cal-product-pill-btn[aria-expanded="true"] {
-  border-color: #4a4a52;
-  background: #242428;
+  background: #222226;
+  border-color: #2e2e32;
+  color: #fff;
 }
 
 .cal-product-pill-label {
