@@ -1145,6 +1145,7 @@
         content: reply.reply || "(no reply)",
         actions: reply.actions,
       });
+      persistActiveChat();
       renderThread(false);
 
       // Keep locked dates highlighted; refresh events if the schedule changed.
@@ -1156,6 +1157,7 @@
     } catch (err) {
       if (err?.name === "AbortError") return;
       conversation.push({ role: "assistant", content: `⚠ ${err.message}` });
+      persistActiveChat();
       renderThread(false);
       toast(err.message, "error");
     } finally {
