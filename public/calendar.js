@@ -1082,27 +1082,62 @@
     if (e.button !== 0) return;
     const cell = e.target.closest(".cal-cell");
     if (!cell) return;
+    if (e.target.closest(".cal-event-row")) {
+      dayClickCandidate = null;
+      return;
+    }
 
     if (isViewMode()) {
       setFocusedDay(cell.dataset.date);
       applySelectionClasses();
+      openDayPopup(cell.dataset.date, cell);
       return;
     }
 
+    dayClickCandidate = {
+      key: cell.dataset.date,
+      cell,
+      x: e.clientX,
+      y: e.clientY,
+      moved: false,
+    };
     e.preventDefault();
     grid.setPointerCapture?.(e.pointerId);
     beginDrag(cell.dataset.date);
   });
 
   grid.addEventListener("pointermove", (e) => {
+    if (dayClickCandidate && !dayClickCandidate.moved) {
+      const dist = Math.hypot(e.clientX - dayClickCandidate.x, e.clientY - dayClickCandidate.y);
+      if (dist > 6) dayClickCandidate.moved = true;
+    }
     if (!drag || !isEditMode()) return;
     const cell = cellFromPoint(e.clientX, e.clientY);
-    if (cell?.dataset.date) updateDrag(cell.dataset.date);
+    if (cell?.dataset.date) {
+      if (drag && cell.dataset.date !== drag.anchor) {
+        if (dayClickCandidate) dayClickCandidate.moved = true;
+      }
+      updateDrag(cell.dataset.date);
+    }
   });
 
-  grid.addEventListener("pointerup", endDrag);
-  grid.addEventListener("pointercancel", endDrag);
-  window.addEventListener("pointerup", endDrag);
+  function finishDayClick() {
+    const candidate = dayClickCandidate;
+    dayClickCandidate = null;
+    endDrag();
+    if (!candidate || candidate.moved || !isEditMode()) return;
+    openDayPopup(candidate.key, candidate.cell);
+  }
+
+  grid.addEventListener("pointerup", finishDayClick);
+  grid.addEventListener("pointercancel", () => {
+    dayClickCandidate = null;
+    endDrag();
+  });
+  window.addEventListener("pointerup", () => {
+    if (dayClickCandidate) finishDayClick();
+    else endDrag();
+  });
 
   modeButtons.forEach((btn) => {
     btn.addEventListener("click", () => {
