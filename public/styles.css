@@ -2907,10 +2907,10 @@ body.theme-light .cal-post-fields {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 4px;
-  width: 44px;
+  gap: 2px;
+  width: 32px;
   height: 32px;
-  padding: 0 6px;
+  padding: 0;
   border: 1px solid #3a3a42;
   border-radius: 8px;
   background: #2a2a30;
