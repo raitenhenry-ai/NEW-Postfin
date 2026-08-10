@@ -240,7 +240,7 @@
 
     ctx.beginPath();
     ctx.setLineDash([4, 4]);
-    ctx.strokeStyle = "rgba(255, 255, 255, 0.22)";
+    ctx.strokeStyle = light ? "rgba(20, 20, 30, 0.3)" : "rgba(255, 255, 255, 0.22)";
     ctx.lineWidth = 1;
     ctx.moveTo(hit.x, pad.top);
     ctx.lineTo(hit.x, pad.top + plotH);
@@ -249,7 +249,7 @@
 
     ctx.beginPath();
     ctx.arc(hit.x, hit.y, 5.5, 0, Math.PI * 2);
-    ctx.fillStyle = "#0b0b0b";
+    ctx.fillStyle = light ? "#ffffff" : "#0b0b0b";
     ctx.fill();
     ctx.lineWidth = 2.5;
     ctx.strokeStyle = config.color;
