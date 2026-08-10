@@ -1800,7 +1800,11 @@
       events = {};
     }
     if (dayPopupKey && dayPopup && !dayPopup.hidden) {
-      openDayPopup(dayPopupKey, grid.querySelector(`.cal-cell[data-date="${dayPopupKey}"]`));
+      openDayPopup(
+        dayPopupKey,
+        grid.querySelector(`.cal-cell[data-date="${dayPopupKey}"]`),
+        dayPopupEventIndex
+      );
     }
   }
 
