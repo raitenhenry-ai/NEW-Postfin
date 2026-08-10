@@ -5230,8 +5230,17 @@ body.theme-light .cal-cell {
   color: #222228;
 }
 
-body.theme-light .cal-cell:hover:not(.selected):not(:has(.cal-event-row:hover)) {
+body.theme-light .cal-cell:hover:not(.selected) {
   background: #f7f7f9;
+}
+
+body.theme-light .cal-cell:has(.cal-event-row:hover):not(.selected) {
+  background: #ffffff;
+}
+
+body.theme-light .cal-cell.muted:has(.cal-event-row:hover),
+body.theme-light .cal-cell.other-month:has(.cal-event-row:hover) {
+  background: #fafafb;
 }
 
 body.theme-light .cal-cell.muted,
