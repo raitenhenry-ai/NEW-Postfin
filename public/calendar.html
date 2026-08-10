@@ -236,9 +236,12 @@
             <button type="button" class="cal-chat-cancel" id="cal-chat-cancel" hidden>New chat</button>
           </div>
           <div class="cal-chat-messages" id="cal-chat-messages"></div>
-          <div class="cal-product-link" id="cal-product-picker">
-            <span class="cal-product-link-label">Link product</span>
-            <div class="cal-product-rail" id="cal-product-rail" aria-label="Link product"></div>
+          <div class="cal-product-pill" id="cal-product-picker">
+            <button type="button" class="cal-product-pill-btn" id="cal-product-pill-btn" aria-haspopup="listbox" aria-expanded="false">
+              <span class="cal-product-pill-label" id="cal-product-pill-label">Link product</span>
+              <svg class="cal-product-pill-caret" viewBox="0 0 12 12" fill="none" aria-hidden="true"><path d="M3 4.5L6 7.5L9 4.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </button>
+            <div class="cal-product-menu" id="cal-product-menu" role="listbox" hidden></div>
           </div>
           <form class="cal-composer" id="cal-chat-form">
             <div class="cal-composer-chips" id="cal-date-chips" hidden></div>
