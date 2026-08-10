@@ -1043,14 +1043,13 @@
 
   field?.addEventListener("focus", () => setComposerActive(true));
 
-  // Keep the gradient while using the chat; drop it when clicking elsewhere.
-  document.getElementById("cal-chat")?.addEventListener("pointerdown", () => {
+  // Gradient only while using the composer itself — not the product pill.
+  form?.addEventListener("pointerdown", () => {
     if (isEditMode()) setComposerActive(true);
   });
 
   document.addEventListener("pointerdown", (e) => {
-    const chat = document.getElementById("cal-chat");
-    if (!chat || chat.contains(e.target)) return;
+    if (form?.contains(e.target)) return;
     setComposerActive(false);
   });
 
