@@ -1240,6 +1240,7 @@
 
   document.getElementById("cal-prev")?.addEventListener("click", () => {
     view = new Date(view.getFullYear(), view.getMonth() - 1, 1);
+    closeDayPopup();
     render();
     loadEvents().then(render);
   });
