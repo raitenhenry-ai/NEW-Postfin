@@ -1968,6 +1968,14 @@ body.sidebar-expanded {
   gap: 2px;
   max-height: 280px;
   overflow: auto;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.cal-history-menu-list::-webkit-scrollbar {
+  width: 0;
+  height: 0;
+  display: none;
 }
 
 .cal-history-empty {
