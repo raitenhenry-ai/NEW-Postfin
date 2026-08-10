@@ -965,6 +965,7 @@
     if (!isEditMode()) return;
     if (isPastKey(key)) return;
 
+    const hadEvent = Boolean(selectedEvent);
     clearSelectedEvent();
 
     // Clicking any day in a connected highlighted block clears the whole block.
@@ -972,7 +973,8 @@
       const block = connectedBlock(key, selected);
       block.forEach((k) => selected.delete(k));
       drag = null;
-      applySelectionClasses();
+      if (hadEvent) render();
+      else applySelectionClasses();
       return;
     }
 
@@ -984,6 +986,7 @@
 
     applyDragSelection(key);
     grid.classList.add("is-dragging");
+    if (hadEvent) render();
   }
 
   function updateDrag(key) {
