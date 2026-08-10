@@ -92,17 +92,36 @@ Pick the shape of the ad with `angle`:
 | `before_after` | the messy way, then the same job after |
 | `listicle` | "5 things I wish I knew", one per slide |
 
+**Check image access before you schedule a week.** `gpt-image-1` is gated
+behind OpenAI's *organisation verification*, separately from the rest of the
+API — so a key that writes scripts perfectly well can be unable to draw a
+single slide, and the 403 says so in as many words. Profile → Generation →
+*Test slide image generation* draws one cheap image (about a cent) and shows
+you either "works" or the API's own refusal. If it refuses: verify the org in
+**Settings → Organization → General**, wait a few minutes for it to
+propagate, and make sure the key belongs to the org you verified.
+
 **Cost.** Slide art is generated with OpenAI's image model
 (`OPENAI_IMAGE_MODEL`, default `gpt-image-1`) at 1024×1536, the portrait size
 closest to 9:16. `OPENAI_IMAGE_QUALITY` (`low` | `medium` | `high`, default
 `medium`) drives both look and price: a six-slide ad is roughly $0.10 at low,
-$0.38 at medium and $1.50 at high, plus a few cents of TTS. A slide whose
-image fails falls back to a gradient card rather than failing the video, and
-with no OpenAI key at all the whole thing still renders as text on gradients.
+$0.38 at medium and $1.50 at high, plus a few cents of TTS.
+
+**When image generation goes wrong**, the three cases are treated
+differently, because they mean different things:
+
+| what happened | what the video does |
+|---|---|
+| rate limit, timeout, server error | retried with backoff, then rendered normally |
+| one slide refused on safety grounds | that slide falls back to a plain card, the video renders, and the calendar says which slide and why — a refusal is deterministic, so it is not retried |
+| the key cannot use the image model at all, or every slide failed | the video **fails** with the API's own message, rather than silently shipping a stack of blank cards |
+
+Only a run with no OpenAI key at all renders as plain text on gradients,
+which is a documented degraded mode rather than a silent one.
 
 Tune it with `UGC_SLIDE_COUNT` (3–10, default 6), `UGC_SLIDE_SECONDS` (the
 fallback slide length when there is no voiceover to time against),
-`UGC_TTS_VOICE` and `FONT_PATH`.
+`OPENAI_IMAGE_TIMEOUT_MS` (default 150000), `UGC_TTS_VOICE` and `FONT_PATH`.
 
 ## Avatar videos with HeyGen
 
@@ -154,6 +173,7 @@ Everything under `/api` requires the login when `ADMIN_PASSWORD` is set.
 | `DELETE /api/jobs/:id` | Delete a job, its posts and its files |
 | `GET /api/heygen` | Avatars and voices on the HeyGen account, for the picker |
 | `POST /api/heygen/test` | Check the HeyGen key works |
+| `POST /api/images/test` | Check this key can generate slide art, for about a cent |
 | `POST /api/plan` | Plan a set of videos from a brief. `{ brief, slots: [epochMs], productUrl?, platforms?, format?, angle?, slides?, avatarId?, voiceId? }` |
 | `POST /api/metrics/refresh` | Collect fresh numbers from the platform APIs now |
 | `GET /healthz` | Unauthenticated health probe |

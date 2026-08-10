@@ -297,32 +297,98 @@ function templateSlideshow(product, settings, slideCount, angle) {
 
 /* ---------------------------------------------------------------- images */
 
-// One slide image. Returns the written path, or null when generation is off
-// or fails - the renderer draws a gradient card instead, which is a real
-// slideshow look rather than a broken one.
-async function generateSlideImage(prompt, styleNote, outPath) {
-  if (!config.openaiApiKey || !prompt) return null;
+// How the slide art should look, appended to every prompt. The planner
+// writes what is in the shot; this decides how it is shot, and it is the
+// same on every slide so six images read as one ad rather than six stock
+// photos. "Shot on a phone" matters: polished studio lighting is the tell
+// that an ad is an ad, and this format lives or dies on looking like
+// something a person posted.
+const LOOK =
+  "Vertical 9:16 photograph, shot on a modern phone camera, natural available " +
+  "light, shallow depth of field, realistic colours and skin tones, slight " +
+  "handheld imperfection. Not a studio product shot, not an advertisement, no " +
+  "watermark, no border, no collage. Keep the top third of the frame simple " +
+  "and uncluttered. Absolutely no text, letters, numbers, captions, labels, " +
+  "logos or user-interface writing anywhere in the image.";
 
-  const res = await fetch(`${config.openaiApiBase}/images/generations`, {
-    method: "POST",
-    headers: {
-      Authorization: `Bearer ${config.openaiApiKey}`,
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({
-      model: config.ugc.imageModel,
-      prompt: [styleNote, prompt, "No text, no words, no letters, no logos anywhere in the image."]
-        .filter(Boolean)
-        .join(" "),
-      n: 1,
-      size: config.ugc.imageSize,
-      quality: config.ugc.imageQuality,
-    }),
-  });
+// How long one image is allowed to take, and how many times a request that
+// failed for a reason that might pass is tried again.
+const IMAGE_TIMEOUT_MS = Number(process.env.OPENAI_IMAGE_TIMEOUT_MS || 150000);
+const IMAGE_ATTEMPTS = 3;
+const RETRY_BACKOFF_MS = [2000, 6000];
+
+// Errors that no number of retries will fix, and that will fail every other
+// slide the same way: a key that cannot use this model, an unverified
+// organisation, a model name that does not exist, exhausted billing.
+// gpt-image-1 in particular is gated behind organisation verification, which
+// is the single most common reason slide art silently stops appearing.
+function permanentImageFailure(status, message) {
+  if ([401, 403, 404].includes(status)) return true;
+  return /must be verified|verify your organization|does not exist|do not have access|billing|quota|insufficient_quota/i
+    .test(message);
+}
+
+// A content refusal is deterministic: the same prompt gets the same answer,
+// so retrying it only spends time and money to be told no again. It is not
+// permanent though - the next slide's prompt may be perfectly fine.
+function contentRefusal(status, message) {
+  return status === 400 || /safety system|moderation|content_policy/i.test(message);
+}
+
+class ImageError extends Error {
+  constructor(message, { permanent = false, retryable = true, status = 0 } = {}) {
+    super(message);
+    this.permanent = permanent;
+    this.retryable = retryable;
+    this.status = status;
+  }
+}
+
+function imagePrompt(prompt, styleNote) {
+  return [styleNote, prompt, LOOK].filter(Boolean).join(" ").slice(0, 3800);
+}
+
+// One request to the image API, with a timeout. Throws ImageError so the
+// caller can tell "try again" apart from "this will never work".
+async function requestImage(prompt, styleNote, outPath, options = {}) {
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), IMAGE_TIMEOUT_MS);
+
+  let res;
+  try {
+    res = await fetch(`${config.openaiApiBase}/images/generations`, {
+      method: "POST",
+      signal: controller.signal,
+      headers: {
+        Authorization: `Bearer ${config.openaiApiKey}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        model: config.ugc.imageModel,
+        prompt: imagePrompt(prompt, styleNote),
+        n: 1,
+        size: options.size || config.ugc.imageSize,
+        quality: options.quality || config.ugc.imageQuality,
+      }),
+    });
+  } catch (err) {
+    throw new ImageError(
+      err.name === "AbortError"
+        ? `The image model did not answer within ${Math.round(IMAGE_TIMEOUT_MS / 1000)}s`
+        : `Could not reach the image API: ${err.message || err}`
+    );
+  } finally {
+    clearTimeout(timer);
+  }
 
   const data = await res.json().catch(() => ({}));
   if (!res.ok) {
-    throw new Error(`Image generation failed (${res.status}): ${JSON.stringify(data).slice(0, 300)}`);
+    const detail = data?.error?.message || JSON.stringify(data).slice(0, 300);
+    throw new ImageError(`${config.ugc.imageModel} refused (${res.status}): ${detail}`, {
+      permanent: permanentImageFailure(res.status, detail),
+      retryable: !contentRefusal(res.status, detail),
+      status: res.status,
+    });
   }
 
   // gpt-image-1 always answers with base64; the older models answer with a
@@ -334,40 +400,67 @@ async function generateSlideImage(prompt, styleNote, outPath) {
   }
   if (entry?.url) {
     const image = await fetch(entry.url);
-    if (!image.ok) throw new Error(`Could not download the generated image (${image.status})`);
+    if (!image.ok) throw new ImageError(`Could not download the generated image (${image.status})`);
     fs.writeFileSync(outPath, Buffer.from(await image.arrayBuffer()));
     return outPath;
   }
-  throw new Error("The image model returned no image");
+  throw new ImageError("The image model returned no image");
 }
 
-// Draws every slide that needs drawing, a couple at a time. A slide that
-// fails falls back to its gradient rather than failing the whole video: one
-// missing picture is worth far less than the render.
+// One slide image, retried through rate limits and hiccups. Returns the
+// written path.
+async function generateSlideImage(prompt, styleNote, outPath) {
+  let last;
+  for (let attempt = 0; attempt < IMAGE_ATTEMPTS; attempt++) {
+    try {
+      return await requestImage(prompt, styleNote, outPath);
+    } catch (err) {
+      last = err;
+      // A 429 or a 500 is worth waiting out; a 403 or a safety refusal never is.
+      if (err.permanent || err.retryable === false || attempt === IMAGE_ATTEMPTS - 1) break;
+      await new Promise((r) => setTimeout(r, RETRY_BACKOFF_MS[attempt] ?? 6000));
+    }
+  }
+  throw last;
+}
+
+// Draws every slide that needs drawing, a couple at a time.
+//
+// Two different failures, treated differently. One slide the model refused to
+// draw is worth a gradient card - the video is still an ad. A key that cannot
+// use the image model at all is not: it would produce six gradient cards and
+// no explanation, so the first permanent failure stops the run and is
+// reported, rather than burning five more requests to arrive at the same
+// answer more slowly.
 export async function generateSlideImages(script, dir, productPhotos = []) {
   fs.mkdirSync(dir, { recursive: true });
-  const out = new Array(script.slides.length).fill(null);
+  const images = new Array(script.slides.length).fill(null);
 
   const queue = [];
   script.slides.forEach((slide, i) => {
     const photo = productPhotos[slide.productImage];
     if (slide.productImage >= 0 && photo && fs.existsSync(photo)) {
-      out[i] = photo;
+      images[i] = photo;
       return;
     }
     if (slide.imagePrompt) queue.push(i);
   });
 
+  const failures = [];
+  let stopped = null;
   let cursor = 0;
+
   const worker = async () => {
-    while (cursor < queue.length) {
+    while (cursor < queue.length && !stopped) {
       const i = queue[cursor++];
       const target = path.join(dir, `slide${i}.png`);
       try {
-        out[i] = await generateSlideImage(script.slides[i].imagePrompt, script.styleNote, target);
+        images[i] = await generateSlideImage(script.slides[i].imagePrompt, script.styleNote, target);
       } catch (err) {
-        console.warn(`[slideshow] slide ${i + 1} image failed:`, err.message || err);
-        out[i] = null;
+        const message = err.message || String(err);
+        failures.push({ slide: i + 1, message });
+        console.warn(`[slideshow] slide ${i + 1} image failed:`, message);
+        if (err.permanent) stopped = message;
       }
     }
   };
@@ -375,7 +468,59 @@ export async function generateSlideImages(script, dir, productPhotos = []) {
     Array.from({ length: Math.min(IMAGE_CONCURRENCY, queue.length) }, worker)
   );
 
-  return out;
+  return {
+    images,
+    requested: queue.length,
+    generated: queue.filter((i) => images[i]).length,
+    photos: images.length - queue.length,
+    failures,
+    // Set when the account itself cannot generate images - the caller turns
+    // this into a failed job rather than a video full of blank cards.
+    blocked: stopped,
+  };
+}
+
+// Explicit check that this key can actually generate images, for the same
+// reason the HeyGen key has one: otherwise a misconfiguration surfaces as a
+// failed render after a week of videos was scheduled on it. Runs at the
+// cheapest size and quality - about a cent - and reports the API's own words,
+// which for gpt-image-1 is usually the organisation-verification message.
+export async function testImageGeneration() {
+  if (!config.openaiApiKey) {
+    return { ok: false, error: "OPENAI_API_KEY is not set", permanent: true };
+  }
+
+  const dir = path.join(config.ugcDir, "image-test");
+  fs.mkdirSync(dir, { recursive: true });
+  const target = path.join(dir, `probe-${process.pid}.png`);
+  const started = Date.now();
+
+  try {
+    await requestImage(
+      "A plain ceramic mug on a wooden table beside a sunlit window.",
+      "",
+      target,
+      { size: "1024x1024", quality: "low" }
+    );
+    return {
+      ok: true,
+      model: config.ugc.imageModel,
+      seconds: Number(((Date.now() - started) / 1000).toFixed(1)),
+      bytes: fs.statSync(target).size,
+      // What real slides will be generated at, which is not what was probed.
+      slideSize: config.ugc.imageSize,
+      slideQuality: config.ugc.imageQuality,
+    };
+  } catch (err) {
+    return {
+      ok: false,
+      model: config.ugc.imageModel,
+      error: err.message || String(err),
+      permanent: Boolean(err.permanent),
+    };
+  } finally {
+    fs.rmSync(dir, { recursive: true, force: true });
+  }
 }
 
 /* ----------------------------------------------------------------- audio */

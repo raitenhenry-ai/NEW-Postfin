@@ -5193,6 +5193,17 @@ body.theme-light .cal-post-fields {
 
 body.theme-light .cal-post-error { color: #b42318 !important; }
 
+.cal-post-warning {
+  display: block;
+  margin-top: 6px;
+  color: #e0b341;
+  font-size: 12.5px;
+  line-height: 1.45;
+  word-break: break-word;
+}
+
+body.theme-light .cal-post-warning { color: #8a6100 !important; }
+
 /* --- assistant multiple-choice questions --- */
 
 .cal-ask {

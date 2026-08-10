@@ -132,12 +132,34 @@ async function processJob(jobId) {
       const photos = product?.images?.length
         ? await downloadImages(product.images, path.join(workDir, "photos"))
         : [];
-      const images = await generateSlideImages(script, path.join(workDir, "slides"), photos);
-      const drawn = images.filter(Boolean).length;
+      const art = await generateSlideImages(script, path.join(workDir, "slides"), photos);
+      const images = art.images;
       console.log(
-        `[ugc] job ${job.id}: ${drawn}/${script.slides.length} slide images ready ` +
-          `(${photos.length} product photo(s) available)`
+        `[ugc] job ${job.id}: ${art.generated}/${art.requested} slide images drawn, ` +
+          `${art.photos} from product photos`
       );
+
+      // Silently shipping a slideshow of blank gradient cards is worse than
+      // failing: the user asked for generated art and would have to guess why
+      // there is none. A key that cannot use the image model, or every single
+      // slide failing, is a failed job with the reason attached.
+      if (art.blocked) {
+        throw new Error(`Slide art could not be generated - ${art.blocked}`);
+      }
+      if (art.requested && !art.generated) {
+        throw new Error(
+          `None of the ${art.requested} slide images could be generated - ` +
+            (art.failures[0]?.message || "the image model returned nothing")
+        );
+      }
+      // A few missing is survivable, but say so rather than quietly shipping
+      // cards where pictures were meant to be.
+      if (art.failures.length) {
+        script.imageNote =
+          `${art.failures.length} of ${art.requested} slide images could not be drawn ` +
+          `and fell back to plain cards - ${art.failures[0].message}`;
+        await setJob(job.id, { script_json: JSON.stringify(script) });
+      }
       const { durationSeconds } = await renderSlideshowVideo({
         script, images, workDir, outputPath, settings,
       });

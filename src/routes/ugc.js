@@ -3,7 +3,7 @@ import config, { PLATFORM_NAMES, ENABLED_PLATFORMS } from "../config.js";
 import { q, q1, run as dbRun } from "../db.js";
 import { platforms, resolveTargetPlatforms } from "../accounts.js";
 import { toneOptions, styleOptions } from "../ugc/script.js";
-import { slideshowAngles, slideshowConfigured } from "../ugc/slideshow.js";
+import { slideshowAngles, slideshowConfigured, testImageGeneration } from "../ugc/slideshow.js";
 import { planContent, normalizeSettings } from "../ugc/plan.js";
 import { heygenConfigured, heygenCatalog, testConnection } from "../ugc/heygen.js";
 import { collectMetrics } from "../metrics.js";
@@ -398,6 +398,15 @@ router.get("/heygen", wrap(async (req, res) => {
     },
     provider: pickProvider(),
   });
+}));
+
+// The same check for slide art. gpt-image-1 is gated behind OpenAI's
+// organisation verification, so a key that writes scripts perfectly well can
+// still be unable to draw a single slide - and that is worth finding out
+// before a week of slideshows is scheduled on it.
+router.post("/images/test", wrap(async (req, res) => {
+  const result = await testImageGeneration();
+  res.status(result.ok ? 200 : 502).json(result);
 }));
 
 // Explicit key check for the settings UI - tells you the key works before

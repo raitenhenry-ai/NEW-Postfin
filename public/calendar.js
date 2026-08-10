@@ -720,10 +720,12 @@
       statusEl.textContent =
         `${post.jobStatus}${post.accountCount ? ` \u00b7 ${post.accountCount} account(s)` : ""}`;
       // A failed video that only says "failed" sends you to the logs; say why.
-      if (post.error) {
+      // A video that rendered with something missing says that too.
+      const note = post.error || post.warning;
+      if (note) {
         const why = document.createElement("span");
-        why.className = "cal-post-error";
-        why.textContent = post.error;
+        why.className = post.error ? "cal-post-error" : "cal-post-warning";
+        why.textContent = note;
         statusEl.after(why);
       }
       detail.querySelector(".cal-post-prompt").textContent =

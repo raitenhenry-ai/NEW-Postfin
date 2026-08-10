@@ -77,6 +77,14 @@
             <button type="button" class="pf-btn ghost" id="heygen-test">Test HeyGen connection</button>
             <span class="profile-heygen-result" id="heygen-result"></span>
           </div>` : ""}
+        ${data.integrations.openai ? `
+          <div class="profile-heygen">
+            <button type="button" class="pf-btn ghost" id="images-test">Test slide image generation</button>
+            <span class="profile-heygen-result" id="images-result"></span>
+          </div>
+          <p class="pf-hint">Slideshows draw their slides with the image model. Access to it is
+            separate from the rest of the API - OpenAI gates it behind organisation verification -
+            so a key that writes scripts can still be unable to draw a slide. This costs about a cent.</p>` : ""}
       </section>
 
       <section class="profile-section">
@@ -109,8 +117,31 @@
     });
   }
 
+  // Same idea for slide art, which fails for its own reasons.
+  function bindImageTest() {
+    const btn = document.getElementById("images-test");
+    const out = document.getElementById("images-result");
+    btn?.addEventListener("click", async () => {
+      btn.disabled = true;
+      out.textContent = "Drawing a test image…";
+      out.className = "profile-heygen-result";
+      try {
+        const result = await api("/api/images/test", { method: "POST", body: {} });
+        out.textContent =
+          `${result.model} works · ${result.seconds}s · slides render at ` +
+          `${result.slideSize} ${result.slideQuality}`;
+        out.className = "profile-heygen-result is-ok";
+      } catch (err) {
+        out.textContent = err.message;
+        out.className = "profile-heygen-result is-error";
+      } finally {
+        btn.disabled = false;
+      }
+    });
+  }
+
   api("/api/profile")
-    .then((data) => { render(data); bindHeygenTest(); })
+    .then((data) => { render(data); bindHeygenTest(); bindImageTest(); })
     .catch((err) => {
       page.innerHTML = errorBlock(`Couldn't load your profile: ${err.message}`);
       toast(err.message, "error");

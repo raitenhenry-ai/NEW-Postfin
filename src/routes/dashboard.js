@@ -362,6 +362,9 @@ router.get("/calendar", wrap(async (req, res) => {
       // Why a failed video failed. Without this the calendar can only say
       // "failed", which is the least useful half of the information.
       error: job.error || null,
+      // A video that rendered but not entirely as asked - slides that fell
+      // back to plain cards, say.
+      warning: shaped.script?.imageNote || null,
       provider: shaped.provider,
       // Which of the two video formats this is, so the panel can name the
       // renderer and show the slides a slideshow was built from.
