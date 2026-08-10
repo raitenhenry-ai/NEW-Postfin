@@ -881,8 +881,9 @@
         list.addEventListener("mousedown", (e) => e.stopPropagation());
         list.addEventListener("touchstart", (e) => e.stopPropagation(), { passive: true });
         list.addEventListener("wheel", (e) => e.stopPropagation(), { passive: true });
-        dayEvents.forEach((ev) => {
-          const row = document.createElement("div");
+        dayEvents.forEach((ev, index) => {
+          const row = document.createElement("button");
+          row.type = "button";
           row.className = `cal-event-row is-${platformKey(primaryPlatform(ev))}`;
           row.innerHTML = `
             <i class="cal-event-bar" aria-hidden="true"></i>
@@ -893,6 +894,21 @@
           row.querySelector(".cal-event-title").textContent = ev.title;
           row.querySelector(".cal-event-platform").textContent = platformLabel(ev);
           row.querySelector(".cal-event-time").textContent = ev.time;
+          row.addEventListener("click", (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            if (isEditMode()) {
+              mode = "view";
+              saveMode(mode);
+              setChatCollapsed(false);
+              updateChrome();
+            }
+            setFocusedDay(key);
+            openedPost = index;
+            editingPost = null;
+            applySelectionClasses();
+            renderDayPanel();
+          });
           list.appendChild(row);
         });
         cell.appendChild(list);
