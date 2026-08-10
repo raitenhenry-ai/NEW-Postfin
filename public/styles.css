@@ -3029,6 +3029,67 @@ body.theme-light .cal-post-fields {
   color: #8a8a92;
 }
 
+.cal-platform-switch {
+  display: inline-flex;
+  align-items: center;
+  height: 32px;
+  padding: 3px;
+  border-radius: 999px;
+  background: #1a1a1e;
+  border: 1px solid #2e2e32;
+  flex-shrink: 0;
+  gap: 0;
+}
+
+.cal-platform-opt {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 32px;
+  height: 26px;
+  padding: 0 10px;
+  border: none;
+  border-radius: 999px;
+  background: transparent;
+  color: #c8c8d0;
+  font: inherit;
+  font-size: 12px;
+  font-weight: 650;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+}
+
+.cal-platform-opt[data-platform="tiktok"],
+.cal-platform-opt[data-platform="youtube"],
+.cal-platform-opt[data-platform="instagram"] {
+  min-width: 30px;
+  padding: 0 8px;
+  border-radius: 8px;
+}
+
+.cal-platform-opt img {
+  width: 15px;
+  height: 15px;
+  display: block;
+  object-fit: contain;
+}
+
+.cal-platform-opt:hover {
+  color: #fff;
+}
+
+.cal-platform-opt.is-on {
+  background: #2a2a30;
+  color: #fff;
+}
+
+.cal-platform-divider {
+  width: 1px;
+  height: 14px;
+  background: #2e2e32;
+  flex-shrink: 0;
+}
+
 .cal-product-pill-btn {
   display: inline-flex;
   align-items: center;
@@ -5158,6 +5219,28 @@ body.theme-light .cal-format-menu-copy strong {
 
 body.theme-light .cal-format-menu-copy em {
   color: #6a6a72;
+}
+
+body.theme-light .cal-platform-switch {
+  background: #ffffff;
+  border-color: #e0e0e6;
+}
+
+body.theme-light .cal-platform-opt {
+  color: #4a4a52;
+}
+
+body.theme-light .cal-platform-opt:hover {
+  color: #111114;
+}
+
+body.theme-light .cal-platform-opt.is-on {
+  background: #f0f0f3;
+  color: #111114;
+}
+
+body.theme-light .cal-platform-divider {
+  background: #e0e0e6;
 }
 
 body.theme-light .cal-product-pill-caret {
