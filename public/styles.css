@@ -5724,3 +5724,105 @@ body.theme-light .cal-history-item-meta {
 body.theme-light #cal-history-btn.is-on .cal-tool-icon {
   stroke: #3b6ef5;
 }
+
+/* ---------------------------------------------------------------- Products */
+
+.products-page .connectors-header {
+  margin-bottom: 28px;
+}
+
+.products-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  width: 100%;
+}
+
+.product-row {
+  display: grid;
+  grid-template-columns: 56px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 16px;
+  padding: 14px 0;
+}
+
+.product-thumb {
+  width: 56px;
+  height: 56px;
+  border-radius: 12px;
+  object-fit: cover;
+  background: #1a1a1f;
+  display: block;
+}
+
+.product-thumb.is-empty {
+  background: linear-gradient(145deg, #222228, #151518);
+  border: 1px solid #2a2a30;
+}
+
+.product-copy {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+
+.product-name {
+  color: #fff;
+  font-size: 15px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.product-meta {
+  color: #8a8a92;
+  font-size: 13px;
+  font-weight: 500;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.product-link {
+  color: #5b8cff;
+  font-size: 14px;
+  font-weight: 600;
+  text-decoration: none;
+  padding: 8px 4px;
+  flex-shrink: 0;
+}
+
+.product-link:hover {
+  color: #7aa3ff;
+}
+
+body.theme-light .product-name {
+  color: #111114;
+}
+
+body.theme-light .product-meta {
+  color: #6a6a72;
+}
+
+body.theme-light .product-thumb {
+  background: #f0f0f3;
+}
+
+body.theme-light .product-thumb.is-empty {
+  background: linear-gradient(145deg, #f4f4f7, #ececf1);
+  border-color: #e0e0e6;
+}
+
+body.theme-light .product-link {
+  color: #3b6ef5;
+}
+
+body.theme-light .product-link:hover {
+  color: #2a56d4;
+}
