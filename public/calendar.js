@@ -1299,10 +1299,20 @@
     renderProductMenu();
   }
 
+  function positionFormatMenu() {
+    if (!formatMenu || !formatBtn || formatMenu.hidden) return;
+    const rect = formatBtn.getBoundingClientRect();
+    const gap = 6;
+    formatMenu.style.left = `${Math.round(rect.left + rect.width / 2)}px`;
+    formatMenu.style.top = `${Math.round(rect.top - gap)}px`;
+    formatMenu.style.transform = "translate(-50%, -100%)";
+  }
+
   function setFormatMenuOpen(open) {
     if (!formatMenu || !formatBtn) return;
     formatMenu.hidden = !open;
     formatBtn.setAttribute("aria-expanded", open ? "true" : "false");
+    if (open) positionFormatMenu();
   }
 
   function syncFormatPicker() {
