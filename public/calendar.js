@@ -241,6 +241,7 @@
   let focused = mode === "edit" ? null : keyFromDate(now);
   let openedPost = null;
   let editingPost = null;
+  let selectedEvent = null; // { id, key, index }
   let drag = null;
   let planAbort = null;
   const chatCancelBtn = document.getElementById("cal-chat-cancel");
