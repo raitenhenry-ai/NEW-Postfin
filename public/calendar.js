@@ -1355,7 +1355,10 @@
         renderThread(false);
       }
     } catch (err) {
-      if (err?.name === "AbortError") return;
+      if (err?.name === "AbortError") {
+        renderThread(false);
+        return;
+      }
       conversation.push({ role: "assistant", content: `⚠ ${err.message}` });
       persistActiveChat();
       renderThread(false);
