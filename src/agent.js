@@ -359,6 +359,10 @@ function systemPrompt(ctx) {
         "Use them when they ask for videos without naming dates."
       : "The user has no days selected on the calendar. If they ask for videos " +
         "without naming dates, pick sensible upcoming dates and say which you chose.",
+    ctx.productUrl
+      ? `The user selected this product for the current chat: ${ctx.productName || "product"} (${ctx.productUrl}). ` +
+        "When planning videos, pass that URL as productUrl unless they ask for a different product."
+      : "No product is selected in the chat picker. Plan from the brief alone unless they paste a product URL.",
     ctx.accounts
       ? `Connected accounts: ${ctx.accounts}.`
       : "No social accounts are connected yet - videos will generate but cannot publish.",
@@ -373,15 +377,30 @@ function systemPrompt(ctx) {
 
 // Runs the tool-calling loop and returns the assistant's reply plus a note
 // of what it actually did.
-export async function runAssistant({ messages, selectedDates = [], offsetMinutes = 0 }) {
+export async function runAssistant({
+  messages, selectedDates = [], offsetMinutes = 0, productUrl = "",
+}) {
   if (!assistantAvailable()) {
     throw new Error("The assistant needs an OpenAI key - set OPENAI_API_KEY");
   }
 
   const accountRows = await q("SELECT platform, display_name FROM accounts ORDER BY platform");
+  let productName = "";
+  if (productUrl) {
+    const saved = await q1("SELECT product_json FROM products WHERE url = ?", [productUrl]);
+    if (saved?.product_json) {
+      try {
+        productName = JSON.parse(saved.product_json)?.name || "";
+      } catch {
+        productName = "";
+      }
+    }
+  }
   const ctx = {
     offsetMinutes,
     selectedDates,
+    productUrl: productUrl || "",
+    productName,
     changed: false,
     accounts: accountRows.map((a) => `${a.platform} (${a.display_name})`).join(", "),
   };
