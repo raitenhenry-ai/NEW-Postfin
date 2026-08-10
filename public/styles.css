@@ -2148,8 +2148,10 @@ body.sidebar-expanded {
 .cal-cell-events {
   display: flex;
   flex-direction: column;
+  align-items: stretch;
   gap: 5px;
   width: 100%;
+  align-self: stretch;
   min-width: 0;
   flex: 1;
   min-height: 0;
