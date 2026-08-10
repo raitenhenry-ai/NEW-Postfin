@@ -912,16 +912,10 @@
           row.addEventListener("click", (e) => {
             e.preventDefault();
             e.stopPropagation();
-            const on = selectEvent(ev, key, index);
-            editingPost = null;
-            if (isViewMode()) {
-              setFocusedDay(key);
-              openedPost = on ? index : null;
-            } else {
-              // Edit mode: highlight this event and select only its day.
-              selected.clear();
-              if (on && !isPastKey(key)) selected.add(key);
-            }
+            // Edit only for now: outline one event at a time. No other behavior yet.
+            if (!isEditMode()) return;
+            const id = eventIdentity(ev, key, index);
+            selectedEvent = selectedEvent?.id === id ? null : { id, key, index };
             render();
           });
           list.appendChild(row);

@@ -2213,13 +2213,13 @@ body.sidebar-expanded {
   box-shadow: inset 0 0 0 1px rgba(91, 140, 255, 0.45);
 }
 
-.cal-event-row.is-selected {
-  background: rgba(91, 140, 255, 0.2);
-  box-shadow: inset 0 0 0 1.5px rgba(91, 140, 255, 0.7);
+.cal-shell.is-edit .cal-event-row.is-selected {
+  background: rgba(255, 255, 255, 0.06);
+  box-shadow: inset 0 0 0 1.5px #5b8cff;
 }
 
-.cal-event-row.is-selected:hover {
-  background: rgba(91, 140, 255, 0.26);
+.cal-shell.is-edit .cal-event-row.is-selected:hover {
+  background: rgba(91, 140, 255, 0.12);
 }
 
 .cal-event-bar {
