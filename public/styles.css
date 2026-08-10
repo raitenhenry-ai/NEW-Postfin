@@ -2184,8 +2184,12 @@ body.sidebar-expanded {
   width: 100%;
   min-width: 0;
   padding: 6px 8px;
+  border: none;
   border-radius: 8px;
   background: rgba(255, 255, 255, 0.045);
+  color: inherit;
+  font: inherit;
+  text-align: left;
   pointer-events: auto;
   cursor: pointer;
   transition: background 0.12s, box-shadow 0.12s;

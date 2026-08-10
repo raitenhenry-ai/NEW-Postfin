@@ -878,6 +878,7 @@
       if (dayEvents.length) {
         const list = document.createElement("div");
         list.className = "cal-cell-events";
+        list.addEventListener("pointerdown", (e) => e.stopPropagation());
         list.addEventListener("mousedown", (e) => e.stopPropagation());
         list.addEventListener("touchstart", (e) => e.stopPropagation(), { passive: true });
         list.addEventListener("wheel", (e) => e.stopPropagation(), { passive: true });
