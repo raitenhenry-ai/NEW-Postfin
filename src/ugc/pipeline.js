@@ -6,7 +6,9 @@ import { platforms, freshAccount } from "../accounts.js";
 import { scrapeProduct, downloadImages } from "./scrape.js";
 import { generateScript, captionText, spokenText } from "./script.js";
 import { heygenConfigured, startAvatarVideo, waitAndDownload } from "./heygen.js";
-import { planSlideshow, generateSlideImages, renderSlideshowVideo } from "./slideshow.js";
+import {
+  planSlideshow, generateSlideImages, renderSlideImages, renderSlideshowVideo,
+} from "./slideshow.js";
 
 // UGC job lifecycle:
 //   queued -> scraping -> scripting -> rendering -> ready -> posting -> posted
@@ -67,6 +69,13 @@ export function pickProvider(settings) {
   return jobFormat(settings) === "slideshow" ? "slideshow" : "heygen";
 }
 
+// A slideshow goes out as photos wherever the platform has a photo post -
+// that is the format's native shape. Everywhere else it falls back to the
+// rendered mp4, which is why both are produced.
+export function postAsPhotos(target, ctx) {
+  return Boolean(ctx?.imageUrls?.length) && typeof target?.uploadPhotos === "function";
+}
+
 export function jobFormat(settings) {
   return settings?.format === "slideshow" || (!settings?.format && config.ugc.format === "slideshow")
     ? "slideshow"
@@ -125,18 +134,20 @@ async function processJob(jobId) {
     const outputPath = path.join(config.ugcDir, filename);
 
     if (format === "slideshow") {
-      // Real photos beat drawn ones whenever there are any, so the scraped
-      // product shots are downloaded first and the planner's per-slide choice
-      // decides which slides use them. Everything here is scratch - the mp4
-      // is the artifact - so it all lands in the work dir.
+      // The scraped product shots are downloaded so the image model can be
+      // handed them as references: on a slide that shows the product, it
+      // redraws the real thing inside a scene that was never photographed,
+      // rather than pasting a catalogue photo into an ad.
       const photos = product?.images?.length
         ? await downloadImages(product.images, path.join(workDir, "photos"))
         : [];
       const art = await generateSlideImages(script, path.join(workDir, "slides"), photos);
       const images = art.images;
       console.log(
-        `[ugc] job ${job.id}: ${art.generated}/${art.requested} slide images drawn, ` +
-          `${art.photos} from product photos`
+        `[ugc] job ${job.id}: ${art.generated}/${art.requested} slide images drawn` +
+          (art.references
+            ? `, ${art.fromReferences} recreating the product from ${art.references} reference photo(s)`
+            : "")
       );
 
       // Silently shipping a slideshow of blank gradient cards is worse than
@@ -160,11 +171,23 @@ async function processJob(jobId) {
           `and fell back to plain cards - ${art.failures[0].message}`;
         await setJob(job.id, { script_json: JSON.stringify(script) });
       }
+      // The slides themselves are the deliverable - a slideshow post is a
+      // stack of photos, not a video - so they are composed as stills and
+      // kept. The mp4 is rendered too: it is what goes to platforms that
+      // only take video, and what makes the preview playable.
+      script.slideFiles = await renderSlideImages({
+        script, images, jobId: job.id, workDir,
+      });
+      await setJob(job.id, { script_json: JSON.stringify(script) });
+
       const { durationSeconds } = await renderSlideshowVideo({
         script, images, workDir, outputPath, settings,
       });
       await setJob(job.id, { status: "ready", video_filename: filename });
-      console.log(`[ugc] job ${job.id}: slideshow ready (${durationSeconds.toFixed(1)}s)`);
+      console.log(
+        `[ugc] job ${job.id}: slideshow ready - ${script.slideFiles.length} slide images ` +
+          `plus a ${durationSeconds.toFixed(1)}s video`
+      );
     } else {
       if (!heygenConfigured()) {
         throw new Error(
@@ -244,9 +267,19 @@ export async function postJob(jobId, { onlyFailed = false } = {}) {
 
   const publicUrl = `${config.baseUrl}/ugc-media/${encodeURIComponent(job.video_filename)}`;
   const caption = captionText(script, product);
+
+  // A slideshow is a stack of photos. Where a platform takes them as photos -
+  // TikTok's photo mode, an Instagram carousel - that is what it should get,
+  // because that is the post the format is for. The mp4 is the fallback for
+  // video-only platforms, and stays the preview everywhere.
+  const slideUrls = (script.slideFiles || []).map(
+    (name) => `${config.baseUrl}/ugc-media/${name.split("/").map(encodeURIComponent).join("/")}`
+  );
+
   const ctx = {
     filePath,
     publicUrl,
+    imageUrls: slideUrls,
     title: `${script.hook || product.name || "New find"} #Shorts`.slice(0, 100),
     caption,
     description: caption,
@@ -273,7 +306,14 @@ export async function postJob(jobId, { onlyFailed = false } = {}) {
     try {
       const account = await freshAccount(accountRow.id);
       if (!account) throw new Error("account disconnected");
-      const platformVideoId = await platforms[account.platform].uploadClip(account, ctx);
+      const target = platforms[account.platform];
+      const asPhotos = postAsPhotos(target, ctx);
+      const platformVideoId = asPhotos
+        ? await target.uploadPhotos(account, ctx)
+        : await target.uploadClip(account, ctx);
+      if (asPhotos) {
+        console.log(`[ugc] job ${job.id} -> ${account.platform} as ${slideUrls.length} photos`);
+      }
       await run(
         `UPDATE ugc_posts SET status = 'done', platform_video_id = ?, error = NULL, posted_at = ?
          WHERE job_id = ? AND account_id = ?`,
@@ -316,6 +356,11 @@ export async function deleteJobFiles(job) {
   if (job.video_filename) {
     fs.rmSync(path.join(config.ugcDir, job.video_filename), { force: true });
   }
+  // The composed slide stills, which live outside the scratch dir because
+  // the platforms fetch them at publish time.
+  fs.rmSync(path.join(config.ugcDir, "slides", `job${job.id}`), {
+    recursive: true, force: true,
+  });
   fs.rmSync(path.join(config.ugcDir, `job${job.id}`), { recursive: true, force: true });
   // The scraped product photos kept for HeyGen scene backgrounds.
   fs.rmSync(path.join(config.ugcDir, "assets", `job${job.id}`), {

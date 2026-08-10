@@ -370,6 +370,7 @@ router.get("/calendar", wrap(async (req, res) => {
       // renderer and show the slides a slideshow was built from.
       format: jobFormat(shaped.settings),
       slideCount: shaped.script?.slides?.length || null,
+      slideUrls: shaped.slideUrls,
       productUrl: shaped.productUrl,
       videoUrl: shaped.videoUrl,
       prompt: promptText(shaped.script, shaped.settings, shaped.concept),

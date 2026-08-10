@@ -204,6 +204,10 @@ export function shapeJob(job, posts = []) {
     autoPost: Boolean(job.auto_post),
     scheduledAt: job.scheduled_at ? Number(job.scheduled_at) : null,
     videoUrl: job.video_filename ? `/ugc-media/${encodeURIComponent(job.video_filename)}` : null,
+    // A slideshow's actual slides, as images. The mp4 is a preview of them.
+    slideUrls: (script?.slideFiles || []).map(
+      (name) => `/ugc-media/${name.split("/").map(encodeURIComponent).join("/")}`
+    ),
     createdAt: Number(job.created_at),
     updatedAt: Number(job.updated_at),
     posts: posts.map((p) => ({

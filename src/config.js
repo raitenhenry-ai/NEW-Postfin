@@ -158,6 +158,14 @@ const config = {
       ? env("OPENAI_IMAGE_QUALITY")
       : "medium",
     imageSize: "1024x1536",
+    // When a slide shows the product, the scraped photos are sent as
+    // references and the model recreates the product inside its own scene.
+    // "high" is what keeps a logo, a label or a screenshot's layout intact;
+    // newer image models reject the setting because they always work that
+    // way, and the renderer drops it when told to.
+    imageFidelity: ["high", "low"].includes(env("OPENAI_IMAGE_FIDELITY"))
+      ? env("OPENAI_IMAGE_FIDELITY")
+      : "high",
     // 6 slides at ~3s is the shape the format converges on: long enough to
     // land a hook, a payoff and a CTA, short enough to loop.
     slides: Math.max(3, Math.min(10, Number(process.env.UGC_SLIDE_COUNT || 6))),

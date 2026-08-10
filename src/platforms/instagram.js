@@ -204,3 +204,74 @@ export async function fetchAudience(account) {
   if (!res.ok) throw new Error(`Instagram audience failed: ${JSON.stringify(data)}`);
   return { followers: Number(data.followers_count || 0) };
 }
+
+// A slideshow as an Instagram carousel: each slide becomes an image child,
+// and the children are published together as one post. Instagram fetches
+// every image from a public URL, so BASE_URL has to be reachable.
+export async function uploadPhotos(account, { imageUrls, caption }) {
+  if (!imageUrls?.length) throw new Error("No slide images to post");
+  const userId = account.external_id || "me";
+
+  // Same fail-fast check the clip upload does: an unreachable URL surfaces
+  // as a meaningless container error minutes later otherwise.
+  try {
+    const probe = await fetch(imageUrls[0], { method: "HEAD" });
+    if (!probe.ok) throw new Error(`slide URL returned HTTP ${probe.status}`);
+  } catch (err) {
+    throw new Error(
+      `Instagram can't fetch the slides: ${String(err.message || err)} ` +
+        `(${imageUrls[0]} must be publicly reachable - check BASE_URL)`
+    );
+  }
+
+  // Carousels take 2-10 children; a longer slideshow is trimmed to what the
+  // platform accepts rather than rejected outright.
+  const children = [];
+  for (const url of imageUrls.slice(0, 10)) {
+    const res = await fetch(`${GRAPH}/${userId}/media`, {
+      method: "POST",
+      headers: { "Content-Type": "application/x-www-form-urlencoded" },
+      body: new URLSearchParams({
+        image_url: url,
+        is_carousel_item: "true",
+        access_token: account.access_token,
+      }),
+    });
+    const child = await res.json();
+    if (!res.ok || !child.id) {
+      throw new Error(`Instagram carousel item failed: ${JSON.stringify(child).slice(0, 300)}`);
+    }
+    children.push(child.id);
+  }
+
+  const createRes = await fetch(`${GRAPH}/${userId}/media`, {
+    method: "POST",
+    headers: { "Content-Type": "application/x-www-form-urlencoded" },
+    body: new URLSearchParams({
+      media_type: "CAROUSEL",
+      children: children.join(","),
+      caption,
+      access_token: account.access_token,
+    }),
+  });
+  const container = await createRes.json();
+  if (!createRes.ok || !container.id) {
+    throw new Error(`Instagram carousel create failed: ${JSON.stringify(container).slice(0, 300)}`);
+  }
+
+  await waitForContainer(container.id, account.access_token);
+
+  const publishRes = await fetch(`${GRAPH}/${userId}/media_publish`, {
+    method: "POST",
+    headers: { "Content-Type": "application/x-www-form-urlencoded" },
+    body: new URLSearchParams({
+      creation_id: container.id,
+      access_token: account.access_token,
+    }),
+  });
+  const published = await publishRes.json();
+  if (!publishRes.ok || !published.id) {
+    throw new Error(`Instagram carousel publish failed: ${JSON.stringify(published).slice(0, 300)}`);
+  }
+  return published.id;
+}

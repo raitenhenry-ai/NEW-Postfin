@@ -159,12 +159,15 @@ export async function planSlideshow(product, settings = {}) {
             "carry the detail the overlay had no room for, not repeat it verbatim. " +
             IMAGE_RULES + " " +
             (photoCount
-              ? `useProductPhoto: this product has ${photoCount} real photos, indexed 0-${photoCount - 1}. ` +
-                "Set it to the index of the photo to use for this slide when a real " +
-                "photo of the product beats a drawn one - which is most slides that " +
-                "show the product itself. Use -1 to generate the image instead. " +
-                "Still write an imagePrompt either way, as the fallback. "
-              : "useProductPhoto: always -1 - there are no real photos of this subject. ") +
+              ? "useProductPhoto: 1 when this slide should show the product itself, " +
+                "0 when it should not. There are real photos of it, and on a slide " +
+                "marked 1 they are handed to the image model as references so it " +
+                "recreates the product accurately inside your scene. So describe " +
+                "the scene around the product - where it is, who is holding it, the " +
+                "light, the surface - and do NOT describe what the product looks " +
+                "like: the photos decide that. Most slides that mention the product " +
+                "should be 1. "
+              : "useProductPhoto: always 0 - there are no photos of this subject. ") +
             "caption: 1-2 sentences for the post text. " +
             "hashtags: 6-10 lowercase hashtags starting with #. " +
             "styleNote: one short phrase describing the visual look shared by every " +
@@ -223,14 +226,17 @@ function defaultAngle(product, settings) {
 function shapeSlides(raw, photoCount) {
   return (Array.isArray(raw) ? raw : [])
     .map((slide) => {
-      const index = Number(slide?.useProductPhoto);
+      // Written as a flag now, but scripts planned before this was a flag
+      // carry a photo index - any non-negative number means the same thing:
+      // this slide is about the product.
+      const raw = slide?.useProductPhoto ?? slide?.showsProduct;
+      const showsProduct = raw === true || (Number.isFinite(Number(raw)) && Number(raw) >= 0 && Number(raw) !== 0)
+        || raw === 1 || raw === "1";
       return {
         overlay: String(slide?.overlay || "").trim().slice(0, 90),
         spoken: String(slide?.spoken || "").trim().slice(0, 220),
         imagePrompt: String(slide?.imagePrompt || "").trim().slice(0, 600),
-        // A hallucinated index would point at a photo that isn't there.
-        productImage:
-          Number.isInteger(index) && index >= 0 && index < photoCount ? index : -1,
+        showsProduct: Boolean(showsProduct && photoCount),
       };
     })
     .filter((slide) => slide.overlay || slide.spoken)
@@ -282,7 +288,7 @@ function templateSlideshow(product, settings, slideCount, angle) {
       overlay: product?.site ? `Get it at ${product.site}` : "Follow for more",
       spoken: product?.site ? `Get it at ${product.site}.` : "Follow for more like this.",
     },
-  ].map((slide) => ({ ...slide, imagePrompt: "", productImage: -1 }));
+  ].map((slide) => ({ ...slide, imagePrompt: "", showsProduct: false }));
 
   return finishScript({
     slides,
@@ -391,8 +397,12 @@ async function requestImage(prompt, styleNote, outPath, options = {}) {
     });
   }
 
-  // gpt-image-1 always answers with base64; the older models answer with a
-  // URL, so both are accepted.
+  return writeImage(data, outPath);
+}
+
+// gpt-image-1 always answers with base64; the older models answer with a
+// URL, so both are accepted.
+async function writeImage(data, outPath) {
   const entry = data.data?.[0];
   if (entry?.b64_json) {
     fs.writeFileSync(outPath, Buffer.from(entry.b64_json, "base64"));
@@ -407,13 +417,94 @@ async function requestImage(prompt, styleNote, outPath, options = {}) {
   throw new ImageError("The image model returned no image");
 }
 
+// The same request, but with the product's own photos attached as
+// references. The model is not pasting them in - it redraws the product
+// inside the scene it was asked for, which is the only way to get the
+// product into a shot that was never photographed: a real dashboard on a
+// laptop on a kitchen table, the real bottle held under a real tap.
+//
+// Sent as multipart to the edits endpoint, which is what accepts reference
+// images. input_fidelity=high is what holds a logo, a label or a
+// screenshot's interface together; newer image models always work that way
+// and reject the parameter, so a refusal naming it retries without.
+async function requestImageWithReferences(prompt, styleNote, references, outPath, options = {}) {
+  const form = new FormData();
+  form.append("model", config.ugc.imageModel);
+  form.append("prompt", referencePrompt(prompt, styleNote));
+  form.append("n", "1");
+  form.append("size", options.size || config.ugc.imageSize);
+  form.append("quality", options.quality || config.ugc.imageQuality);
+  if (!options.noFidelity) form.append("input_fidelity", config.ugc.imageFidelity);
+
+  for (const [i, file] of references.entries()) {
+    const bytes = fs.readFileSync(file);
+    const type = file.toLowerCase().endsWith(".png") ? "image/png" : "image/jpeg";
+    form.append("image[]", new Blob([bytes], { type }), `reference${i}${path.extname(file) || ".png"}`);
+  }
+
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), IMAGE_TIMEOUT_MS);
+  let res;
+  try {
+    res = await fetch(`${config.openaiApiBase}/images/edits`, {
+      method: "POST",
+      signal: controller.signal,
+      headers: { Authorization: `Bearer ${config.openaiApiKey}` },
+      body: form,
+    });
+  } catch (err) {
+    throw new ImageError(
+      err.name === "AbortError"
+        ? `The image model did not answer within ${Math.round(IMAGE_TIMEOUT_MS / 1000)}s`
+        : `Could not reach the image API: ${err.message || err}`
+    );
+  } finally {
+    clearTimeout(timer);
+  }
+
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok) {
+    const detail = data?.error?.message || JSON.stringify(data).slice(0, 300);
+    // Models that always work at high fidelity reject the setting outright.
+    if (!options.noFidelity && /input_fidelity/i.test(detail)) {
+      return requestImageWithReferences(prompt, styleNote, references, outPath, {
+        ...options, noFidelity: true,
+      });
+    }
+    throw new ImageError(`${config.ugc.imageModel} refused (${res.status}): ${detail}`, {
+      permanent: permanentImageFailure(res.status, detail),
+      retryable: !contentRefusal(res.status, detail),
+      status: res.status,
+    });
+  }
+
+  return writeImage(data, outPath);
+}
+
+// What the model is told when it has the product in front of it. The scene
+// is ours; the product is theirs, and must survive the redraw exactly.
+function referencePrompt(prompt, styleNote) {
+  return [
+    styleNote,
+    "Recreate the product shown in the reference images faithfully - the same " +
+      "shape, proportions, colours, materials and branding, and for a screenshot " +
+      "or app interface the same layout, and the same text where it appears on " +
+      "the product itself. Do not copy the reference framing: place the recreated " +
+      "product naturally into this scene:",
+    prompt,
+    LOOK,
+  ].filter(Boolean).join(" ").slice(0, 3800);
+}
+
 // One slide image, retried through rate limits and hiccups. Returns the
 // written path.
-async function generateSlideImage(prompt, styleNote, outPath) {
+async function generateSlideImage(prompt, styleNote, outPath, references = []) {
   let last;
   for (let attempt = 0; attempt < IMAGE_ATTEMPTS; attempt++) {
     try {
-      return await requestImage(prompt, styleNote, outPath);
+      return references.length
+        ? await requestImageWithReferences(prompt, styleNote, references, outPath)
+        : await requestImage(prompt, styleNote, outPath);
     } catch (err) {
       last = err;
       // A 429 or a 500 is worth waiting out; a 403 or a safety refusal never is.
@@ -436,13 +527,12 @@ export async function generateSlideImages(script, dir, productPhotos = []) {
   fs.mkdirSync(dir, { recursive: true });
   const images = new Array(script.slides.length).fill(null);
 
+  // Up to four references: enough for the model to see the product from
+  // more than one angle without the request becoming unwieldy.
+  const references = productPhotos.filter((p) => p && fs.existsSync(p)).slice(0, 4);
+
   const queue = [];
   script.slides.forEach((slide, i) => {
-    const photo = productPhotos[slide.productImage];
-    if (slide.productImage >= 0 && photo && fs.existsSync(photo)) {
-      images[i] = photo;
-      return;
-    }
     if (slide.imagePrompt) queue.push(i);
   });
 
@@ -454,8 +544,11 @@ export async function generateSlideImages(script, dir, productPhotos = []) {
     while (cursor < queue.length && !stopped) {
       const i = queue[cursor++];
       const target = path.join(dir, `slide${i}.png`);
+      const slide = script.slides[i];
+      // Slides that show the product are drawn with its photos in hand.
+      const refs = slide.showsProduct ? references : [];
       try {
-        images[i] = await generateSlideImage(script.slides[i].imagePrompt, script.styleNote, target);
+        images[i] = await generateSlideImage(slide.imagePrompt, script.styleNote, target, refs);
       } catch (err) {
         const message = err.message || String(err);
         failures.push({ slide: i + 1, message });
@@ -472,7 +565,9 @@ export async function generateSlideImages(script, dir, productPhotos = []) {
     images,
     requested: queue.length,
     generated: queue.filter((i) => images[i]).length,
-    photos: images.length - queue.length,
+    // How many slides were drawn with the product's own photos in hand.
+    fromReferences: queue.filter((i) => script.slides[i].showsProduct && images[i]).length,
+    references: references.length,
     failures,
     // Set when the account itself cannot generate images - the caller turns
     // this into a failed job rather than a video full of blank cards.
@@ -690,6 +785,63 @@ async function renderSlide({ image, overlay, audio, seconds, index, isHook, work
   );
   await run(config.ffmpegPath, args);
   return out;
+}
+
+/* ---------------------------------------------------------- slide images */
+
+// One finished slide as a still 1080x1920 PNG: the art, the scrim, the
+// overlay burned in - the same frame the video shows, without the motion.
+//
+// These are the actual deliverable of the format. A slideshow post is a
+// stack of photos the viewer swipes, not a video, and TikTok and Instagram
+// both take them as images; the mp4 is what gets posted where only video is
+// accepted, and what makes the preview playable.
+async function renderSlideStill({ image, overlay, index, isHook, outPath, workDir }) {
+  const args = ["-y"];
+
+  if (image) args.push("-i", image);
+  else args.push("-f", "lavfi", "-t", "1", "-i", gradientSource(index, 1));
+
+  args.push("-f", "lavfi", "-t", "1", "-i",
+    `gradients=s=${W}x${H}:c0=black@0.78:c1=black@0.0:x0=0:y0=0:x1=0:y1=1150:d=1:speed=0.00001`);
+
+  const filter =
+    `[0:v]scale=${W}:${H}:force_original_aspect_ratio=increase,crop=${W}:${H}[bg];` +
+    `[1:v]format=rgba[scrim];` +
+    `[bg][scrim]overlay=0:0` +
+    overlayFilters(overlay, index, isHook, workDir) +
+    `,format=rgb24[v]`;
+
+  args.push("-filter_complex", filter, "-map", "[v]", "-frames:v", "1", outPath);
+  await run(config.ffmpegPath, args);
+  return outPath;
+}
+
+// Every slide as a still, written where they will outlive the render - the
+// platforms fetch them over HTTP at publish time, and the UI shows them.
+// Returns the filenames, relative to the media directory.
+export async function renderSlideImages({ script, images = [], jobId, workDir }) {
+  const slides = script.slides || [];
+  const dirName = path.join("slides", `job${jobId}`);
+  const outDir = path.join(config.ugcDir, dirName);
+  fs.rmSync(outDir, { recursive: true, force: true });
+  fs.mkdirSync(outDir, { recursive: true });
+  fs.mkdirSync(workDir, { recursive: true });
+
+  const written = [];
+  for (const [i, slide] of slides.entries()) {
+    const name = `slide${String(i + 1).padStart(2, "0")}.png`;
+    await renderSlideStill({
+      image: images[i] || null,
+      overlay: slide.overlay,
+      index: i,
+      isHook: i === 0,
+      outPath: path.join(outDir, name),
+      workDir,
+    });
+    written.push(path.join(dirName, name).split(path.sep).join("/"));
+  }
+  return written;
 }
 
 /* ---------------------------------------------------------------- render */

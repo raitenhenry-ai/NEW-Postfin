@@ -44,6 +44,11 @@
   // product photo whenever it exists. #t=0.5 asks the browser for a frame
   // half a second in - without it a poster-less video paints black.
   function thumbMedia(job) {
+    // The hook slide is the ad's first frame and loads far faster than the
+    // video does.
+    if (job.slideUrls?.length) {
+      return `<img src="${escapeHtml(job.slideUrls[0])}" alt="" loading="lazy">`;
+    }
     if (job.videoUrl) {
       return `<video src="${escapeHtml(job.videoUrl)}#t=0.5" muted playsinline preload="metadata"></video>`;
     }
@@ -107,6 +112,22 @@
     return "No video yet.";
   }
 
+  // The slides themselves, as the images that get posted. This is what a
+  // slideshow actually is, so it is shown before the write-up.
+  function slideGallery(job) {
+    const urls = job.slideUrls || [];
+    if (!urls.length) return "";
+    return `
+      <div class="recent-slide-grid">
+        ${urls.map((url, i) => `
+          <a class="recent-slide-shot" href="${escapeHtml(url)}" target="_blank" rel="noopener"
+             aria-label="Slide ${i + 1}">
+            <img src="${escapeHtml(url)}" alt="" loading="lazy">
+            <span class="recent-slide-index">${i + 1}</span>
+          </a>`).join("")}
+      </div>`;
+  }
+
   // A slideshow is worth reading as well as watching: the overlay lines are
   // the ad, and seeing them listed is how you tell whether it is any good
   // without playing 25 seconds of video.
@@ -156,6 +177,10 @@
       ${job.videoUrl
         ? `<a class="recent-post-link" href="${escapeHtml(job.videoUrl)}" target="_blank" rel="noopener">Open the video file</a>`
         : `<p class="recent-card-meta">${escapeHtml(videoNote(job))}</p>`}
+      ${job.slideUrls?.length
+        ? `<p class="recent-detail-caption">The ${job.slideUrls.length} slides, as posted:</p>`
+        : ""}
+      ${slideGallery(job)}
       ${text ? `<p class="recent-detail-caption">${escapeHtml(text)}</p>` : ""}
       ${slideList(job)}
       ${job.productUrl

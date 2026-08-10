@@ -50,6 +50,7 @@ Every video is one of two things, chosen per video and stored on it:
 | What it is | a person talking to camera | images cutting every few seconds under one big line of text, with a voiceover |
 | Needs | `HEYGEN_API_KEY` | `OPENAI_API_KEY` + ffmpeg |
 | Good for | a physical product someone can hold | software, apps, tool comparisons, method videos — anything with nothing to film |
+| Posted as | a video | photos (TikTok photo mode, Instagram carousel); video where photos aren't supported |
 | Cost per video | HeyGen credits | roughly $0.10–$1.50 of image generation, see below |
 
 `UGC_FORMAT` sets the default (`avatar` unless you change it), but it is the
@@ -70,7 +71,15 @@ other format.
 The format short-form advertising for software actually uses. A slideshow is
 planned as slides rather than scenes, and each slide carries three things:
 the **overlay** burned on screen, the **spoken** line under it, and an
-**image prompt**. The rules the planner is held to come from how the format
+**image prompt**.
+
+**What comes out is images.** Each slide is composed as a finished 1080×1920
+PNG — art, scrim, overlay text — and those images are the post: on TikTok
+they go out through photo mode, on Instagram as a carousel. They're kept,
+served, and shown on Recent, so you can look at exactly what will be
+published. An mp4 of the same slides is rendered alongside, which is what
+goes to platforms that only accept video (YouTube), and what makes the
+preview playable. The rules the planner is held to come from how the format
 works, not from taste:
 
 - **Slide 1 is the ad.** Most viewers decide inside a couple of seconds, so
@@ -86,9 +95,16 @@ works, not from taste:
   slide art is asked to be wordless and calm in the upper third; the overlay
   is burned in afterwards at a known size, over a gradient scrim so white
   text stays legible on a bright photo.
-- **Real photos beat drawn ones.** When the video came from a product URL,
-  the planner can put a scraped product photo on any slide instead of a
-  generated image.
+- **The product is recreated, not pasted.** When the video came from a
+  product URL, the scraped photos are handed to the image model as
+  *references* on any slide that shows the product, and it redraws the real
+  thing — same shape, colours, branding, and for a screenshot the same
+  interface — inside a scene that was never photographed: on a kitchen
+  counter, in someone's hand, on a laptop by a window. A catalogue photo
+  dropped into an ad looks like a catalogue photo; this doesn't. The planner
+  is told to describe the scene and *not* the product, because the photos
+  decide that. `OPENAI_IMAGE_FIDELITY` (default `high`) is what holds a logo
+  or a screenshot's layout together through the redraw.
 
 Pick the shape of the ad with `angle`:
 

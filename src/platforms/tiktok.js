@@ -3,6 +3,9 @@ import config from "../config.js";
 
 const TOKEN_URL = "https://open.tiktokapis.com/v2/oauth/token/";
 const INIT_URL = "https://open.tiktokapis.com/v2/post/publish/video/init/";
+// Photo posts go through the content endpoint, not the video one: TikTok
+// treats a slideshow as its own post type rather than as a video.
+const PHOTO_INIT_URL = "https://open.tiktokapis.com/v2/post/publish/content/init/";
 
 export function isConfigured() {
   return Boolean(config.tiktok.clientKey && config.tiktok.clientSecret);
@@ -204,4 +207,44 @@ export async function fetchAudience(account) {
     throw new Error(`TikTok audience failed: ${JSON.stringify(data.error || data)}`);
   }
   return { followers: Number(data.data?.user?.follower_count || 0) };
+}
+
+// A slideshow, posted as what it actually is: a stack of photos the viewer
+// swipes through, not a video of them. TikTok pulls each image from a public
+// URL, so the slides have to be reachable at BASE_URL.
+export async function uploadPhotos(account, { imageUrls, caption, title }) {
+  const text = caption || title || "";
+  if (!imageUrls?.length) throw new Error("No slide images to post");
+
+  const res = await fetch(PHOTO_INIT_URL, {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${account.access_token}`,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      media_type: "PHOTO",
+      post_mode: "DIRECT_POST",
+      post_info: {
+        title: text.slice(0, 90),
+        description: text.slice(0, 4000),
+        privacy_level: config.tiktok.privacyLevel,
+        disable_comment: false,
+        auto_add_music: true,
+      },
+      source_info: {
+        source: "PULL_FROM_URL",
+        photo_cover_index: 0,
+        photo_images: imageUrls.slice(0, 35),
+      },
+    }),
+  });
+
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok || (data.error && data.error.code !== "ok")) {
+    throw new Error(`TikTok photo post failed: ${JSON.stringify(data).slice(0, 400)}`);
+  }
+  const publishId = data.data?.publish_id;
+  if (!publishId) throw new Error(`TikTok returned no publish_id: ${JSON.stringify(data).slice(0, 300)}`);
+  return publishId;
 }
