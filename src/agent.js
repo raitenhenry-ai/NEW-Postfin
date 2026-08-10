@@ -200,12 +200,9 @@ const IMPLEMENTATIONS = {
       brief, count: slots.length, productUrl: resolvedUrl,
     });
 
-    // Prefer the tool args; fall back to the chat platform picker.
-    // Empty/omitted means every connected account — store that list so the
-    // calendar never shows "No platform".
-    const wanted = await resolveTargetPlatforms(
-      (Array.isArray(platforms) && platforms.length) ? platforms : ctx.platforms
-    );
+    // Empty/omitted platforms means every connected account — store that
+    // list so the calendar never shows "No platform".
+    const wanted = await resolveTargetPlatforms(platforms);
     const now = Date.now();
     const created = [];
     for (const [i, concept] of plan.concepts.entries()) {
@@ -216,12 +213,7 @@ const IMPLEMENTATIONS = {
          VALUES (?, ?, 'queued', 1, ?, ?, ?, ?, ?, ?) RETURNING id`,
         [
           resolvedUrl,
-          JSON.stringify({
-            tone: "casual",
-            style: "product_pov",
-            platforms: wanted,
-            outputFormat: ctx.outputFormat === "slideshow" ? "slideshow" : "video",
-          }),
+          JSON.stringify({ tone: "casual", style: "product_pov", platforms: wanted }),
           concept.title, brief || null, JSON.stringify(concept), scheduledAt, now, now,
         ]
       );
