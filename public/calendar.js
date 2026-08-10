@@ -1310,9 +1310,20 @@
 
   function setFormatMenuOpen(open) {
     if (!formatMenu || !formatBtn) return;
-    formatMenu.hidden = !open;
-    formatBtn.setAttribute("aria-expanded", open ? "true" : "false");
-    if (open) positionFormatMenu();
+    if (open) {
+      if (formatMenu.parentElement !== document.body) {
+        document.body.appendChild(formatMenu);
+      }
+      formatMenu.hidden = false;
+      formatBtn.setAttribute("aria-expanded", "true");
+      positionFormatMenu();
+    } else {
+      formatMenu.hidden = true;
+      formatBtn.setAttribute("aria-expanded", "false");
+      if (formatPicker && formatMenu.parentElement !== formatPicker) {
+        formatPicker.appendChild(formatMenu);
+      }
+    }
   }
 
   function syncFormatPicker() {
@@ -1367,8 +1378,15 @@
 
   document.addEventListener("click", (e) => {
     if (!productPicker?.contains(e.target)) setProductMenuOpen(false);
-    if (!formatPicker?.contains(e.target)) setFormatMenuOpen(false);
+    if (!formatPicker?.contains(e.target) && !formatMenu?.contains(e.target)) {
+      setFormatMenuOpen(false);
+    }
   });
+
+  window.addEventListener("resize", positionFormatMenu);
+  document.getElementById("cal-chat-messages")?.addEventListener("scroll", () => {
+    if (formatMenu && !formatMenu.hidden) setFormatMenuOpen(false);
+  }, { passive: true });
 
   syncFormatPicker();
   syncSendState();
