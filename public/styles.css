@@ -4884,8 +4884,9 @@ body.theme-light .cal-post-fields {
 .cal-thread {
   display: flex;
   flex-direction: column;
+  align-items: stretch;
   gap: 12px;
-  padding: 16px;
+  padding: 10px 6px;
 }
 
 .cal-msg { display: flex; flex-direction: column; gap: 8px; max-width: 100%; }
