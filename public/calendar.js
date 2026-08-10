@@ -1091,8 +1091,156 @@
 
   const URL_PATTERN = /https?:\/\/[^\s]+/i;
 
+  const LOADING_LINES = [
+    "cooking up your schedule...",
+    "putting it all together...",
+    "working some magic...",
+    "getting things ready...",
+    "making a game plan...",
+    "letting Postfin cook...",
+    "building your plan...",
+    "getting everything lined up...",
+    "making things happen...",
+    "setting things in motion...",
+    "connecting the dots...",
+    "figuring out the details...",
+    "getting everything in place...",
+    "putting the pieces together...",
+    "planning things out...",
+    "making it all click...",
+    "working behind the scenes...",
+    "getting things organized...",
+    "doing the heavy lifting...",
+    "making a few adjustments...",
+    "getting everything dialed in...",
+    "finding the right balance...",
+    "making your plan smarter...",
+    "sorting things out...",
+    "getting things moving...",
+    "turning ideas into action...",
+    "making the pieces fit...",
+    "building something good...",
+    "getting the gears turning...",
+    "mapping things out...",
+    "putting AI to work...",
+    "letting AI handle it...",
+    "thinking things through...",
+    "getting the details right...",
+    "making some moves...",
+    "doing the boring stuff...",
+    "making it look easy...",
+    "getting everything sorted...",
+    "working on it...",
+    "giving it some thought...",
+    "making the magic happen...",
+    "getting it just right...",
+    "bringing it all together...",
+    "working out the details...",
+    "crunching the numbers...",
+    "making some calculations...",
+    "finding what works...",
+    "getting things in order...",
+    "building behind the scenes...",
+    "making something great...",
+    "Postfin is cooking...",
+    "Postfin is on it...",
+    "Postfin is thinking...",
+    "Postfin is working...",
+    "Postfin is planning...",
+    "Postfin is building...",
+    "Postfin is figuring it out...",
+    "Postfin is making moves...",
+    "Postfin is doing its thing...",
+    "Postfin has a plan...",
+    "letting the fin cook...",
+    "the fin is cooking...",
+    "making waves...",
+    "getting ready to make waves...",
+    "keeping things moving...",
+    "building momentum...",
+    "setting the pace...",
+    "finding the sweet spot...",
+    "getting into the flow...",
+    "making everything flow...",
+    "turning the gears...",
+    "firing things up...",
+    "warming things up...",
+    "powering things up...",
+    "spinning things up...",
+    "putting things into motion...",
+    "making a few tweaks...",
+    "fine-tuning everything...",
+    "adding the finishing touches...",
+    "checking everything twice...",
+    "polishing things up...",
+    "almost done cooking...",
+    "something good is brewing...",
+    "something good is cooking...",
+    "good things are loading...",
+    "getting something good ready...",
+    "preparing something good...",
+    "your plan is taking shape...",
+    "everything is coming together...",
+    "almost there...",
+    "nearly ready...",
+    "finishing things up...",
+    "wrapping things up...",
+    "just about ready...",
+    "one sec, we’re cooking...",
+    "give us a second...",
+    "hang tight, we’re working...",
+    "just putting things together...",
+    "getting the final details right...",
+    "ready when you are...",
+  ];
+  let loadingTimer = null;
+  let loadingFadeTimer = null;
+  let loadingLineIndex = -1;
+
+  function stopLoadingShuffle() {
+    if (loadingTimer) {
+      clearInterval(loadingTimer);
+      loadingTimer = null;
+    }
+    if (loadingFadeTimer) {
+      clearTimeout(loadingFadeTimer);
+      loadingFadeTimer = null;
+    }
+  }
+
+  function pickLoadingLine() {
+    if (LOADING_LINES.length < 2) return LOADING_LINES[0] || "working on it...";
+    let next = Math.floor(Math.random() * LOADING_LINES.length);
+    if (next === loadingLineIndex) {
+      next = (next + 1) % LOADING_LINES.length;
+    }
+    loadingLineIndex = next;
+    return LOADING_LINES[next];
+  }
+
+  function startLoadingShuffle() {
+    stopLoadingShuffle();
+    const el = dayPanel?.querySelector(".cal-loading-status");
+    if (!el) return;
+    el.textContent = pickLoadingLine();
+    el.classList.remove("is-fading");
+    loadingTimer = setInterval(() => {
+      const status = dayPanel?.querySelector(".cal-loading-status");
+      if (!status) {
+        stopLoadingShuffle();
+        return;
+      }
+      status.classList.add("is-fading");
+      loadingFadeTimer = setTimeout(() => {
+        status.textContent = pickLoadingLine();
+        status.classList.remove("is-fading");
+      }, 320);
+    }, 2200);
+  }
+
   function renderAgentEmpty() {
     if (!dayPanel) return;
+    stopLoadingShuffle();
     dayPanel.innerHTML = `
       <div class="cal-agent-empty" aria-hidden="true">
         <img class="cal-agent-mark" src="agent-mark.jpg" alt="">
@@ -1101,6 +1249,7 @@
 
   function renderThread(pending) {
     if (!dayPanel) return;
+    stopLoadingShuffle();
     if (!conversation.length && !pending) {
       renderAgentEmpty();
       return;
@@ -1116,9 +1265,10 @@
     dayPanel.innerHTML = `
       <div class="cal-thread">
         ${bubbles}
-        ${pending ? `<div class="cal-msg is-assistant"><div class="cal-msg-body cal-typing"><span></span><span></span><span></span></div></div>` : ""}
+        ${pending ? `<div class="cal-msg is-assistant"><p class="cal-loading-status" aria-live="polite"></p></div>` : ""}
       </div>`;
     dayPanel.scrollTop = dayPanel.scrollHeight;
+    if (pending) startLoadingShuffle();
   }
 
   // Light formatting only - the assistant is told to answer in plain
