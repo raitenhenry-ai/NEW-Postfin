@@ -2117,7 +2117,8 @@ body.sidebar-expanded {
   border-bottom: none;
 }
 
-.cal-cell:hover {
+.cal-cell:hover,
+.cal-cell:has(.cal-cell-events:hover) {
   background: rgba(255, 255, 255, 0.03);
 }
 
