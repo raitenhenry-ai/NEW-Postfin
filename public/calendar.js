@@ -210,9 +210,141 @@
   let drag = null;
   let planAbort = null;
   const chatCancelBtn = document.getElementById("cal-chat-cancel");
+  const historyPicker = document.getElementById("cal-history-picker");
+  const historyBtn = document.getElementById("cal-history-btn");
+  const historyMenu = document.getElementById("cal-history-menu");
+  const historyList = document.getElementById("cal-history-list");
   // Sent back whole each turn; the server keeps no session.
   const conversation = [];
   let assistantBusy = false;
+  let activeChatId = null;
+
+  const CHATS_KEY = "cal-recent-chats";
+  const MAX_CHATS = 20;
+
+  function loadChatStore() {
+    try {
+      const raw = JSON.parse(localStorage.getItem(CHATS_KEY) || "[]");
+      return Array.isArray(raw) ? raw : [];
+    } catch {
+      return [];
+    }
+  }
+
+  function saveChatStore(chats) {
+    try {
+      localStorage.setItem(CHATS_KEY, JSON.stringify(chats.slice(0, MAX_CHATS)));
+    } catch {
+      /* ignore */
+    }
+  }
+
+  function chatPreview(messages) {
+    const first = messages.find((m) => m.role === "user");
+    const text = (first?.content || "Chat").replace(/\s+/g, " ").trim();
+    return text.length > 56 ? `${text.slice(0, 55)}…` : text;
+  }
+
+  function formatChatWhen(ts) {
+    const d = new Date(ts);
+    const now = new Date();
+    const sameDay = d.toDateString() === now.toDateString();
+    if (sameDay) {
+      return d.toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" });
+    }
+    return d.toLocaleDateString("en-US", { month: "short", day: "numeric" });
+  }
+
+  function persistActiveChat() {
+    if (!conversation.length) return;
+    if (!activeChatId) activeChatId = `chat-${Date.now()}`;
+    const entry = {
+      id: activeChatId,
+      updatedAt: Date.now(),
+      selectedDates: [...selected].sort(),
+      messages: conversation.map(({ role, content, actions }) => ({
+        role,
+        content,
+        ...(actions?.length ? { actions } : {}),
+      })),
+      preview: chatPreview(conversation),
+    };
+    const chats = loadChatStore().filter((c) => c.id !== activeChatId);
+    chats.unshift(entry);
+    saveChatStore(chats);
+  }
+
+  function setHistoryMenuOpen(open) {
+    if (!historyPicker || !historyBtn || !historyMenu) return;
+    if (open) {
+      renderHistoryMenu();
+      setModeMenuOpen(false);
+      setMonthMenuOpen(false);
+    }
+    historyPicker.classList.toggle("open", open);
+    historyBtn.setAttribute("aria-expanded", open ? "true" : "false");
+    historyMenu.hidden = !open;
+  }
+
+  function renderHistoryMenu() {
+    if (!historyList) return;
+    const chats = loadChatStore();
+    if (!chats.length) {
+      historyList.innerHTML = `<p class="cal-history-empty">No recent chats yet.</p>`;
+      return;
+    }
+    historyList.innerHTML = chats.map((c) => `
+      <button type="button" class="cal-history-item${c.id === activeChatId ? " is-active" : ""}" role="menuitem" data-chat-id="${escapeHtml(c.id)}">
+        <span class="cal-history-item-preview">${escapeHtml(c.preview || "Chat")}</span>
+        <span class="cal-history-item-meta">${escapeHtml(formatChatWhen(c.updatedAt))}${
+          c.selectedDates?.length ? ` · ${c.selectedDates.length} day${c.selectedDates.length === 1 ? "" : "s"}` : ""
+        }</span>
+      </button>`).join("");
+
+    historyList.querySelectorAll("[data-chat-id]").forEach((btn) => {
+      btn.addEventListener("click", (e) => {
+        e.stopPropagation();
+        openRecentChat(btn.getAttribute("data-chat-id"));
+      });
+    });
+  }
+
+  function openRecentChat(id) {
+    const chat = loadChatStore().find((c) => c.id === id);
+    if (!chat) return;
+
+    if (activeChatId !== chat.id) persistActiveChat();
+
+    if (!isEditMode()) {
+      mode = "edit";
+      saveMode(mode);
+      focused = null;
+      setChatCollapsed(false);
+    }
+
+    if (planAbort) {
+      planAbort.abort();
+      planAbort = null;
+    }
+
+    activeChatId = chat.id;
+    conversation.length = 0;
+    chat.messages.forEach((m) => conversation.push({
+      role: m.role,
+      content: m.content,
+      ...(m.actions?.length ? { actions: m.actions } : {}),
+    }));
+    selected.clear();
+    (chat.selectedDates || []).forEach((key) => {
+      if (!isPastKey(key)) selected.add(key);
+    });
+    assistantBusy = false;
+    setComposerActive(false);
+    setHistoryMenuOpen(false);
+    render();
+    renderThread(false);
+    syncChatCancel();
+  }
 
   function isEditMode() {
     return mode === "edit";
