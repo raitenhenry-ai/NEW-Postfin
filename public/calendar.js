@@ -1256,13 +1256,23 @@
           >${media}</button>`;
       }).join("");
 
+      if (!products.length) {
+        productRail.innerHTML = `
+          <p class="cal-product-empty">No products yet</p>
+          <a class="cal-product-dot is-add" href="products.html" title="Add product" aria-label="Add product">+</a>
+        `;
+        return;
+      }
+
       productRail.innerHTML = `
         ${dots}
         <a class="cal-product-dot is-add" href="products.html" title="Add product" aria-label="Add product">+</a>
       `;
     } catch {
-      productRail.innerHTML =
-        `<a class="cal-product-dot is-add" href="products.html" title="Add product" aria-label="Add product">+</a>`;
+      productRail.innerHTML = `
+        <p class="cal-product-empty">Couldn't load products</p>
+        <a class="cal-product-dot is-add" href="products.html" title="Add product" aria-label="Add product">+</a>
+      `;
     }
   }
 

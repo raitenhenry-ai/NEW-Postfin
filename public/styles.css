@@ -4921,6 +4921,19 @@ body.theme-light .cal-composer-send:disabled {
   opacity: 0.45;
 }
 
+body.theme-light .cal-product-link {
+  background: #ffffff;
+  border-color: #e0e0e6;
+}
+
+body.theme-light .cal-product-link-label {
+  color: #6a6a72;
+}
+
+body.theme-light .cal-product-empty {
+  color: #8a8a92;
+}
+
 body.theme-light .cal-product-dot {
   background: #ececf1;
 }
