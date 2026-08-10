@@ -237,6 +237,7 @@
 
   function closeDayPopup() {
     dayPopupKey = null;
+    dayPopupEventIndex = null;
     if (!dayPopup) return;
     dayPopup.hidden = true;
     dayPopupList && (dayPopupList.innerHTML = "");
