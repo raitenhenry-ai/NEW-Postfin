@@ -403,17 +403,6 @@
     selectedEvent = null;
   }
 
-  function selectEvent(ev, key, index) {
-    const id = eventIdentity(ev, key, index);
-    if (selectedEvent?.id === id) {
-      clearSelectedEvent();
-      if (isViewMode() && focused === key) openedPost = null;
-      return false;
-    }
-    selectedEvent = { id, key, index };
-    return true;
-  }
-
   function syncChatCancel() {
     if (!chatCancelBtn) return;
     const show = isEditMode() && (conversation.length > 0 || assistantBusy);
