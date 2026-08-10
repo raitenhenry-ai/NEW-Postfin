@@ -14,10 +14,22 @@
   const productPillBtn = document.getElementById("cal-product-pill-btn");
   const productPillLabel = document.getElementById("cal-product-pill-label");
   const productMenu = document.getElementById("cal-product-menu");
+  const formatPicker = document.getElementById("cal-format-picker");
+  const formatBtn = document.getElementById("cal-format-btn");
+  const formatBtnIcon = document.getElementById("cal-format-btn-icon");
+  const formatMenu = document.getElementById("cal-format-menu");
   const hint = document.getElementById("cal-hint");
   const shell = document.querySelector(".cal-shell");
   const PRODUCT_KEY = "cal-product-url";
+  const FORMAT_KEY = "cal-output-format";
+  const FORMAT_ICONS = {
+    slideshow:
+      '<svg viewBox="0 0 16 16" fill="none"><rect x="2.5" y="3.5" width="11" height="9" rx="1.5" stroke="currentColor" stroke-width="1.4"/><circle cx="5.75" cy="6.5" r="1" fill="currentColor"/><path d="M2.75 10.5l2.8-2.4 2.1 1.7 2.4-2.6 3.2 3.3" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+    video:
+      '<svg viewBox="0 0 16 16" fill="none"><rect x="2.5" y="3.5" width="11" height="9" rx="1.5" stroke="currentColor" stroke-width="1.4"/><path d="M7 6.2v3.6L10.2 8 7 6.2z" fill="currentColor"/></svg>',
+  };
   let selectedProductUrl = localStorage.getItem(PRODUCT_KEY) || "";
+  let selectedFormat = localStorage.getItem(FORMAT_KEY) === "slideshow" ? "slideshow" : "video";
   let productCatalog = [];
   const modeButtons = document.querySelectorAll("[data-cal-mode]");
   const modeSwitcher = document.getElementById("cal-mode-switcher");
