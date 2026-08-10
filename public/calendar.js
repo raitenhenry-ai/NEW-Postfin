@@ -242,7 +242,6 @@
   let openedPost = null;
   let editingPost = null;
   let selectedEvent = null; // { id, key, index }
-  let eventOutlineIntent = null; // set on pointerdown when a bare event-click may outline
   let drag = null;
   let planAbort = null;
   const chatCancelBtn = document.getElementById("cal-chat-cancel");
