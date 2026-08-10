@@ -2061,8 +2061,8 @@ body.sidebar-expanded {
 .cal-day-popup {
   position: absolute;
   z-index: 40;
-  width: min(260px, calc(100% - 16px));
-  max-height: min(320px, calc(100% - 16px));
+  width: min(380px, calc(100% - 16px));
+  max-height: min(560px, calc(100% - 16px));
   display: flex;
   flex-direction: column;
   border: 1px solid #2e2e34;
@@ -2140,11 +2140,18 @@ body.sidebar-expanded {
 
 .cal-day-popup-list {
   overflow: auto;
-  padding: 8px;
+  padding: 12px;
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 8px;
   min-height: 0;
+  scrollbar-width: none;
+}
+
+.cal-day-popup-list::-webkit-scrollbar {
+  display: none;
+  width: 0;
+  height: 0;
 }
 
 .cal-day-popup-empty {
@@ -2200,6 +2207,67 @@ body.sidebar-expanded {
 
 .cal-day-popup-item-meta .cal-day-popup-platform {
   color: inherit;
+}
+
+.cal-day-popup-field {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  margin-top: 6px;
+}
+
+.cal-day-popup-field-label {
+  font-size: 10px;
+  font-weight: 650;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: #7a7a82;
+}
+
+.cal-day-popup-model {
+  width: 100%;
+  height: 32px;
+  margin: 0;
+  padding: 0 28px 0 10px;
+  border: 1px solid #3a3a42;
+  border-radius: 8px;
+  background: #2a2a30 url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12' fill='none'%3E%3Cpath d='M3 4.5L6 7.5L9 4.5' stroke='%239a9aa2' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") no-repeat right 10px center;
+  background-size: 12px;
+  color: #f0f0f4;
+  font: inherit;
+  font-size: 12.5px;
+  font-weight: 550;
+  line-height: 1.4;
+  appearance: none;
+  -webkit-appearance: none;
+  cursor: pointer;
+}
+
+.cal-day-popup-model:hover,
+.cal-day-popup-model:focus {
+  border-color: #4a4a54;
+  outline: none;
+}
+
+.cal-day-popup-model option {
+  background: #1a1a1e;
+  color: #f0f0f4;
+}
+
+.cal-day-popup-caption,
+.cal-day-popup-prompt {
+  margin: 0;
+  color: #d0d0d6;
+  font-size: 12.5px;
+  font-weight: 500;
+  line-height: 1.5;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.cal-day-popup-prompt {
+  max-height: none;
+  overflow: visible;
 }
 
 .cal-day-popup-item.is-tiktok { color: #69c9ff; }
@@ -5513,6 +5581,32 @@ body.theme-light .cal-day-popup-item-title {
 
 body.theme-light .cal-day-popup-item-meta {
   color: #6a6a72;
+}
+
+body.theme-light .cal-day-popup-field-label {
+  color: #8a8a92;
+}
+
+body.theme-light .cal-day-popup-model {
+  background-color: #f0f0f3;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12' fill='none'%3E%3Cpath d='M3 4.5L6 7.5L9 4.5' stroke='%236a6a72' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  border-color: #d8d8de;
+  color: #111114;
+}
+
+body.theme-light .cal-day-popup-model:hover,
+body.theme-light .cal-day-popup-model:focus {
+  border-color: #ccccd4;
+}
+
+body.theme-light .cal-day-popup-model option {
+  background: #ffffff;
+  color: #111114;
+}
+
+body.theme-light .cal-day-popup-caption,
+body.theme-light .cal-day-popup-prompt {
+  color: #2a2a30;
 }
 
 body.theme-light .cal-weekdays {

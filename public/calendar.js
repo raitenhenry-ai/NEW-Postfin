@@ -210,7 +210,7 @@
   function clampPopupPosition(left, top) {
     if (!calBoard || !dayPopup) return { left, top };
     const board = calBoard.getBoundingClientRect();
-    const width = dayPopup.offsetWidth || 260;
+    const width = dayPopup.offsetWidth || 380;
     const height = dayPopup.offsetHeight || 180;
     const pad = 8;
     return {
@@ -223,7 +223,7 @@
     if (!calBoard || !dayPopup || !cell) return;
     const board = calBoard.getBoundingClientRect();
     const rect = cell.getBoundingClientRect();
-    const width = dayPopup.offsetWidth || 260;
+    const width = dayPopup.offsetWidth || 380;
     const gap = 10;
     let left = rect.right - board.left + gap;
     if (left + width > board.width - 8) {
@@ -237,26 +237,61 @@
 
   function closeDayPopup() {
     dayPopupKey = null;
+    dayPopupEventIndex = null;
     if (!dayPopup) return;
     dayPopup.hidden = true;
     dayPopupList && (dayPopupList.innerHTML = "");
   }
 
-  function openDayPopup(key, cell) {
+  // Add new render models here as they ship.
+  const MODEL_OPTIONS = [
+    { id: "heygen", label: "HeyGen avatar" },
+  ];
+
+  function resolveModelId(post) {
+    const id = String(post?.provider || "").toLowerCase();
+    if (MODEL_OPTIONS.some((m) => m.id === id)) return id;
+    return MODEL_OPTIONS[0]?.id || "heygen";
+  }
+
+  function captionWithHashtags(post) {
+    const caption = String(post?.caption || "").trim();
+    const tags = String(post?.hashtags || "").trim();
+    if (caption && tags) return `${caption}\n${tags}`;
+    return caption || tags || "—";
+  }
+
+  function modelSelectHtml(selectedId) {
+    return `
+      <select class="cal-day-popup-model" aria-label="Model">
+        ${MODEL_OPTIONS.map((m) => `
+          <option value="${escapeHtml(m.id)}"${m.id === selectedId ? " selected" : ""}>${escapeHtml(m.label)}</option>
+        `).join("")}
+      </select>`;
+  }
+
+  function openDayPopup(key, cell, eventIndex = null) {
     if (!dayPopup || !dayPopupList || !key) return;
     dayPopupKey = key;
+    dayPopupEventIndex = Number.isInteger(eventIndex) ? eventIndex : null;
     const posts = events[key] || [];
+    const focusIndex = dayPopupEventIndex;
+    const shownIndexes = focusIndex != null && posts[focusIndex]
+      ? [focusIndex]
+      : posts.map((_, i) => i);
+    const shown = shownIndexes.map((i) => posts[i]).filter(Boolean);
+
     if (dayPopupDate) dayPopupDate.textContent = formatPopupDate(key);
     if (dayPopupCount) {
-      dayPopupCount.textContent = posts.length
-        ? `${posts.length} post${posts.length === 1 ? "" : "s"}`
-        : "No posts";
+      dayPopupCount.textContent = shown.length === 1
+        ? (shown[0].time || "1 post")
+        : (shown.length ? `${shown.length} posts` : "No posts");
     }
-    if (!posts.length) {
+    if (!shown.length) {
       dayPopupList.innerHTML = `<p class="cal-day-popup-empty">Nothing scheduled this day.</p>`;
     } else {
-      dayPopupList.innerHTML = posts.map((post) => `
-        <div class="cal-day-popup-item is-${platformKey(primaryPlatform(post))}">
+      dayPopupList.innerHTML = shown.map((post) => `
+        <div class="cal-day-popup-item" data-post-index="">
           <i class="cal-day-popup-item-bar" aria-hidden="true"></i>
           <div class="cal-day-popup-item-copy">
             <div class="cal-day-popup-item-title"></div>
@@ -264,14 +299,42 @@
               <span class="cal-day-popup-platform"></span>
               <span class="cal-day-popup-time"></span>
             </div>
+            <div class="cal-day-popup-field">
+              <span class="cal-day-popup-field-label">Model</span>
+              ${modelSelectHtml(resolveModelId(post))}
+            </div>
+            <div class="cal-day-popup-field">
+              <span class="cal-day-popup-field-label">Caption</span>
+              <p class="cal-day-popup-caption"></p>
+            </div>
+            <div class="cal-day-popup-field">
+              <span class="cal-day-popup-field-label">Prompt</span>
+              <p class="cal-day-popup-prompt"></p>
+            </div>
           </div>
         </div>
       `).join("");
       [...dayPopupList.children].forEach((row, i) => {
-        const post = posts[i];
+        const postIndex = shownIndexes[i];
+        const post = posts[postIndex];
+        row.dataset.postIndex = String(postIndex);
+        row.classList.add(`is-${platformKey(primaryPlatform(post))}`);
         row.querySelector(".cal-day-popup-item-title").textContent = post.title || "Untitled";
         row.querySelector(".cal-day-popup-platform").textContent = platformLabel(post);
         row.querySelector(".cal-day-popup-time").textContent = post.time || "";
+        row.querySelector(".cal-day-popup-caption").textContent = captionWithHashtags(post);
+        row.querySelector(".cal-day-popup-prompt").textContent =
+          post.prompt || "Script not generated yet.";
+        row.querySelector(".cal-day-popup-model")?.addEventListener("change", (e) => {
+          const next = e.target.value;
+          if (!MODEL_OPTIONS.some((m) => m.id === next)) return;
+          post.provider = next;
+          // Keep the in-memory calendar entry in sync for this session.
+          if (events[key]?.[postIndex]) events[key][postIndex].provider = next;
+        });
+        row.querySelector(".cal-day-popup-model")?.addEventListener("pointerdown", (e) => {
+          e.stopPropagation();
+        });
       });
     }
     dayPopup.hidden = false;
@@ -347,6 +410,7 @@
   let selectedEvent = null; // { id, key, index }
   let drag = null;
   let dayPopupKey = null;
+  let dayPopupEventIndex = null;
   let popupDrag = null;
   let planAbort = null;
   const chatCancelBtn = document.getElementById("cal-chat-cancel");
@@ -1044,12 +1108,12 @@
               selectedEvent = turningOff ? null : { id: eventId, key, index };
               render();
               if (turningOff) closeDayPopup();
-              else openDayPopup(key, grid.querySelector(`.cal-cell[data-date="${key}"]`));
+              else openDayPopup(key, grid.querySelector(`.cal-cell[data-date="${key}"]`), index);
               return;
             }
             setFocusedDay(key);
             applySelectionClasses();
-            openDayPopup(key, cell);
+            openDayPopup(key, cell, index);
           });
           list.appendChild(row);
         });
@@ -1770,7 +1834,11 @@
       events = {};
     }
     if (dayPopupKey && dayPopup && !dayPopup.hidden) {
-      openDayPopup(dayPopupKey, grid.querySelector(`.cal-cell[data-date="${dayPopupKey}"]`));
+      openDayPopup(
+        dayPopupKey,
+        grid.querySelector(`.cal-cell[data-date="${dayPopupKey}"]`),
+        dayPopupEventIndex
+      );
     }
   }
 
