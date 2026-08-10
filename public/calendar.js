@@ -262,10 +262,12 @@
       id: activeChatId,
       updatedAt: Date.now(),
       selectedDates: [...selected].sort(),
-      messages: conversation.map(({ role, content, actions }) => ({
+      messages: conversation.map(({ role, content, actions, questions, answered }) => ({
         role,
         content,
         ...(actions?.length ? { actions } : {}),
+        ...(questions?.length ? { questions } : {}),
+        ...(answered ? { answered: true } : {}),
       })),
       preview: chatPreview(conversation),
     };
@@ -334,6 +336,8 @@
       role: m.role,
       content: m.content,
       ...(m.actions?.length ? { actions: m.actions } : {}),
+      ...(m.questions?.length ? { questions: m.questions } : {}),
+      ...(m.answered ? { answered: true } : {}),
     }));
     selected.clear();
     (chat.selectedDates || []).forEach((key) => {
@@ -1018,7 +1022,7 @@
 
   function syncSendState() {
     if (!sendBtn || !field) return;
-    sendBtn.disabled = !field.value.trim();
+    sendBtn.disabled = assistantBusy || !field.value.trim();
   }
 
   function resizeField() {
@@ -1060,12 +1064,13 @@
 
   function renderThread(pending) {
     if (!dayPanel) return;
-    const bubbles = conversation.map((m) => `
+    const bubbles = conversation.map((m, index) => `
       <div class="cal-msg is-${m.role}">
         <div class="cal-msg-body">${
           m.role === "assistant" ? formatReply(m.content) : escapeHtml(m.content)
         }</div>
         ${m.actions?.length ? renderActions(m.actions) : ""}
+        ${askable(m, index) ? renderAsk(m, index) : ""}
       </div>`).join("");
 
     dayPanel.innerHTML = `
@@ -1073,7 +1078,132 @@
         ${bubbles}
         ${pending ? `<div class="cal-msg is-assistant"><div class="cal-msg-body cal-typing"><span></span><span></span><span></span></div></div>` : ""}
       </div>`;
+    bindAsk();
     dayPanel.scrollTop = dayPanel.scrollHeight;
+  }
+
+  /* ---------- multiple-choice questions ---------- */
+
+  // The assistant asks before it generates, so a vague brief turns into a
+  // couple of taps instead of a guessed video. Picks are staged on the
+  // message itself and sent as one ordinary reply, which is all the server
+  // needs - it keeps no session.
+
+  // Only the newest question is still live: once the conversation has moved
+  // past it - answered by tapping, or by typing something else - its options
+  // are history, and leaving them clickable would send a reply to a question
+  // the assistant has stopped waiting on.
+  function askable(msg, index) {
+    return Boolean(msg?.questions?.length) && !msg.answered && index === conversation.length - 1;
+  }
+
+  function askPicks(msg, qIndex) {
+    return msg.picked?.[qIndex] || [];
+  }
+
+  // One question with one answer sends on tap; anything else waits for
+  // Continue, so a set of questions goes back as a single reply.
+  function askNeedsContinue(msg) {
+    return msg.questions.length > 1 || msg.questions.some((entry) => entry.allowMultiple);
+  }
+
+  function askComplete(msg) {
+    return msg.questions.every((entry, i) => askPicks(msg, i).length > 0);
+  }
+
+  function renderAsk(msg, msgIndex) {
+    const multi = askNeedsContinue(msg);
+    const blocks = msg.questions.map((entry, qIndex) => `
+      <div class="cal-ask-q">
+        ${msg.questions.length > 1 || entry.question !== msg.content
+          ? `<p class="cal-ask-label">${escapeHtml(entry.question)}</p>`
+          : ""}
+        <div class="cal-ask-options" role="group" aria-label="${escapeHtml(entry.question)}">
+          ${entry.options.map((option, oIndex) => `
+            <button type="button" class="cal-ask-chip${
+              askPicks(msg, qIndex).includes(option.label) ? " is-picked" : ""
+            }" data-ask-msg="${msgIndex}" data-ask-q="${qIndex}" data-ask-option="${oIndex}"
+              aria-pressed="${askPicks(msg, qIndex).includes(option.label) ? "true" : "false"}">
+              <span class="cal-ask-chip-label">${escapeHtml(option.label)}</span>
+              ${option.hint ? `<span class="cal-ask-chip-hint">${escapeHtml(option.hint)}</span>` : ""}
+            </button>`).join("")}
+        </div>
+      </div>`).join("");
+
+    return `
+      <div class="cal-ask">
+        ${blocks}
+        <div class="cal-ask-foot">
+          <span class="cal-ask-hint">${
+            multi ? "Pick one for each, or just type your answer." : "Or type your own answer."
+          }</span>
+          ${multi
+            ? `<button type="button" class="cal-ask-send" data-ask-send="${msgIndex}"${
+                askComplete(msg) ? "" : " disabled"
+              }>Continue</button>`
+            : ""}
+        </div>
+      </div>`;
+  }
+
+  function bindAsk() {
+    dayPanel?.querySelectorAll("[data-ask-option]").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        pickAnswer(
+          Number(btn.getAttribute("data-ask-msg")),
+          Number(btn.getAttribute("data-ask-q")),
+          Number(btn.getAttribute("data-ask-option"))
+        );
+      });
+    });
+    dayPanel?.querySelectorAll("[data-ask-send]").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        sendAnswers(Number(btn.getAttribute("data-ask-send")));
+      });
+    });
+  }
+
+  function pickAnswer(msgIndex, qIndex, optionIndex) {
+    const msg = conversation[msgIndex];
+    if (!askable(msg, msgIndex) || assistantBusy) return;
+    const entry = msg.questions[qIndex];
+    const label = entry?.options?.[optionIndex]?.label;
+    if (!label) return;
+
+    msg.picked ??= {};
+    if (entry.allowMultiple) {
+      const current = askPicks(msg, qIndex);
+      msg.picked[qIndex] = current.includes(label)
+        ? current.filter((pick) => pick !== label)
+        : [...current, label];
+    } else {
+      msg.picked[qIndex] = [label];
+    }
+
+    if (!askNeedsContinue(msg)) {
+      sendAnswers(msgIndex);
+      return;
+    }
+    renderThread(false);
+  }
+
+  function sendAnswers(msgIndex) {
+    const msg = conversation[msgIndex];
+    if (!askable(msg, msgIndex) || assistantBusy || !askComplete(msg)) return;
+
+    // One question reads as a plain answer; several are labelled so the
+    // assistant can tell which answer belongs to which question.
+    const text = msg.questions.length === 1
+      ? askPicks(msg, 0).join(", ")
+      : msg.questions
+          .map((entry, i) => `${entry.question} — ${askPicks(msg, i).join(", ")}`)
+          .join("\n");
+
+    msg.answered = true;
+    delete msg.picked;
+    renderThread(false);
+    persistActiveChat();
+    submitMessage(text);
   }
 
   // Light formatting only - the assistant is told to answer in plain
@@ -1111,7 +1241,22 @@
             hour: "numeric", minute: "2-digit",
           }))}</li>`;
       }
-      if (a.name === "edit_video") return `<li class="cal-action-note">Updated video ${a.result.videoId}</li>`;
+      if (a.name === "edit_video") {
+        const fields = (a.result.updated || []).join(", ");
+        return `<li class="cal-action-note">Updated video ${a.result.videoId}${
+          fields ? ` · ${escapeHtml(fields)}` : ""
+        }</li>`;
+      }
+      if (a.name === "regenerate_video") {
+        return `<li class="cal-action-note">Rewriting and re-rendering video ${a.result.videoId}</li>`;
+      }
+      if (a.name === "delete_video") {
+        const gone = a.result.deleted || [];
+        if (!gone.length) return "";
+        return `<li class="cal-action-note">Deleted ${gone.length} video${
+          gone.length === 1 ? "" : "s"
+        } · ${escapeHtml(gone.map((v) => v.title).join(", "))}</li>`;
+      }
       if (a.name === "retry_video") return `<li class="cal-action-note">Re-queued video ${a.result.videoId}</li>`;
       if (a.name === "post_video_now") {
         return `<li class="cal-action-note">Posted to ${a.result.posted} account(s), ${a.result.failed} failed</li>`;
@@ -1146,6 +1291,9 @@
         role: "assistant",
         content: reply.reply || "(no reply)",
         actions: reply.actions,
+        // Present only when the assistant stopped to ask something; the
+        // thread renders them as choices under the bubble.
+        ...(reply.questions?.length ? { questions: reply.questions } : {}),
       });
       persistActiveChat();
       renderThread(false);
@@ -1168,20 +1316,17 @@
     }
   }
 
-  form?.addEventListener("submit", async (e) => {
-    e.preventDefault();
-    if (!field || !field.value.trim() || assistantBusy) return;
+  // The composer and the assistant's choice chips both land here, so a
+  // tapped answer behaves exactly like a typed one.
+  async function submitMessage(text) {
+    if (!text || assistantBusy) return;
 
     if (!isEditMode()) {
       toast("Switch to Edit mode to use the assistant", "error");
       return;
     }
 
-    const text = field.value.trim();
-    field.value = "";
-
     assistantBusy = true;
-    if (sendBtn) sendBtn.disabled = true;
     syncSendState();
     resizeField();
     syncChatCancel();
@@ -1190,10 +1335,17 @@
       await sendToAssistant(text);
     } finally {
       assistantBusy = false;
-      if (sendBtn) sendBtn.disabled = false;
       syncSendState();
       syncChatCancel();
     }
+  }
+
+  form?.addEventListener("submit", (e) => {
+    e.preventDefault();
+    if (!field || !field.value.trim() || assistantBusy) return;
+    const text = field.value.trim();
+    field.value = "";
+    submitMessage(text);
   });
 
   chatCancelBtn?.addEventListener("click", () => {

@@ -1,7 +1,8 @@
 import config, { PLATFORM_NAMES, ENABLED_PLATFORMS } from "./config.js";
 import { q, q1, run as dbRun } from "./db.js";
 import { planContent } from "./ugc/plan.js";
-import { enqueueUgcJob, postJob } from "./ugc/pipeline.js";
+import { enqueueUgcJob, postJob, deleteJobFiles } from "./ugc/pipeline.js";
+import { toneOptions, styleOptions } from "./ugc/script.js";
 import { reschedule } from "./schedule.js";
 import { totalsSince, accountLeaderboard, viewsByPlatform } from "./metrics.js";
 
@@ -9,14 +10,32 @@ import { totalsSince, accountLeaderboard, viewsByPlatform } from "./metrics.js";
 //
 // A tool-calling loop over the operator's own workspace: it can plan and
 // schedule videos, but also answer questions about what is scheduled, how
-// posts are performing, which accounts are connected, and make small edits.
+// posts are performing, which accounts are connected, and edit or remove
+// work that is already on the calendar.
 //
-// Deleting is deliberately NOT a tool. It is the one irreversible action
-// here, and a model acting on a loosely worded instruction should not be
-// able to destroy work - the Recent page has an explicit delete button.
+// Two of those are one-way doors, so both are gated on the user rather than
+// on the model's reading of a sentence:
+//   - ask_user pauses the turn and hands the client a multiple-choice
+//     question, so a vague brief becomes a choice instead of a guess.
+//   - delete_video refuses to run until it is called with confirm: true,
+//     which the prompt only allows after the user has answered a
+//     confirmation question.
 
 const MAX_TOOL_ROUNDS = 6;
 const MAX_HISTORY = 20;
+
+// Ceilings on one ask_user round, so a turn can't bury the composer under a
+// questionnaire.
+const MAX_QUESTIONS = 3;
+const MAX_OPTIONS = 6;
+
+// A single delete_video call is capped so "clear my calendar" can't become
+// one unbounded destructive statement.
+const MAX_DELETE = 25;
+
+// Statuses where the pipeline currently owns the job - editing the direction
+// or re-rendering underneath it would race the worker.
+const BUSY_STATUSES = ["queued", "scraping", "scripting", "rendering", "posting"];
 
 export function assistantAvailable() {
   return Boolean(config.openaiApiKey);
@@ -25,6 +44,50 @@ export function assistantAvailable() {
 /* ---------------------------------------------------------------- tools */
 
 const TOOLS = [
+  {
+    type: "function",
+    function: {
+      name: "ask_user",
+      description:
+        "Ask the user a multiple-choice question and stop until they answer. " +
+        "Use this before generating videos whenever the brief leaves something " +
+        "material open (subject, tone, style, platforms, dates), and to confirm " +
+        "a deletion. Call it up to three times in one message for up to three " +
+        "questions; the user sees them all at once. Do not call any other tool " +
+        "in the same message.",
+      parameters: {
+        type: "object",
+        properties: {
+          question: {
+            type: "string",
+            description: "One short question, in plain language.",
+          },
+          options: {
+            type: "array",
+            description:
+              "Two to six concrete answers to choose from. Make them real, " +
+              "distinct choices - never 'yes/no' for an open question.",
+            items: {
+              type: "object",
+              properties: {
+                label: { type: "string", description: "The answer, a few words." },
+                hint: {
+                  type: "string",
+                  description: "Optional one-line explanation of what it means.",
+                },
+              },
+              required: ["label"],
+            },
+          },
+          allowMultiple: {
+            type: "boolean",
+            description: "True when several answers can be picked together, e.g. platforms.",
+          },
+        },
+        required: ["question", "options"],
+      },
+    },
+  },
   {
     type: "function",
     function: {
@@ -58,6 +121,16 @@ const TOOLS = [
             type: "array",
             items: { type: "string", enum: ENABLED_PLATFORMS },
             description: "Platforms to post to. Omit for all connected accounts.",
+          },
+          tone: {
+            type: "string",
+            enum: toneOptions(),
+            description: "Voice of the script. Defaults to casual.",
+          },
+          style: {
+            type: "string",
+            enum: styleOptions(),
+            description: "How the video is framed. Defaults to product_pov.",
           },
         },
         required: ["brief", "dates"],
@@ -128,7 +201,11 @@ const TOOLS = [
     type: "function",
     function: {
       name: "edit_video",
-      description: "Change a video's title, caption or hashtags.",
+      description:
+        "Change what a video is published with: its title, caption, hashtags " +
+        "or the platforms it goes to. Works on videos that are already " +
+        "scheduled. Does not touch the video itself - use regenerate_video to " +
+        "change what is in it.",
       parameters: {
         type: "object",
         properties: {
@@ -136,8 +213,61 @@ const TOOLS = [
           title: { type: "string" },
           caption: { type: "string" },
           hashtags: { type: "string", description: "Space-separated hashtags." },
+          platforms: {
+            type: "array",
+            items: { type: "string", enum: ENABLED_PLATFORMS },
+            description: "Replaces the platforms this video posts to.",
+          },
         },
         required: ["videoId"],
+      },
+    },
+  },
+  {
+    type: "function",
+    function: {
+      name: "regenerate_video",
+      description:
+        "Rewrite and re-render a scheduled video, optionally with new creative " +
+        "direction. Use when the user wants the video itself changed rather " +
+        "than its caption. Keeps its slot on the calendar.",
+      parameters: {
+        type: "object",
+        properties: {
+          videoId: { type: "number" },
+          brief: {
+            type: "string",
+            description: "New direction for this one video, in the user's own words.",
+          },
+          tone: { type: "string", enum: toneOptions() },
+          style: { type: "string", enum: styleOptions() },
+        },
+        required: ["videoId"],
+      },
+    },
+  },
+  {
+    type: "function",
+    function: {
+      name: "delete_video",
+      description:
+        "Permanently delete videos and their files. Only call this after the " +
+        "user has answered a confirmation question naming exactly what would " +
+        "go; then call it with confirm true.",
+      parameters: {
+        type: "object",
+        properties: {
+          videoIds: {
+            type: "array",
+            items: { type: "number" },
+            description: "The ids to delete. Read them with list_videos first.",
+          },
+          confirm: {
+            type: "boolean",
+            description: "True only once the user has explicitly confirmed.",
+          },
+        },
+        required: ["videoIds", "confirm"],
       },
     },
   },
@@ -188,17 +318,60 @@ function slotFor(date, time, offsetMinutes) {
   return Date.UTC(y, mo - 1, d, h || 0, m || 0) - offsetMinutes * 60000;
 }
 
+// An option list can come back as ["Casual", ...] or as [{label, hint}, ...]
+// depending on how literally the model read the schema; both mean the same
+// thing to the user, so both are accepted.
+function normalizeOptions(raw) {
+  return (Array.isArray(raw) ? raw : [])
+    .map((option) => (typeof option === "string" ? { label: option } : option))
+    .map((option) => ({
+      label: String(option?.label ?? "").trim().slice(0, 60),
+      hint: option?.hint ? String(option.hint).trim().slice(0, 140) : undefined,
+    }))
+    .filter((option) => option.label)
+    .slice(0, MAX_OPTIONS);
+}
+
 const IMPLEMENTATIONS = {
-  async plan_videos({ brief, dates, time, productUrl, platforms }, ctx) {
+  // Does not touch the workspace: it parks the question on ctx, and the loop
+  // hands it to the client instead of running another round.
+  async ask_user({ question, options, allowMultiple }, ctx) {
+    const text = String(question || "").trim().slice(0, 200);
+    if (!text) throw new Error("A question is required");
+
+    const choices = normalizeOptions(options);
+    if (choices.length < 2) throw new Error("Give at least two options to choose from");
+    if (ctx.questions.length >= MAX_QUESTIONS) {
+      throw new Error(`Ask at most ${MAX_QUESTIONS} questions at a time`);
+    }
+
+    ctx.questions.push({
+      question: text,
+      options: choices,
+      allowMultiple: Boolean(allowMultiple),
+    });
+    return { asked: true };
+  },
+
+  async plan_videos({ brief, dates, time, productUrl, platforms, tone, style }, ctx) {
     const slots = (dates || []).map((d) => slotFor(d, time, ctx.offsetMinutes));
     if (!slots.length) throw new Error("No dates given");
     if (slots.length > 30) throw new Error("That is more than 30 videos - narrow the range");
 
+    const settings = {
+      tone: toneOptions().includes(tone) ? tone : "casual",
+      style: styleOptions().includes(style) ? style : "product_pov",
+      platforms: (platforms || []).filter((p) => ENABLED_PLATFORMS.includes(p)),
+    };
+
     const plan = await planContent({
-      brief, count: slots.length, productUrl: productUrl || "",
+      brief,
+      count: slots.length,
+      productUrl: productUrl || "",
+      tone: settings.tone,
+      style: settings.style,
     });
 
-    const wanted = (platforms || []).filter((p) => ENABLED_PLATFORMS.includes(p));
     const now = Date.now();
     const created = [];
     for (const [i, concept] of plan.concepts.entries()) {
@@ -209,7 +382,7 @@ const IMPLEMENTATIONS = {
          VALUES (?, ?, 'queued', 1, ?, ?, ?, ?, ?, ?) RETURNING id`,
         [
           productUrl || "",
-          JSON.stringify({ tone: "casual", style: "product_pov", platforms: wanted }),
+          JSON.stringify(settings),
           concept.title, brief || null, JSON.stringify(concept), scheduledAt, now, now,
         ]
       );
@@ -217,7 +390,7 @@ const IMPLEMENTATIONS = {
       created.push({ id: row.id, title: concept.title, angle: concept.angle, scheduledAt });
     }
     ctx.changed = true;
-    return { scheduled: created.length, videos: created };
+    return { scheduled: created.length, videos: created, tone: settings.tone, style: settings.style };
   },
 
   async list_videos({ status = "all", limit = 20 }, ctx) {
@@ -298,27 +471,164 @@ const IMPLEMENTATIONS = {
     return { videoId, scheduledFor: new Date(when).toISOString() };
   },
 
-  async edit_video({ videoId, title, caption, hashtags }, ctx) {
+  async edit_video({ videoId, title, caption, hashtags, platforms }, ctx) {
     const job = await q1("SELECT * FROM ugc_jobs WHERE id = ?", [videoId]);
     if (!job) throw new Error(`No video with id ${videoId}`);
+
+    const updated = [];
+    const skipped = [];
 
     if (typeof title === "string") {
       await dbRun("UPDATE ugc_jobs SET title = ?, updated_at = ? WHERE id = ?",
         [title.slice(0, 120), Date.now(), videoId]);
+      updated.push("title");
     }
+
     if (typeof caption === "string" || typeof hashtags === "string") {
+      // Caption and hashtags live inside the generated script. A video that
+      // hasn't been scripted yet has nowhere to put them, and writing a stub
+      // would stop the pipeline generating one - so those fields are reported
+      // as skipped rather than swallowed.
       const script = JSON.parse(job.script_json || "null");
-      if (!script) throw new Error("That video's script has not been written yet");
-      if (typeof caption === "string") script.caption = caption.slice(0, 2200);
-      if (typeof hashtags === "string") {
-        script.hashtags = hashtags.split(/[\s,]+/).filter(Boolean)
-          .map((t) => (t.startsWith("#") ? t : `#${t}`)).slice(0, 30);
+      if (!script) {
+        if (typeof caption === "string") skipped.push("caption");
+        if (typeof hashtags === "string") skipped.push("hashtags");
+      } else {
+        if (typeof caption === "string") {
+          script.caption = caption.slice(0, 2200);
+          updated.push("caption");
+        }
+        if (typeof hashtags === "string") {
+          script.hashtags = hashtags.split(/[\s,]+/).filter(Boolean)
+            .map((t) => (t.startsWith("#") ? t : `#${t}`)).slice(0, 30);
+          updated.push("hashtags");
+        }
+        await dbRun("UPDATE ugc_jobs SET script_json = ?, updated_at = ? WHERE id = ?",
+          [JSON.stringify(script), Date.now(), videoId]);
       }
-      await dbRun("UPDATE ugc_jobs SET script_json = ?, updated_at = ? WHERE id = ?",
-        [JSON.stringify(script), Date.now(), videoId]);
     }
+
+    if (Array.isArray(platforms)) {
+      const wanted = platforms.filter((p) => ENABLED_PLATFORMS.includes(p));
+      if (!wanted.length) throw new Error("None of those are platforms this workspace can post to");
+      const settings = JSON.parse(job.settings_json || "{}");
+      settings.platforms = wanted;
+      await dbRun("UPDATE ugc_jobs SET settings_json = ?, updated_at = ? WHERE id = ?",
+        [JSON.stringify(settings), Date.now(), videoId]);
+      updated.push("platforms");
+    }
+
+    if (!updated.length && !skipped.length) throw new Error("Nothing to change was given");
+
     ctx.changed = true;
-    return { videoId, updated: true };
+    return {
+      videoId,
+      updated,
+      skipped: skipped.length ? skipped : undefined,
+      note: skipped.length
+        ? "That video hasn't been scripted yet, so it has no caption to edit - " +
+          "the caption is written when the video generates."
+        : job.status === "posted"
+          ? "This video has already been published, so the change only affects the record here."
+          : undefined,
+    };
+  },
+
+  async regenerate_video({ videoId, brief, tone, style }, ctx) {
+    const job = await q1("SELECT * FROM ugc_jobs WHERE id = ?", [videoId]);
+    if (!job) throw new Error(`No video with id ${videoId}`);
+    if (job.status === "posted") {
+      throw new Error("That video has already gone out - plan a new one instead of re-rendering it");
+    }
+    if (BUSY_STATUSES.includes(job.status)) {
+      throw new Error("That video is still generating - wait for it to finish");
+    }
+
+    // New direction, when given, replaces the brief and the planned concept's
+    // angle so the rewritten script actually follows it.
+    const applied = [];
+    if (typeof brief === "string" && brief.trim()) {
+      const text = brief.trim().slice(0, 2000);
+      const concept = JSON.parse(job.concept_json || "null");
+      if (concept) concept.angle = text;
+      await dbRun(
+        "UPDATE ugc_jobs SET brief = ?, concept_json = ?, updated_at = ? WHERE id = ?",
+        [text, concept ? JSON.stringify(concept) : job.concept_json, Date.now(), videoId]
+      );
+      applied.push("brief");
+    }
+    if (toneOptions().includes(tone) || styleOptions().includes(style)) {
+      const settings = JSON.parse(job.settings_json || "{}");
+      if (toneOptions().includes(tone)) { settings.tone = tone; applied.push("tone"); }
+      if (styleOptions().includes(style)) { settings.style = style; applied.push("style"); }
+      await dbRun("UPDATE ugc_jobs SET settings_json = ?, updated_at = ? WHERE id = ?",
+        [JSON.stringify(settings), Date.now(), videoId]);
+    }
+
+    // Same reset the Recent page's regenerate does: script and render are
+    // thrown away, the slot is kept, and the job goes back on the queue.
+    await deleteJobFiles(job);
+    await dbRun("DELETE FROM ugc_posts WHERE job_id = ?", [videoId]);
+    await dbRun(
+      `UPDATE ugc_jobs SET status = 'queued', error = NULL, script_json = NULL,
+         video_filename = NULL, updated_at = ? WHERE id = ?`,
+      [Date.now(), videoId]
+    );
+    enqueueUgcJob(videoId);
+
+    ctx.changed = true;
+    return {
+      videoId,
+      regenerating: true,
+      applied,
+      scheduledFor: job.scheduled_at ? new Date(Number(job.scheduled_at)).toISOString() : null,
+    };
+  },
+
+  async delete_video({ videoIds, confirm }, ctx) {
+    const ids = [...new Set(
+      (Array.isArray(videoIds) ? videoIds : [videoIds])
+        .map(Number)
+        .filter((id) => Number.isInteger(id) && id > 0)
+    )];
+    if (!ids.length) throw new Error("Give the id of the video to delete");
+    if (ids.length > MAX_DELETE) {
+      throw new Error(`Delete at most ${MAX_DELETE} videos at a time`);
+    }
+    if (confirm !== true) {
+      throw new Error(
+        "Deleting is permanent. Ask the user to confirm, naming what would go, " +
+        "then call this again with confirm true."
+      );
+    }
+
+    const deleted = [];
+    const missing = [];
+    const published = [];
+    for (const id of ids) {
+      const job = await q1("SELECT * FROM ugc_jobs WHERE id = ?", [id]);
+      if (!job) { missing.push(id); continue; }
+
+      const live = Number(
+        (await q1("SELECT COUNT(*) AS n FROM ugc_posts WHERE job_id = ? AND status = 'done'", [id]))?.n || 0
+      );
+      if (live) published.push(id);
+
+      await deleteJobFiles(job);
+      await dbRun("DELETE FROM ugc_posts WHERE job_id = ?", [id]);
+      await dbRun("DELETE FROM ugc_jobs WHERE id = ?", [id]);
+      deleted.push({ id, title: job.title || `Video #${id}` });
+    }
+
+    ctx.changed = true;
+    return {
+      deleted,
+      missing: missing.length ? missing : undefined,
+      note: published.length
+        ? `${published.length} of those were already published - deleting them here ` +
+          "removes them from Postfin but does not take them down from the platform."
+        : undefined,
+    };
   },
 
   async post_video_now({ videoId, onlyFailed }, ctx) {
@@ -361,10 +671,29 @@ function systemPrompt(ctx) {
       : "No social accounts are connected yet - videos will generate but cannot publish.",
     "Use the tools rather than guessing. Never invent view counts, dates or video " +
       "ids: read them with a tool first.",
-    "You cannot delete videos - tell the user to use the delete button on the " +
-      "Recent page if they ask.",
+    // Asking beats guessing on the one action that costs a render and lands on
+    // a public account, so this is a rule rather than a suggestion.
+    "Before generating videos, make sure you know what to make. If the request " +
+      "leaves anything material open - what the videos are about, the tone, the " +
+      "style, which platforms, which days - call ask_user with up to three " +
+      "multiple-choice questions and stop there. Every option must be a real " +
+      "choice the user can act on, drawn from this workspace: the tones are " +
+      `${toneOptions().join(", ")}, the styles are ${styleOptions().join(", ")}, ` +
+      `and the platforms are ${ENABLED_PLATFORMS.join(", ")}.`,
+    "Ask once per request, not repeatedly. Never ask about something the user " +
+      "already told you, and if they say you should pick, or leave part of it " +
+      "open, choose sensible defaults, say what you chose, and get on with it.",
+    "You can change videos that are already scheduled: edit_video for the title, " +
+      "caption, hashtags or platforms, regenerate_video to rewrite and re-render " +
+      "the video itself, reschedule_video to move its slot.",
+    "delete_video is permanent. Always confirm first with ask_user, listing the " +
+      "titles and dates that would go, and only call it with confirm true after " +
+      "they choose to delete. Deleting a video that has already been published " +
+      "does not remove it from the platform - say so when it applies.",
     "Be brief and concrete. Plain sentences, no headings. When you schedule " +
-      "something, say what and when in one line.",
+      "something, say what and when in one line. When you ask a question, write " +
+      "one short line - the options are shown as buttons, so do not list them " +
+      "again in your reply.",
   ].filter(Boolean).join(" ");
 }
 
@@ -380,6 +709,7 @@ export async function runAssistant({ messages, selectedDates = [], offsetMinutes
     offsetMinutes,
     selectedDates,
     changed: false,
+    questions: [],
     accounts: accountRows.map((a) => `${a.platform} (${a.display_name})`).join(", "),
   };
 
@@ -414,7 +744,7 @@ export async function runAssistant({ messages, selectedDates = [], offsetMinutes
     if (!message) throw new Error("The assistant returned nothing");
 
     if (!message.tool_calls?.length) {
-      return { reply: message.content || "", actions, changed: ctx.changed };
+      return { reply: message.content || "", actions, changed: ctx.changed, questions: [] };
     }
 
     thread.push(message);
@@ -438,11 +768,24 @@ export async function runAssistant({ messages, selectedDates = [], offsetMinutes
         content: JSON.stringify(result).slice(0, 6000),
       });
     }
+
+    // A question ends the turn: there is nothing more the model can usefully
+    // decide until the user answers, and their answer arrives as an ordinary
+    // message on the next turn.
+    if (ctx.questions.length) {
+      return {
+        reply: message.content?.trim() || ctx.questions.map((entry) => entry.question).join("\n"),
+        questions: ctx.questions,
+        actions,
+        changed: ctx.changed,
+      };
+    }
   }
 
   return {
     reply: "That needed more steps than I can take in one go - try narrowing the request.",
     actions,
     changed: ctx.changed,
+    questions: [],
   };
 }
