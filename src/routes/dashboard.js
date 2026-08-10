@@ -410,59 +410,161 @@ function timeLabel(ms) {
 
 /* ----------------------------------------------------------------- Products */
 
-// products.html: unique product URLs scraped across jobs, with the latest
-// name/image and how many videos have been made from each.
-router.get("/products", wrap(async (req, res) => {
-  const jobs = await q(
-    `SELECT id, product_url, product_json, created_at, status, video_filename
-     FROM ugc_jobs
-     WHERE product_url IS NOT NULL AND TRIM(product_url) <> ''
-     ORDER BY created_at DESC`
-  );
+function normalizeProductUrl(raw) {
+  const parsed = new URL(String(raw || "").trim());
+  if (!/^https?:$/.test(parsed.protocol)) throw new Error("bad protocol");
+  parsed.hash = "";
+  return parsed.toString();
+}
 
-  const byUrl = new Map();
+function shapeCatalogProduct(row, usage = {}) {
+  let scraped = {};
+  try {
+    scraped = row.product_json ? JSON.parse(row.product_json) : {};
+  } catch {
+    scraped = {};
+  }
+  const images = Array.isArray(scraped.images) ? scraped.images.filter(Boolean) : [];
+  return {
+    id: row.id,
+    url: row.url,
+    name: scraped.name || null,
+    brand: scraped.brand || null,
+    price: scraped.price ?? null,
+    currency: scraped.currency || null,
+    description: scraped.description || null,
+    site: scraped.site || null,
+    images,
+    image: images[0] || null,
+    videoCount: usage.videoCount || 0,
+    lastUsedAt: usage.lastUsedAt || Number(row.updated_at || row.created_at),
+    latestJobId: usage.latestJobId || null,
+    hasVideo: Boolean(usage.hasVideo),
+    saved: true,
+    createdAt: Number(row.created_at),
+    updatedAt: Number(row.updated_at),
+  };
+}
+
+// products.html: saved catalog + products that have appeared on jobs.
+router.get("/products", wrap(async (req, res) => {
+  const [savedRows, jobs] = await Promise.all([
+    q("SELECT * FROM products ORDER BY updated_at DESC"),
+    q(
+      `SELECT id, product_url, product_json, created_at, video_filename
+       FROM ugc_jobs
+       WHERE product_url IS NOT NULL AND TRIM(product_url) <> ''
+       ORDER BY created_at DESC`
+    ),
+  ]);
+
+  const usageByUrl = new Map();
   for (const job of jobs) {
     const url = String(job.product_url).trim();
     if (!url) continue;
-    let product = null;
-    try {
-      product = job.product_json ? JSON.parse(job.product_json) : null;
-    } catch {
-      product = null;
-    }
-    const existing = byUrl.get(url);
+    const existing = usageByUrl.get(url);
     if (!existing) {
-      byUrl.set(url, {
+      let product = null;
+      try {
+        product = job.product_json ? JSON.parse(job.product_json) : null;
+      } catch {
+        product = null;
+      }
+      usageByUrl.set(url, {
         url,
         name: product?.name || null,
         brand: product?.brand || null,
         price: product?.price ?? null,
         currency: product?.currency || null,
         description: product?.description || null,
-        image: product?.images?.[0] || null,
+        site: product?.site || null,
+        images: Array.isArray(product?.images) ? product.images.filter(Boolean) : [],
         videoCount: 1,
         lastUsedAt: Number(job.created_at),
         latestJobId: job.id,
         hasVideo: Boolean(job.video_filename),
+        scrapedFromJob: product,
       });
       continue;
     }
     existing.videoCount += 1;
-    if (!existing.name && product?.name) existing.name = product.name;
-    if (!existing.brand && product?.brand) existing.brand = product.brand;
-    if (existing.price == null && product?.price != null) {
-      existing.price = product.price;
-      existing.currency = product.currency || existing.currency;
-    }
-    if (!existing.image && product?.images?.[0]) existing.image = product.images[0];
-    if (!existing.description && product?.description) {
-      existing.description = product.description;
-    }
     if (job.video_filename) existing.hasVideo = true;
   }
 
-  const products = [...byUrl.values()].sort((a, b) => b.lastUsedAt - a.lastUsedAt);
+  const products = [];
+  const seen = new Set();
+
+  for (const row of savedRows) {
+    const usage = usageByUrl.get(row.url) || {};
+    products.push(shapeCatalogProduct(row, usage));
+    seen.add(row.url);
+  }
+
+  for (const [url, usage] of usageByUrl) {
+    if (seen.has(url)) continue;
+    const images = usage.images || [];
+    products.push({
+      id: null,
+      url,
+      name: usage.name,
+      brand: usage.brand,
+      price: usage.price,
+      currency: usage.currency,
+      description: usage.description,
+      site: usage.site,
+      images,
+      image: images[0] || null,
+      videoCount: usage.videoCount,
+      lastUsedAt: usage.lastUsedAt,
+      latestJobId: usage.latestJobId,
+      hasVideo: usage.hasVideo,
+      saved: false,
+      createdAt: usage.lastUsedAt,
+      updatedAt: usage.lastUsedAt,
+    });
+  }
+
+  products.sort((a, b) => (b.updatedAt || b.lastUsedAt || 0) - (a.updatedAt || a.lastUsedAt || 0));
   res.json({ products });
+}));
+
+// Paste a product URL → scrape the page and save it to the catalog.
+router.post("/products", wrap(async (req, res) => {
+  let url;
+  try {
+    url = normalizeProductUrl(req.body.url);
+  } catch {
+    return res.status(400).json({ error: "Enter a valid product URL (https://...)" });
+  }
+
+  const scraped = await scrapeProduct(url);
+  const now = Date.now();
+  const existing = await q1("SELECT id FROM products WHERE url = ?", [scraped.url]);
+
+  if (existing) {
+    await dbRun(
+      "UPDATE products SET product_json = ?, updated_at = ? WHERE id = ?",
+      [JSON.stringify(scraped), now, existing.id]
+    );
+    const row = await q1("SELECT * FROM products WHERE id = ?", [existing.id]);
+    return res.json({ product: shapeCatalogProduct(row), updated: true });
+  }
+
+  const row = await q1(
+    `INSERT INTO products (url, product_json, created_at, updated_at)
+     VALUES (?, ?, ?, ?) RETURNING *`,
+    [scraped.url, JSON.stringify(scraped), now, now]
+  );
+  res.status(201).json({ product: shapeCatalogProduct(row), updated: false });
+}));
+
+router.delete("/products/:id", wrap(async (req, res) => {
+  const id = Number(req.params.id);
+  if (!Number.isFinite(id)) return res.status(400).json({ error: "Invalid product id" });
+  const row = await q1("SELECT id FROM products WHERE id = ?", [id]);
+  if (!row) return res.status(404).json({ error: "Product not found" });
+  await dbRun("DELETE FROM products WHERE id = ?", [id]);
+  res.json({ ok: true });
 }));
 
 /* --------------------------------------------------------------- Connectors */
