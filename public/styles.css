@@ -2229,16 +2229,16 @@ body.sidebar-expanded {
 .cal-day-popup-prompt {
   margin: 0;
   color: #d0d0d6;
-  font-size: 11.5px;
+  font-size: 12.5px;
   font-weight: 500;
-  line-height: 1.45;
+  line-height: 1.5;
   white-space: pre-wrap;
   word-break: break-word;
 }
 
 .cal-day-popup-prompt {
-  max-height: 120px;
-  overflow: auto;
+  max-height: none;
+  overflow: visible;
 }
 
 .cal-day-popup-item.is-tiktok { color: #69c9ff; }
