@@ -236,12 +236,40 @@
             <button type="button" class="cal-chat-cancel" id="cal-chat-cancel" hidden>New chat</button>
           </div>
           <div class="cal-chat-messages" id="cal-chat-messages"></div>
-          <div class="cal-product-pill" id="cal-product-picker">
-            <button type="button" class="cal-product-pill-btn" id="cal-product-pill-btn" aria-haspopup="listbox" aria-expanded="false">
-              <span class="cal-product-pill-label" id="cal-product-pill-label">Link product</span>
-              <svg class="cal-product-pill-caret" viewBox="0 0 12 12" fill="none" aria-hidden="true"><path d="M3 4.5L6 7.5L9 4.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
-            </button>
-            <div class="cal-product-menu" id="cal-product-menu" role="listbox" hidden></div>
+          <div class="cal-chat-tools" id="cal-chat-tools">
+            <div class="cal-product-pill" id="cal-product-picker">
+              <button type="button" class="cal-product-pill-btn" id="cal-product-pill-btn" aria-haspopup="listbox" aria-expanded="false">
+                <span class="cal-product-pill-label" id="cal-product-pill-label">Link product</span>
+                <svg class="cal-product-pill-caret" viewBox="0 0 12 12" fill="none" aria-hidden="true"><path d="M3 4.5L6 7.5L9 4.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              </button>
+              <div class="cal-product-menu" id="cal-product-menu" role="listbox" hidden></div>
+            </div>
+            <div class="cal-format-picker" id="cal-format-picker">
+              <button type="button" class="cal-format-btn" id="cal-format-btn" aria-haspopup="menu" aria-expanded="false" aria-label="Output format" title="Output format">
+                <span class="cal-format-btn-icon" id="cal-format-btn-icon" aria-hidden="true"></span>
+                <svg class="cal-product-pill-caret" viewBox="0 0 12 12" fill="none" aria-hidden="true"><path d="M3 4.5L6 7.5L9 4.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              </button>
+              <div class="cal-format-menu" id="cal-format-menu" role="menu" hidden>
+                <button type="button" class="cal-format-menu-item" role="menuitemradio" data-format="slideshow" aria-checked="false">
+                  <span class="cal-format-menu-icon" aria-hidden="true">
+                    <svg viewBox="0 0 16 16" fill="none"><rect x="2.5" y="3.5" width="11" height="9" rx="1.5" stroke="currentColor" stroke-width="1.4"/><circle cx="5.75" cy="6.5" r="1" fill="currentColor"/><path d="M2.75 10.5l2.8-2.4 2.1 1.7 2.4-2.6 3.2 3.3" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                  </span>
+                  <span class="cal-format-menu-copy">
+                    <strong>Image</strong>
+                    <em>Slideshow generation</em>
+                  </span>
+                </button>
+                <button type="button" class="cal-format-menu-item" role="menuitemradio" data-format="video" aria-checked="true">
+                  <span class="cal-format-menu-icon" aria-hidden="true">
+                    <svg viewBox="0 0 16 16" fill="none"><rect x="2.5" y="3.5" width="11" height="9" rx="1.5" stroke="currentColor" stroke-width="1.4"/><path d="M7 6.2v3.6L10.2 8 7 6.2z" fill="currentColor"/></svg>
+                  </span>
+                  <span class="cal-format-menu-copy">
+                    <strong>Video</strong>
+                    <em>Video generation</em>
+                  </span>
+                </button>
+              </div>
+            </div>
           </div>
           <form class="cal-composer" id="cal-chat-form">
             <div class="cal-composer-chips" id="cal-date-chips" hidden></div>
