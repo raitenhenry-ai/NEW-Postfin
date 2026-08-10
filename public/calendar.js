@@ -259,8 +259,9 @@
   function openDayPopup(key, cell, eventIndex = null) {
     if (!dayPopup || !dayPopupList || !key) return;
     dayPopupKey = key;
+    dayPopupEventIndex = Number.isInteger(eventIndex) ? eventIndex : null;
     const posts = events[key] || [];
-    const focusIndex = Number.isInteger(eventIndex) ? eventIndex : null;
+    const focusIndex = dayPopupEventIndex;
     const shown = focusIndex != null && posts[focusIndex]
       ? [posts[focusIndex]]
       : posts;
