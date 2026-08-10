@@ -5678,3 +5678,31 @@ body.theme-light .cal-event-row.is-tiktok .cal-event-platform {
 body.theme-light .cal-event-row.is-instagram {
   color: #a21caf;
 }
+
+/* Light: recent chats menu */
+body.theme-light .cal-history-menu {
+  background: #ffffff;
+  border: 1px solid #d8d8de;
+  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.12);
+}
+
+body.theme-light .cal-history-menu-head {
+  color: #6a6a72;
+}
+
+body.theme-light .cal-history-empty {
+  color: #6a6a72;
+}
+
+body.theme-light .cal-history-item {
+  color: #1a1a1f;
+}
+
+body.theme-light .cal-history-item:hover,
+body.theme-light .cal-history-item.is-active {
+  background: #f0f0f3;
+}
+
+body.theme-light .cal-history-item-meta {
+  color: #6a6a72;
+}

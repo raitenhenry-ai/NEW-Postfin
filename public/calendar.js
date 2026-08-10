@@ -1122,6 +1122,7 @@
 
   async function sendToAssistant(text) {
     conversation.push({ role: "user", content: text });
+    persistActiveChat();
     renderThread(true);
     syncChatCancel();
 
