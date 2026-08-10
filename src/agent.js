@@ -195,8 +195,9 @@ const IMPLEMENTATIONS = {
     if (!slots.length) throw new Error("No dates given");
     if (slots.length > 30) throw new Error("That is more than 30 videos - narrow the range");
 
+    const resolvedUrl = String(productUrl || ctx.productUrl || "").trim();
     const plan = await planContent({
-      brief, count: slots.length, productUrl: productUrl || "",
+      brief, count: slots.length, productUrl: resolvedUrl,
     });
 
     // Empty/omitted platforms means every connected account — store that
@@ -211,7 +212,7 @@ const IMPLEMENTATIONS = {
            brief, concept_json, scheduled_at, created_at, updated_at)
          VALUES (?, ?, 'queued', 1, ?, ?, ?, ?, ?, ?) RETURNING id`,
         [
-          productUrl || "",
+          resolvedUrl,
           JSON.stringify({ tone: "casual", style: "product_pov", platforms: wanted }),
           concept.title, brief || null, JSON.stringify(concept), scheduledAt, now, now,
         ]
