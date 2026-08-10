@@ -2117,8 +2117,8 @@ body.sidebar-expanded {
   border-bottom: none;
 }
 
-.cal-cell:hover,
-.cal-cell:has(.cal-cell-events:hover) {
+.cal-cell:hover:not(.selected),
+.cal-cell:has(.cal-cell-events:hover):not(.selected) {
   background: rgba(255, 255, 255, 0.03);
 }
 
