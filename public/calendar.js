@@ -382,6 +382,7 @@
   let selectedEvent = null; // { id, key, index }
   let drag = null;
   let dayPopupKey = null;
+  let dayPopupEventIndex = null;
   let popupDrag = null;
   let planAbort = null;
   const chatCancelBtn = document.getElementById("cal-chat-cancel");
