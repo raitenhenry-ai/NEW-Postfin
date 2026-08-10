@@ -5359,6 +5359,47 @@ body.theme-light .cal-board {
   box-shadow: none;
 }
 
+body.theme-light .cal-day-popup {
+  background: #ffffff;
+  border-color: #e0e0e6;
+  box-shadow: 0 14px 32px rgba(0, 0, 0, 0.12);
+}
+
+body.theme-light .cal-day-popup-head {
+  border-bottom-color: #ececf0;
+}
+
+body.theme-light .cal-day-popup-heading strong {
+  color: #111114;
+}
+
+body.theme-light .cal-day-popup-heading span,
+body.theme-light .cal-day-popup-empty {
+  color: #6a6a72;
+}
+
+body.theme-light .cal-day-popup-close {
+  color: #6a6a72;
+}
+
+body.theme-light .cal-day-popup-close:hover {
+  background: #f0f0f3;
+  color: #111114;
+}
+
+body.theme-light .cal-day-popup-item {
+  background: #f3f3f6;
+  color: #222228;
+}
+
+body.theme-light .cal-day-popup-item-title {
+  color: #111114;
+}
+
+body.theme-light .cal-day-popup-item-meta {
+  color: #6a6a72;
+}
+
 body.theme-light .cal-weekdays {
   background: #f4f4f6;
   border-bottom: 1px solid #e2e2e8;
