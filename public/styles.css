@@ -2417,6 +2417,23 @@ body.sidebar-expanded {
   min-height: 0;
 }
 
+.cal-agent-empty {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+}
+
+.cal-agent-mark {
+  width: min(148px, 42%);
+  height: auto;
+  display: block;
+  opacity: 0.9;
+  user-select: none;
+}
+
 .cal-day-empty {
   color: #8a8a92;
   font-size: 13px;

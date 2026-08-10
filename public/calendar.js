@@ -1091,8 +1091,20 @@
 
   const URL_PATTERN = /https?:\/\/[^\s]+/i;
 
+  function renderAgentEmpty() {
+    if (!dayPanel) return;
+    dayPanel.innerHTML = `
+      <div class="cal-agent-empty" aria-hidden="true">
+        <img class="cal-agent-mark" src="agent-mark.jpg" alt="">
+      </div>`;
+  }
+
   function renderThread(pending) {
     if (!dayPanel) return;
+    if (!conversation.length && !pending) {
+      renderAgentEmpty();
+      return;
+    }
     const bubbles = conversation.map((m) => `
       <div class="cal-msg is-${m.role}">
         <div class="cal-msg-body">${
