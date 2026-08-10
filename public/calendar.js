@@ -1071,12 +1071,12 @@
               selectedEvent = turningOff ? null : { id: eventId, key, index };
               render();
               if (turningOff) closeDayPopup();
-              else openDayPopup(key, grid.querySelector(`.cal-cell[data-date="${key}"]`));
+              else openDayPopup(key, grid.querySelector(`.cal-cell[data-date="${key}"]`), index);
               return;
             }
             setFocusedDay(key);
             applySelectionClasses();
-            openDayPopup(key, cell);
+            openDayPopup(key, cell, index);
           });
           list.appendChild(row);
         });
