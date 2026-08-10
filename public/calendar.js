@@ -30,7 +30,7 @@
   const PLATFORM_KEY = "cal-target-platform";
   const PLATFORM_OPTS = new Set(["all", "tiktok", "youtube", "instagram"]);
   const PLATFORM_PICKER_LABELS = {
-    all: "All",
+    all: "All platforms",
     tiktok: "TikTok",
     youtube: "YouTube",
     instagram: "Instagram",
