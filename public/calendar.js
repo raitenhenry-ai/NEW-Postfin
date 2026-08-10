@@ -1572,15 +1572,6 @@
 
   function syncPlatformPicker() {
     if (platformBtnLabel) platformBtnLabel.textContent = PLATFORM_PICKER_LABELS[selectedPlatform] || "All platforms";
-    if (platformBtnIcon) {
-      if (selectedPlatform === "all") {
-        platformBtnIcon.hidden = true;
-        platformBtnIcon.innerHTML = "";
-      } else {
-        platformBtnIcon.hidden = false;
-        platformBtnIcon.innerHTML = `<img src="icons/${selectedPlatform}.png" alt="">`;
-      }
-    }
     platformMenu?.querySelectorAll("[data-platform]").forEach((btn) => {
       const on = btn.getAttribute("data-platform") === selectedPlatform;
       btn.classList.toggle("is-on", on);
