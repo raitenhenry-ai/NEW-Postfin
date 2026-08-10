@@ -130,6 +130,9 @@
   const clamp = (v, lo, hi) => Math.min(hi, Math.max(lo, v));
 
   function buildCurve(points, samplesPerSeg = 28) {
+    // Zero or one collected buckets can't make a curve; an empty array here
+    // used to throw below and take the rest of the page's render with it.
+    if (points.length < 2) return points.slice();
     const curve = [];
     const minY = Math.min(...points.map((p) => p.y));
     const maxY = Math.max(...points.map((p) => p.y));
