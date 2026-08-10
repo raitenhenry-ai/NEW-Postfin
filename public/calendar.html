@@ -217,11 +217,23 @@
 
       <div class="cal-body">
         <section class="cal-main" aria-label="Content calendar">
-          <div class="cal-board">
+          <div class="cal-board" id="cal-board">
             <div class="cal-weekdays" aria-hidden="true">
               <span>SUN</span><span>MON</span><span>TUE</span><span>WED</span><span>THU</span><span>FRI</span><span>SAT</span>
             </div>
             <div class="cal-grid" id="cal-grid" role="grid" aria-label="June 2026"></div>
+            <div class="cal-day-popup" id="cal-day-popup" hidden>
+              <div class="cal-day-popup-head" id="cal-day-popup-drag">
+                <div class="cal-day-popup-heading">
+                  <strong id="cal-day-popup-date"></strong>
+                  <span id="cal-day-popup-count"></span>
+                </div>
+                <button type="button" class="cal-day-popup-close" id="cal-day-popup-close" aria-label="Close">
+                  <svg viewBox="0 0 12 12" fill="none" aria-hidden="true"><path d="M3 3l6 6M9 3L3 9" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+                </button>
+              </div>
+              <div class="cal-day-popup-list" id="cal-day-popup-list"></div>
+            </div>
           </div>
 
           <p class="cal-hint" id="cal-hint">View mode · browse your schedule</p>
