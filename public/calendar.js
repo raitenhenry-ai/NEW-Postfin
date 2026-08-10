@@ -29,7 +29,7 @@
   const FORMAT_KEY = "cal-output-format";
   const PLATFORM_KEY = "cal-target-platform";
   const PLATFORM_OPTS = new Set(["all", "tiktok", "youtube", "instagram"]);
-  const PLATFORM_LABELS = {
+  const PLATFORM_PICKER_LABELS = {
     all: "All",
     tiktok: "TikTok",
     youtube: "YouTube",
