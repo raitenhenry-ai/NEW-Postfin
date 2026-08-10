@@ -2884,8 +2884,12 @@ body.theme-light .cal-post-fields {
 .cal-product-pill {
   position: relative;
   align-self: flex-start;
-  margin: 0 10px 4px;
+  margin: 0 10px 0;
   flex-shrink: 0;
+}
+
+.cal-product-pill + .cal-composer {
+  margin-top: 6px;
 }
 
 .cal-product-pill-btn {
