@@ -898,16 +898,19 @@
             e.preventDefault();
             e.stopPropagation();
             if (isEditMode()) {
+              if (planAbort) {
+                planAbort.abort();
+                planAbort = null;
+              }
+              persistActiveChat();
               mode = "view";
               saveMode(mode);
               setChatCollapsed(false);
-              updateChrome();
             }
             setFocusedDay(key);
             openedPost = index;
             editingPost = null;
             applySelectionClasses();
-            renderDayPanel();
           });
           list.appendChild(row);
         });
