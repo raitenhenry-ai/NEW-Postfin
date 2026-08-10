@@ -10,11 +10,15 @@
   const form = document.getElementById("cal-chat-form");
   const field = document.getElementById("cal-chat-field");
   const sendBtn = document.getElementById("cal-chat-send");
-  const productRail = document.getElementById("cal-product-rail");
+  const productPicker = document.getElementById("cal-product-picker");
+  const productPillBtn = document.getElementById("cal-product-pill-btn");
+  const productPillLabel = document.getElementById("cal-product-pill-label");
+  const productMenu = document.getElementById("cal-product-menu");
   const hint = document.getElementById("cal-hint");
   const shell = document.querySelector(".cal-shell");
   const PRODUCT_KEY = "cal-product-url";
   let selectedProductUrl = localStorage.getItem(PRODUCT_KEY) || "";
+  let productCatalog = [];
   const modeButtons = document.querySelectorAll("[data-cal-mode]");
   const modeSwitcher = document.getElementById("cal-mode-switcher");
   const modeSwitcherBtn = document.getElementById("cal-mode-switcher-btn");

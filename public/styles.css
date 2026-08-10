@@ -4973,44 +4973,48 @@ body.theme-light .cal-composer-send:disabled {
   opacity: 0.45;
 }
 
-body.theme-light .cal-product-link {
+body.theme-light .cal-product-pill-btn {
+  background: #ffffff;
+  border-color: #d8d8de;
+  color: #111114;
+}
+
+body.theme-light .cal-product-pill-btn:hover,
+body.theme-light .cal-product-pill-btn[aria-expanded="true"] {
+  background: #f4f4f7;
+  border-color: #c8c8d0;
+}
+
+body.theme-light .cal-product-pill-caret {
+  color: #6a6a72;
+}
+
+body.theme-light .cal-product-menu {
   background: #ffffff;
   border-color: #e0e0e6;
+  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.12);
 }
 
-body.theme-light .cal-product-link-label {
+body.theme-light .cal-product-menu-item {
+  color: #111114;
+}
+
+body.theme-light .cal-product-menu-item:hover,
+body.theme-light .cal-product-menu-item.is-on {
+  background: #f0f0f3;
+}
+
+body.theme-light .cal-product-menu-empty {
   color: #6a6a72;
 }
 
-body.theme-light .cal-product-empty {
-  color: #8a8a92;
-}
-
-body.theme-light .cal-product-dot {
-  background: #ececf1;
-}
-
-body.theme-light .cal-product-dot:hover {
-  border-color: #c8c8d0;
-}
-
-body.theme-light .cal-product-dot.is-on {
-  border-color: #3b6ef5;
-  box-shadow: 0 0 0 2px rgba(59, 110, 245, 0.18);
-}
-
-body.theme-light .cal-product-dot.is-add {
-  border-color: #c8c8d0;
-  color: #6a6a72;
-}
-
-body.theme-light .cal-product-dot.is-add:hover {
-  border-color: #3b6ef5;
+body.theme-light .cal-product-menu-foot {
   color: #3b6ef5;
 }
 
-body.theme-light .cal-product-dot-fallback {
-  color: #3a3a42;
+body.theme-light .cal-product-menu-foot:hover {
+  background: #f0f0f3;
+  color: #2a56d4;
 }
 
 body.theme-light .cal-msg.is-user .cal-msg-body {
