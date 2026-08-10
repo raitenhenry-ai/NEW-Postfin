@@ -213,7 +213,12 @@ const IMPLEMENTATIONS = {
          VALUES (?, ?, 'queued', 1, ?, ?, ?, ?, ?, ?) RETURNING id`,
         [
           resolvedUrl,
-          JSON.stringify({ tone: "casual", style: "product_pov", platforms: wanted }),
+          JSON.stringify({
+            tone: "casual",
+            style: "product_pov",
+            platforms: wanted,
+            outputFormat: ctx.outputFormat === "slideshow" ? "slideshow" : "video",
+          }),
           concept.title, brief || null, JSON.stringify(concept), scheduledAt, now, now,
         ]
       );
