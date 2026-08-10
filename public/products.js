@@ -86,20 +86,66 @@
       </article>`;
   }
 
-  async function load() {
+  function shimmerCard() {
+    return `
+      <article class="product-card product-card-shimmer" aria-hidden="true">
+        <div class="product-media">
+          <div class="product-shimmer product-hero"></div>
+          <div class="product-thumbs">
+            <div class="product-shimmer"></div>
+            <div class="product-shimmer"></div>
+            <div class="product-shimmer"></div>
+          </div>
+        </div>
+        <div class="product-body">
+          <div class="product-body-top">
+            <div class="product-titles" style="width:100%">
+              <div class="product-shimmer product-shimmer-title"></div>
+              <div class="product-shimmer product-shimmer-url"></div>
+            </div>
+          </div>
+          <div class="product-shimmer product-shimmer-line"></div>
+          <div class="product-shimmer product-shimmer-line is-short"></div>
+          <div class="product-facts">
+            <div class="product-shimmer product-shimmer-fact"></div>
+            <div class="product-shimmer product-shimmer-fact"></div>
+            <div class="product-shimmer product-shimmer-fact"></div>
+            <div class="product-shimmer product-shimmer-fact"></div>
+          </div>
+        </div>
+      </article>`;
+  }
+
+  function showShimmers(count = 2) {
     status.innerHTML = "";
-    list.innerHTML = "";
+    list.innerHTML = Array.from({ length: count }, shimmerCard).join("");
+  }
+
+  function prependShimmer() {
+    status.innerHTML = "";
+    list.insertAdjacentHTML("afterbegin", shimmerCard());
+  }
+
+  function removeLeadingShimmer() {
+    list.querySelector(".product-card-shimmer")?.remove();
+  }
+
+  async function load({ keepExisting = false } = {}) {
+    if (!keepExisting) showShimmers(2);
     try {
       const data = await api("/api/products");
       const products = data.products || [];
       if (!products.length) {
+        list.innerHTML = "";
         status.innerHTML = emptyBlock(
           "No products yet. Paste a product URL above to add one."
         );
         return;
       }
+      status.innerHTML = "";
       list.innerHTML = products.map(productCard).join("");
     } catch (err) {
+      list.innerHTML = "";
       status.innerHTML = errorBlock(err.message || "Couldn't load products");
     }
   }
@@ -112,6 +158,7 @@
     addBtn.disabled = true;
     hint.textContent = "Scraping product page…";
     hint.classList.remove("is-error");
+    prependShimmer();
 
     try {
       const result = await api("/api/products", {
@@ -125,6 +172,7 @@
       toast(result.updated ? "Product updated" : "Product added");
       await load();
     } catch (err) {
+      removeLeadingShimmer();
       hint.textContent = err.message || "Couldn't add that product";
       hint.classList.add("is-error");
       toast(err.message || "Couldn't add that product", "error");
