@@ -199,7 +199,9 @@ const IMPLEMENTATIONS = {
       brief, count: slots.length, productUrl: productUrl || "",
     });
 
-    const wanted = (platforms || []).filter((p) => ENABLED_PLATFORMS.includes(p));
+    // Empty/omitted platforms means every connected account — store that
+    // list so the calendar never shows "No platform".
+    const wanted = await resolveTargetPlatforms(platforms);
     const now = Date.now();
     const created = [];
     for (const [i, concept] of plan.concepts.entries()) {

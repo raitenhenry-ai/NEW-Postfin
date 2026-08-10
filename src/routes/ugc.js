@@ -1,7 +1,7 @@
 import { Router } from "express";
 import config, { PLATFORM_NAMES, ENABLED_PLATFORMS } from "../config.js";
 import { q, q1, run as dbRun } from "../db.js";
-import { platforms } from "../accounts.js";
+import { platforms, resolveTargetPlatforms } from "../accounts.js";
 import { toneOptions, styleOptions } from "../ugc/script.js";
 import { planContent, normalizeSettings } from "../ugc/plan.js";
 import { heygenConfigured, heygenCatalog, testConnection } from "../ugc/heygen.js";
@@ -95,9 +95,7 @@ router.post("/jobs", wrap(async (req, res) => {
     return res.status(400).json({ error: "Enter a product URL (https://...) or describe the video" });
   }
 
-  const wanted = Array.isArray(req.body.platforms)
-    ? req.body.platforms.filter((p) => ENABLED_PLATFORMS.includes(p))
-    : [];
+  const wanted = await resolveTargetPlatforms(req.body.platforms);
   const settings = {
     tone: toneOptions().includes(req.body.tone) ? req.body.tone : "casual",
     style: styleOptions().includes(req.body.style) ? req.body.style : "product_pov",
