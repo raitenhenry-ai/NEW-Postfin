@@ -4887,28 +4887,26 @@ body.theme-light .cal-post-fields {
   padding: 8px 11px;
 }
 
-/* typing indicator */
-.cal-typing {
-  display: inline-flex;
-  gap: 4px;
-  align-items: center;
-  padding: 14px 15px;
+/* loading status lines */
+.cal-loading-status {
+  align-self: flex-start;
+  max-width: 100%;
+  padding: 8px 2px;
+  color: #9a9aa2;
+  font-size: 13px;
+  font-weight: 500;
+  line-height: 1.4;
+  letter-spacing: 0.01em;
+  opacity: 1;
+  transition: opacity 0.35s ease;
 }
 
-.cal-typing span {
-  width: 6px;
-  height: 6px;
-  border-radius: 50%;
-  background: #6a6a72;
-  animation: cal-bounce 1.2s infinite ease-in-out;
+.cal-loading-status.is-fading {
+  opacity: 0;
 }
 
-.cal-typing span:nth-child(2) { animation-delay: 0.15s; }
-.cal-typing span:nth-child(3) { animation-delay: 0.3s; }
-
-@keyframes cal-bounce {
-  0%, 60%, 100% { transform: translateY(0); opacity: 0.45; }
-  30% { transform: translateY(-4px); opacity: 1; }
+body.theme-light .cal-loading-status {
+  color: #6a6a72;
 }
 
 /* --- light theme (white + light grey) --- */
