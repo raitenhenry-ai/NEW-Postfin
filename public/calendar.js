@@ -1164,6 +1164,7 @@
           offsetMinutes: -new Date().getTimezoneOffset(),
           productUrl: selectedProductUrl || "",
           outputFormat: selectedFormat,
+          platforms: selectedPlatform === "all" ? [] : [selectedPlatform],
         },
       });
 
@@ -1393,7 +1394,28 @@
     if (formatMenu && !formatMenu.hidden) setFormatMenuOpen(false);
   }, { passive: true });
 
+  function syncPlatformSwitch() {
+    platformSwitch?.querySelectorAll("[data-platform]").forEach((btn) => {
+      const on = btn.getAttribute("data-platform") === selectedPlatform;
+      btn.classList.toggle("is-on", on);
+      btn.setAttribute("aria-checked", on ? "true" : "false");
+    });
+  }
+
+  function setSelectedPlatform(platform) {
+    selectedPlatform = PLATFORM_OPTS.has(platform) ? platform : "all";
+    localStorage.setItem(PLATFORM_KEY, selectedPlatform);
+    syncPlatformSwitch();
+  }
+
+  platformSwitch?.addEventListener("click", (e) => {
+    const btn = e.target.closest("[data-platform]");
+    if (!btn || !platformSwitch.contains(btn)) return;
+    setSelectedPlatform(btn.getAttribute("data-platform"));
+  });
+
   syncFormatPicker();
+  syncPlatformSwitch();
   syncSendState();
   resizeField();
   render();

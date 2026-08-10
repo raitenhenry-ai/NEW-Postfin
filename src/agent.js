@@ -200,9 +200,12 @@ const IMPLEMENTATIONS = {
       brief, count: slots.length, productUrl: resolvedUrl,
     });
 
-    // Empty/omitted platforms means every connected account — store that
-    // list so the calendar never shows "No platform".
-    const wanted = await resolveTargetPlatforms(platforms);
+    // Prefer the tool args; fall back to the chat platform picker.
+    // Empty/omitted means every connected account — store that list so the
+    // calendar never shows "No platform".
+    const wanted = await resolveTargetPlatforms(
+      (Array.isArray(platforms) && platforms.length) ? platforms : ctx.platforms
+    );
     const now = Date.now();
     const created = [];
     for (const [i, concept] of plan.concepts.entries()) {
