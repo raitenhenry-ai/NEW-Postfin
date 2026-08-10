@@ -4929,12 +4929,13 @@ body.theme-light .cal-post-fields {
 }
 
 /* loading status lines */
-.cal-msg:has(.cal-loading-status) {
+.cal-msg-loading {
   align-self: flex-start;
   align-items: flex-start;
   width: auto;
   max-width: 100%;
   margin-right: auto;
+  padding-left: 2px;
 }
 
 .cal-loading-status {
