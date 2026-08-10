@@ -706,6 +706,7 @@
       pickerYear = view.getFullYear();
       renderMonthMenu();
       setModeMenuOpen(false);
+      setHistoryMenuOpen(false);
     }
     monthPicker.classList.toggle("open", open);
     monthLabelBtn.setAttribute("aria-expanded", open ? "true" : "false");
