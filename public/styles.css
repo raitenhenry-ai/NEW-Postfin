@@ -3029,65 +3029,91 @@ body.theme-light .cal-post-fields {
   color: #8a8a92;
 }
 
-.cal-platform-switch {
-  display: inline-flex;
-  align-items: center;
-  height: 32px;
-  padding: 3px;
-  border-radius: 999px;
-  background: #1a1a1e;
-  border: 1px solid #2e2e32;
+.cal-platform-picker {
+  position: relative;
   flex-shrink: 0;
-  gap: 0;
 }
 
-.cal-platform-opt {
+.cal-platform-btn-icon {
+  width: 15px;
+  height: 15px;
   display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  min-width: 32px;
-  height: 26px;
-  padding: 0 10px;
-  border: none;
-  border-radius: 999px;
-  background: transparent;
-  color: #c8c8d0;
-  font: inherit;
-  font-size: 12px;
-  font-weight: 650;
-  cursor: pointer;
-  transition: background 0.15s, color 0.15s;
+  flex-shrink: 0;
 }
 
-.cal-platform-opt[data-platform="tiktok"],
-.cal-platform-opt[data-platform="youtube"],
-.cal-platform-opt[data-platform="instagram"] {
-  min-width: 30px;
-  padding: 0 8px;
-  border-radius: 8px;
+.cal-platform-btn-icon[hidden] {
+  display: none;
 }
 
-.cal-platform-opt img {
+.cal-platform-btn-icon img {
   width: 15px;
   height: 15px;
   display: block;
   object-fit: contain;
 }
 
-.cal-platform-opt:hover {
-  color: #fff;
+.cal-platform-menu {
+  position: absolute;
+  left: 0;
+  bottom: calc(100% + 6px);
+  z-index: 40;
+  min-width: 160px;
+  padding: 6px;
+  border: 1px solid #2e2e32;
+  border-radius: 10px;
+  background: #1a1a1e;
+  box-shadow: 0 10px 28px rgba(0, 0, 0, 0.35);
 }
 
-.cal-platform-opt.is-on {
+.cal-platform-menu[hidden] {
+  display: none;
+}
+
+.cal-platform-menu-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  border: none;
+  border-radius: 8px;
+  background: transparent;
+  color: #e8e8ee;
+  font: inherit;
+  font-size: 12px;
+  font-weight: 550;
+  text-align: left;
+  padding: 8px 10px;
+  cursor: pointer;
+}
+
+.cal-platform-menu-item:hover,
+.cal-platform-menu-item.is-on {
   background: #2a2a30;
-  color: #fff;
 }
 
-.cal-platform-divider {
-  width: 1px;
-  height: 14px;
-  background: #2e2e32;
+.cal-platform-menu-icon {
+  width: 22px;
+  height: 22px;
+  border-radius: 6px;
+  background: #242428;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   flex-shrink: 0;
+  overflow: hidden;
+}
+
+.cal-platform-menu-icon.is-all {
+  color: #c8c8d0;
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.cal-platform-menu-icon img {
+  width: 14px;
+  height: 14px;
+  display: block;
+  object-fit: contain;
 }
 
 .cal-product-pill-btn {

@@ -269,20 +269,30 @@
                 </button>
               </div>
             </div>
-            <div class="cal-platform-switch" id="cal-platform-switch" role="radiogroup" aria-label="Target platform">
-              <button type="button" class="cal-platform-opt is-on" data-platform="all" role="radio" aria-checked="true">All</button>
-              <span class="cal-platform-divider" aria-hidden="true"></span>
-              <button type="button" class="cal-platform-opt" data-platform="tiktok" role="radio" aria-checked="false" aria-label="TikTok" title="TikTok">
-                <img src="icons/tiktok.png" alt="" width="16" height="16">
+            <div class="cal-platform-picker" id="cal-platform-picker">
+              <button type="button" class="cal-product-pill-btn" id="cal-platform-btn" aria-haspopup="menu" aria-expanded="false" aria-label="Target platform">
+                <span class="cal-platform-btn-icon" id="cal-platform-btn-icon" hidden aria-hidden="true"></span>
+                <span class="cal-product-pill-label" id="cal-platform-label">All</span>
+                <svg class="cal-product-pill-caret" viewBox="0 0 12 12" fill="none" aria-hidden="true"><path d="M3 4.5L6 7.5L9 4.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
               </button>
-              <span class="cal-platform-divider" aria-hidden="true"></span>
-              <button type="button" class="cal-platform-opt" data-platform="youtube" role="radio" aria-checked="false" aria-label="YouTube" title="YouTube">
-                <img src="icons/youtube.png" alt="" width="16" height="16">
-              </button>
-              <span class="cal-platform-divider" aria-hidden="true"></span>
-              <button type="button" class="cal-platform-opt" data-platform="instagram" role="radio" aria-checked="false" aria-label="Instagram" title="Instagram">
-                <img src="icons/instagram.png" alt="" width="16" height="16">
-              </button>
+              <div class="cal-platform-menu" id="cal-platform-menu" role="menu" hidden>
+                <button type="button" class="cal-platform-menu-item is-on" role="menuitemradio" data-platform="all" aria-checked="true">
+                  <span class="cal-platform-menu-icon is-all" aria-hidden="true">A</span>
+                  <span>All</span>
+                </button>
+                <button type="button" class="cal-platform-menu-item" role="menuitemradio" data-platform="tiktok" aria-checked="false">
+                  <span class="cal-platform-menu-icon" aria-hidden="true"><img src="icons/tiktok.png" alt=""></span>
+                  <span>TikTok</span>
+                </button>
+                <button type="button" class="cal-platform-menu-item" role="menuitemradio" data-platform="youtube" aria-checked="false">
+                  <span class="cal-platform-menu-icon" aria-hidden="true"><img src="icons/youtube.png" alt=""></span>
+                  <span>YouTube</span>
+                </button>
+                <button type="button" class="cal-platform-menu-item" role="menuitemradio" data-platform="instagram" aria-checked="false">
+                  <span class="cal-platform-menu-icon" aria-hidden="true"><img src="icons/instagram.png" alt=""></span>
+                  <span>Instagram</span>
+                </button>
+              </div>
             </div>
           </div>
           <form class="cal-composer" id="cal-chat-form">
