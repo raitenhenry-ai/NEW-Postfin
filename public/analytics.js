@@ -650,4 +650,10 @@
     clearTimeout(window.__analyticsResize);
     window.__analyticsResize = setTimeout(renderAll, 80);
   });
+
+  // The canvas colors are picked per paint, so flipping the theme needs a
+  // repaint - CSS alone can't recolor what's already drawn.
+  new MutationObserver(() => {
+    instances.forEach((inst) => paint(inst, inst.hoverX));
+  }).observe(document.body, { attributes: true, attributeFilter: ["class"] });
 })();
