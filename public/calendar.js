@@ -1365,9 +1365,40 @@
     syncFormatPicker();
   }
 
+  function setPlatformMenuOpen(open) {
+    if (!platformMenu || !platformBtn) return;
+    platformMenu.hidden = !open;
+    platformBtn.setAttribute("aria-expanded", open ? "true" : "false");
+  }
+
+  function syncPlatformPicker() {
+    if (platformLabel) platformLabel.textContent = PLATFORM_LABELS[selectedPlatform] || "All";
+    if (platformBtnIcon) {
+      if (selectedPlatform === "all") {
+        platformBtnIcon.hidden = true;
+        platformBtnIcon.innerHTML = "";
+      } else {
+        platformBtnIcon.hidden = false;
+        platformBtnIcon.innerHTML = `<img src="icons/${selectedPlatform}.png" alt="">`;
+      }
+    }
+    platformMenu?.querySelectorAll("[data-platform]").forEach((btn) => {
+      const on = btn.getAttribute("data-platform") === selectedPlatform;
+      btn.classList.toggle("is-on", on);
+      btn.setAttribute("aria-checked", on ? "true" : "false");
+    });
+  }
+
+  function setSelectedPlatform(platform) {
+    selectedPlatform = PLATFORM_OPTS.has(platform) ? platform : "all";
+    localStorage.setItem(PLATFORM_KEY, selectedPlatform);
+    syncPlatformPicker();
+  }
+
   productPillBtn?.addEventListener("click", (e) => {
     e.stopPropagation();
     setFormatMenuOpen(false);
+    setPlatformMenuOpen(false);
     setProductMenuOpen(productMenu?.hidden !== false);
   });
 
@@ -1382,6 +1413,7 @@
   formatBtn?.addEventListener("click", (e) => {
     e.stopPropagation();
     setProductMenuOpen(false);
+    setPlatformMenuOpen(false);
     setFormatMenuOpen(formatMenu?.hidden !== false);
   });
 
@@ -1392,11 +1424,26 @@
     setFormatMenuOpen(false);
   });
 
+  platformBtn?.addEventListener("click", (e) => {
+    e.stopPropagation();
+    setProductMenuOpen(false);
+    setFormatMenuOpen(false);
+    setPlatformMenuOpen(platformMenu?.hidden !== false);
+  });
+
+  platformMenu?.addEventListener("click", (e) => {
+    const item = e.target.closest("[data-platform]");
+    if (!item) return;
+    setSelectedPlatform(item.getAttribute("data-platform"));
+    setPlatformMenuOpen(false);
+  });
+
   document.addEventListener("click", (e) => {
     if (!productPicker?.contains(e.target)) setProductMenuOpen(false);
     if (!formatPicker?.contains(e.target) && !formatMenu?.contains(e.target)) {
       setFormatMenuOpen(false);
     }
+    if (!platformPicker?.contains(e.target)) setPlatformMenuOpen(false);
   });
 
   window.addEventListener("resize", positionFormatMenu);
@@ -1404,28 +1451,8 @@
     if (formatMenu && !formatMenu.hidden) setFormatMenuOpen(false);
   }, { passive: true });
 
-  function syncPlatformSwitch() {
-    platformSwitch?.querySelectorAll("[data-platform]").forEach((btn) => {
-      const on = btn.getAttribute("data-platform") === selectedPlatform;
-      btn.classList.toggle("is-on", on);
-      btn.setAttribute("aria-checked", on ? "true" : "false");
-    });
-  }
-
-  function setSelectedPlatform(platform) {
-    selectedPlatform = PLATFORM_OPTS.has(platform) ? platform : "all";
-    localStorage.setItem(PLATFORM_KEY, selectedPlatform);
-    syncPlatformSwitch();
-  }
-
-  platformSwitch?.addEventListener("click", (e) => {
-    const btn = e.target.closest("[data-platform]");
-    if (!btn || !platformSwitch.contains(btn)) return;
-    setSelectedPlatform(btn.getAttribute("data-platform"));
-  });
-
   syncFormatPicker();
-  syncPlatformSwitch();
+  syncPlatformPicker();
   syncSendState();
   resizeField();
   render();
