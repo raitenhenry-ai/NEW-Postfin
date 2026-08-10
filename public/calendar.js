@@ -282,6 +282,7 @@
       setMonthMenuOpen(false);
     }
     historyPicker.classList.toggle("open", open);
+    historyBtn.classList.toggle("is-on", open);
     historyBtn.setAttribute("aria-expanded", open ? "true" : "false");
     historyMenu.hidden = !open;
   }
