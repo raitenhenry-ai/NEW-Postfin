@@ -3063,13 +3063,9 @@ body.theme-light .cal-post-fields {
 
 .cal-platform-picker {
   position: relative;
-  flex: 1 1 auto;
+  flex: 0 0 auto;
   min-width: 0;
-}
-
-.cal-platform-picker .cal-product-pill-btn {
-  width: 100%;
-  max-width: none;
+  max-width: 100%;
 }
 
 .cal-platform-btn-icon {
