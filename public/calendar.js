@@ -432,7 +432,7 @@
         renderThread(false);
         return;
       }
-      dayPanel.innerHTML = "";
+      renderAgentEmpty();
       return;
     }
 
