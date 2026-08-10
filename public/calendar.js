@@ -928,12 +928,11 @@
             if (isViewMode()) {
               setFocusedDay(key);
               openedPost = on ? index : null;
-              applySelectionClasses();
-              return;
+            } else {
+              // Edit mode: highlight this event and select only its day.
+              selected.clear();
+              if (on && !isPastKey(key)) selected.add(key);
             }
-            // Edit mode: highlight this event and select only its day.
-            selected.clear();
-            if (on && !isPastKey(key)) selected.add(key);
             render();
           });
           list.appendChild(row);
