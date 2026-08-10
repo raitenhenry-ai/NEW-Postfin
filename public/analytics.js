@@ -172,10 +172,14 @@
   function paint(instance, hoverX) {
     const { canvas, ctx, config, pad, plotW, plotH, cssWidth, cssHeight, points, curve, tooltip } = instance;
 
+    // The canvas can't read CSS variables, so pick the palette at paint time
+    // and repaint when the theme flips (observer at the bottom of the file).
+    const light = document.body.classList.contains("theme-light");
+
     ctx.clearRect(0, 0, cssWidth, cssHeight);
 
     const steps = config.yLabels.length - 1;
-    ctx.strokeStyle = "rgba(255, 255, 255, 0.06)";
+    ctx.strokeStyle = light ? "rgba(20, 20, 30, 0.09)" : "rgba(255, 255, 255, 0.06)";
     ctx.lineWidth = 1;
     for (let i = 0; i <= steps; i++) {
       const y = pad.top + (plotH * i) / steps;
