@@ -138,8 +138,12 @@ const config = {
     heygenApiBase: env("HEYGEN_API_BASE", "https://api.heygen.com").replace(/\/+$/, ""),
     // Fallbacks only - the create form lists the avatars and voices this
     // account actually has, and a job stores the pair it was made with.
-    heygenAvatarId: env("HEYGEN_AVATAR_ID", "Daisy-inskirt-20220818"),
-    heygenVoiceId: env("HEYGEN_VOICE_ID", "2d5b0e6cf36f460aa7fc47e3eee4ba54"),
+    // Empty by default on purpose. A hardcoded stock id is a stale id -
+    // HeyGen retires sample avatars, and a video that names one fails with
+    // "avatar not found" on an account that never had it. Left empty, the
+    // renderer asks the account which avatars it actually has.
+    heygenAvatarId: env("HEYGEN_AVATAR_ID"),
+    heygenVoiceId: env("HEYGEN_VOICE_ID"),
     heygenBackground: env("HEYGEN_BACKGROUND", "#0b0d12"),
     heygenSpeed: Number(process.env.HEYGEN_SPEED || 1.05),
     videoSeconds: Number(process.env.UGC_VIDEO_SECONDS || 24),

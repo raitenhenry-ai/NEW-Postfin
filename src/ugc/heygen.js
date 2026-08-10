@@ -116,13 +116,53 @@ export async function testConnection() {
 // URLs for the scraped product photos, indexed the way the storyboard
 // refers to them. Falls back to a single scene when there is no storyboard.
 export async function startAvatarVideo({ text, script, sceneImages = [], settings = {} }) {
+  // A video only names an avatar when someone picked one from the scheduler.
+  // Anything the assistant schedules names none, so the account's own first
+  // avatar and voice stand in - asking HeyGen what exists beats guessing an
+  // id that may have been retired years ago.
+  const needsDefaults = !settings.avatarId && !config.ugc.heygenAvatarId;
+  const needsVoice = !settings.voiceId && !config.ugc.heygenVoiceId;
+  let fallback = null;
+  if (needsDefaults || needsVoice) {
+    const defaults = await accountDefaults();
+    fallback = { avatar: defaults.avatar, voice: defaults.voice };
+    console.log(
+      `[heygen] no avatar chosen for this video - using this account's ` +
+        `"${defaults.avatar.name}"${defaults.voice ? ` with "${defaults.voice.name}"` : ""}`
+    );
+  }
+
   const body = {
-    video_inputs: buildScenes({ text, script, sceneImages, settings }),
+    video_inputs: buildScenes({ text, script, sceneImages, settings, fallback }),
     // Match the built-in renderer: full vertical 1080x1920, which is what
     // every short-form surface expects.
     dimension: { width: 1080, height: 1920 },
   };
-  const data = await call("/v2/video/generate", { method: "POST", body: JSON.stringify(body) });
+
+  let data;
+  try {
+    data = await call("/v2/video/generate", { method: "POST", body: JSON.stringify(body) });
+  } catch (err) {
+    // An id that this account does not have is the single most common way
+    // this call fails, and "avatar not found" on its own tells you nothing
+    // about what to do next.
+    if (/avatar.*not found|not found.*avatar|invalid.*avatar/i.test(err.message || "")) {
+      const catalog = await heygenCatalog({ force: true }).catch(() => null);
+      const names = (catalog?.avatars || []).slice(0, 5).map((a) => `"${a.name}"`).join(", ");
+      throw new Error(
+        `HeyGen does not have the avatar this video asks for ` +
+          `(${settings.avatarId || config.ugc.heygenAvatarId || "unnamed"}). ` +
+          (names
+            ? `This account has ${catalog.avatars.length}: ${names}. Pick one in the ` +
+              "scheduler, clear HEYGEN_AVATAR_ID to use the first automatically, " +
+              "or switch the video to the slideshow format."
+            : "This account has no avatars available to the API - switch the video " +
+              "to the slideshow format, which needs no HeyGen account.")
+      );
+    }
+    throw err;
+  }
+
   const videoId = data.data?.video_id;
   if (!videoId) throw new Error(`HeyGen returned no video_id: ${JSON.stringify(data).slice(0, 300)}`);
   return videoId;
@@ -137,9 +177,9 @@ function spokenLines(script) {
     .filter(Boolean);
 }
 
-function buildScenes({ text, script, sceneImages, settings }) {
-  const character = buildCharacter(settings);
-  const voiceId = settings.voiceId || config.ugc.heygenVoiceId;
+function buildScenes({ text, script, sceneImages, settings, fallback }) {
+  const character = buildCharacter(settings, fallback?.avatar);
+  const voiceId = settings.voiceId || config.ugc.heygenVoiceId || fallback?.voice?.id;
   const voiceFor = (input) => ({
     type: "text",
     input_text: input.slice(0, 1500),
@@ -174,12 +214,31 @@ function buildScenes({ text, script, sceneImages, settings }) {
 }
 
 // Uploaded photo avatars are a different character type to stock avatars.
-function buildCharacter(settings) {
-  const id = settings.avatarId || config.ugc.heygenAvatarId;
-  if (settings.avatarKind === "talking_photo") {
+function buildCharacter(settings, fallback) {
+  const id = settings.avatarId || config.ugc.heygenAvatarId || fallback?.id;
+  const kind = settings.avatarId ? settings.avatarKind : (config.ugc.heygenAvatarId ? settings.avatarKind : fallback?.kind);
+  if (kind === "talking_photo") {
     return { type: "talking_photo", talking_photo_id: id };
   }
   return { type: "avatar", avatar_id: id, avatar_style: "normal" };
+}
+
+// The first avatar and voice this account actually owns. Used when a video
+// does not name one - which is every video the assistant schedules, since
+// nobody picked from a dropdown - so the render uses something real instead
+// of a hardcoded id that may not exist here.
+async function accountDefaults() {
+  const catalog = await heygenCatalog().catch(() => null);
+  const avatar = catalog?.avatars?.[0] || null;
+  const voice = catalog?.voices?.[0] || null;
+  if (!avatar) {
+    throw new Error(
+      "This HeyGen account has no avatars available to the API" +
+        (catalog?.error ? ` (${catalog.error})` : "") +
+        ". Add one in HeyGen, or switch the video to the slideshow format."
+    );
+  }
+  return { avatar, voice };
 }
 
 // Polls until the video completes, then streams it to outputPath.

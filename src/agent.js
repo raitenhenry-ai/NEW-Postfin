@@ -155,7 +155,7 @@ const TOOLS = [
             description: "Slideshow only: how many slides, 3-10. Defaults to 6.",
           },
         },
-        required: ["brief", "dates"],
+        required: ["brief", "dates", "format"],
       },
     },
   },
@@ -391,6 +391,34 @@ function normalizeOptions(raw) {
     .slice(0, MAX_OPTIONS);
 }
 
+// Which format a video is actually made in, in order of authority:
+//
+//   1. What the user said. "Make it a slideshow" is the most explicit signal
+//      there is, and it beats every setting - including a switch they left
+//      on yesterday.
+//   2. The composer's Video/Slideshow switch, which is their own setting
+//      sitting on screen as they type. It beats anything the model inferred.
+//   3. What the model asked for.
+//   4. The workspace default.
+//
+// Getting this wrong is expensive and invisible until the render finishes:
+// an avatar job goes to HeyGen and looks nothing like what was asked for.
+function resolveFormat(requested, brief, ctx) {
+  const said = spokenFormat(brief);
+  if (said) return said;
+  if (ctx.outputFormat) return ctx.outputFormat;
+  if (requested === "slideshow" || requested === "avatar") return requested;
+  return config.ugc.format === "slideshow" ? "slideshow" : "avatar";
+}
+
+// A format named in the brief itself, in the words people actually use.
+function spokenFormat(brief) {
+  const text = String(brief || "");
+  if (/slide\s?show|\bslides\b|image ad|picture ad/i.test(text)) return "slideshow";
+  if (/\bavatar\b|talking head|person talking to camera/i.test(text)) return "avatar";
+  return "";
+}
+
 const IMPLEMENTATIONS = {
   // Does not touch the workspace: it parks the question on ctx, and the loop
   // hands it to the client instead of running another round.
@@ -425,9 +453,7 @@ const IMPLEMENTATIONS = {
       // Empty/omitted platforms means every connected account - store that
       // list so the calendar never shows "No platform".
       platforms: await resolveTargetPlatforms(platforms),
-      format: format === "slideshow" || format === "avatar"
-        ? format
-        : ctx.outputFormat || "avatar",
+      format: resolveFormat(format, brief, ctx),
     };
     if (settings.format === "slideshow") {
       if (slideshowAngles().includes(angle)) settings.angle = angle;

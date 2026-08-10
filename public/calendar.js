@@ -1684,7 +1684,13 @@
     if (!done.length) return "";
     const lines = done.map((a) => {
       if (a.name === "plan_videos") {
-        return (a.result.videos || []).map((v) => `
+        // Say which format was made. Getting this wrong is invisible until
+        // the render finishes, by which point it is the wrong video.
+        const made = a.result.format === "slideshow"
+          ? `AI slideshow${a.result.angle ? ` · ${a.result.angle.replace(/_/g, " ")}` : ""}`
+          : "HeyGen avatar video";
+        const header = `<li class="cal-action-note">${escapeHtml(made)}</li>`;
+        return header + (a.result.videos || []).map((v) => `
           <li class="cal-plan-item">
             <span class="cal-plan-date">${escapeHtml(
               new Date(v.scheduledAt).toLocaleDateString("en-US", {

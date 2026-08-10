@@ -52,9 +52,18 @@ Every video is one of two things, chosen per video and stored on it:
 | Good for | a physical product someone can hold | software, apps, tool comparisons, method videos — anything with nothing to film |
 | Cost per video | HeyGen credits | roughly $0.10–$1.50 of image generation, see below |
 
-`UGC_FORMAT` sets the default (`avatar` unless you change it). The calendar
-assistant asks which one you want before it generates, and can re-render an
-existing video as the other format.
+`UGC_FORMAT` sets the default (`avatar` unless you change it), but it is the
+last word, not the first. The format of a video is decided in this order:
+
+1. **What you said.** "Make it a slideshow" wins over every setting.
+2. **The composer's Video/Slideshow switch**, which beats anything the
+   assistant inferred on its own.
+3. What the assistant chose, when you left it open.
+4. `UGC_FORMAT`.
+
+The assistant asks which one you want before generating if nothing above
+answers it, says which it made, and can re-render an existing video as the
+other format.
 
 ### Slideshow ads
 
@@ -133,6 +142,14 @@ default for new videos.
 
 The key is in HeyGen under **Settings → API**. API access requires a paid
 HeyGen plan, and each render spends credits from that plan.
+
+**Avatars are resolved from your account.** `HEYGEN_AVATAR_ID` and
+`HEYGEN_VOICE_ID` are empty by default, and a video that names no avatar -
+which is every video the assistant schedules - uses the first one this
+account actually has. A hardcoded stock id is a stale id: HeyGen retires its
+sample avatars, and a video naming one fails with "avatar not found" on an
+account that never had it. If a render still can't find its avatar, the
+error names the ones you do have.
 
 **Picking an avatar.** You don't need to hunt for IDs. The scheduler dialog
 lists the avatars and voices this HeyGen account actually has — including
