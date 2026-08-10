@@ -12,13 +12,15 @@ all driven by this app's own API. There is no mock data anywhere in the UI.
 ## How a video gets made
 
 1. **Scrape** — JSON-LD / OpenGraph / meta parsing, works on most storefronts.
-2. **Script** — hook, spoken scenes, CTA, caption and hashtags via OpenAI, in
-   a chosen tone (casual / hyped / pro / storytelling) and style (Product POV,
-   GRWM, Unboxing, Before-After, Demo). Falls back to templates without a key.
+2. **Script** — for an **avatar** video: hook, spoken scenes, CTA, caption and
+   hashtags via OpenAI, in a chosen tone (casual / hyped / pro / storytelling)
+   and style (Product POV, GRWM, Unboxing, Before-After, Demo). For a
+   **slideshow**: slides, each with its own on-screen line, voiceover line and
+   image prompt. Falls back to templates without a key.
 3. **Render** — either the **HeyGen avatar API** for a talking-creator video,
-   or the **built-in ffmpeg renderer**: 1080×1920 from the product images
-   with burned-in captions and an OpenAI TTS voiceover. Both output 1080×1920.
-   See [Avatar videos with HeyGen](#avatar-videos-with-heygen).
+   or the **built-in slideshow renderer**: AI-generated slide art, one big
+   overlay per slide, a voiceover, cut together with ffmpeg. Both output
+   1080×1920. See [The two formats](#the-two-formats).
 4. **Schedule** — a job with a `scheduledAt` renders immediately and then
    waits at `ready`, so the finished video is previewable on the calendar
    before its slot. Without one it posts as soon as it has rendered.
@@ -36,14 +38,79 @@ npm install
 npm start              # http://localhost:3000
 ```
 
-Requirements: Node 18+, ffmpeg + ffprobe on PATH (for the built-in renderer).
+Requirements: Node 18+, and ffmpeg + ffprobe on PATH for the slideshow
+format (the Docker image installs both).
+
+## The two formats
+
+Every video is one of two things, chosen per video and stored on it:
+
+| | **avatar** | **slideshow** |
+|---|---|---|
+| What it is | a person talking to camera | images cutting every few seconds under one big line of text, with a voiceover |
+| Needs | `HEYGEN_API_KEY` | `OPENAI_API_KEY` + ffmpeg |
+| Good for | a physical product someone can hold | software, apps, tool comparisons, method videos — anything with nothing to film |
+| Cost per video | HeyGen credits | roughly $0.10–$1.50 of image generation, see below |
+
+`UGC_FORMAT` sets the default (`avatar` unless you change it). The calendar
+assistant asks which one you want before it generates, and can re-render an
+existing video as the other format.
+
+### Slideshow ads
+
+The format short-form advertising for software actually uses. A slideshow is
+planned as slides rather than scenes, and each slide carries three things:
+the **overlay** burned on screen, the **spoken** line under it, and an
+**image prompt**. The rules the planner is held to come from how the format
+works, not from taste:
+
+- **Slide 1 is the ad.** Most viewers decide inside a couple of seconds, so
+  the hook is a concrete claim or tension — never a greeting, never the
+  product name on its own.
+- **It has to read with the sound off.** Overlays are capped at ~8 words and
+  the overlays alone tell the story slide by slide; the voiceover carries the
+  detail they had no room for.
+- **Everything sits in the safe zone.** Overlay text lives in the
+  upper-middle band, clear of the caption block and the action rail, so the
+  platform UI never covers it.
+- **The art carries no text.** Image models still garble small type, so
+  slide art is asked to be wordless and calm in the upper third; the overlay
+  is burned in afterwards at a known size, over a gradient scrim so white
+  text stays legible on a bright photo.
+- **Real photos beat drawn ones.** When the video came from a product URL,
+  the planner can put a scraped product photo on any slide instead of a
+  generated image.
+
+Pick the shape of the ad with `angle`:
+
+| angle | what it builds |
+|---|---|
+| `tool_comparison` | the alternatives, what each gets wrong, then yours |
+| `money_method` | "how I make X doing Y", one step per slide |
+| `problem_solution` | the frustration, made worse, then resolved |
+| `feature_demo` | a walkthrough, one screen per slide |
+| `before_after` | the messy way, then the same job after |
+| `listicle` | "5 things I wish I knew", one per slide |
+
+**Cost.** Slide art is generated with OpenAI's image model
+(`OPENAI_IMAGE_MODEL`, default `gpt-image-1`) at 1024×1536, the portrait size
+closest to 9:16. `OPENAI_IMAGE_QUALITY` (`low` | `medium` | `high`, default
+`medium`) drives both look and price: a six-slide ad is roughly $0.10 at low,
+$0.38 at medium and $1.50 at high, plus a few cents of TTS. A slide whose
+image fails falls back to a gradient card rather than failing the video, and
+with no OpenAI key at all the whole thing still renders as text on gradients.
+
+Tune it with `UGC_SLIDE_COUNT` (3–10, default 6), `UGC_SLIDE_SECONDS` (the
+fallback slide length when there is no voiceover to time against),
+`UGC_TTS_VOICE` and `FONT_PATH`.
 
 ## Avatar videos with HeyGen
 
-Set `HEYGEN_API_KEY` and every video is rendered as a talking avatar
-speaking the generated script, at 1080×1920. Without it, the built-in
-ffmpeg renderer is used instead. `UGC_PROVIDER` forces one or the other
-(`auto` | `heygen` | `local`); `auto` means "HeyGen when a key is set".
+Set `HEYGEN_API_KEY` and avatar videos are rendered as a talking avatar
+speaking the generated script, at 1080×1920. Without it, an avatar video
+fails with that reason - switch the video to the slideshow format, which
+needs no HeyGen account, or set `UGC_FORMAT=slideshow` to make that the
+default for new videos.
 
 The key is in HeyGen under **Settings → API**. API access requires a paid
 HeyGen plan, and each render spends credits from that plan.
@@ -62,8 +129,8 @@ publish time.
 
 Two limits worth knowing: the script is truncated to 1500 characters, which
 is HeyGen's per-request cap, and HeyGen output has no burned-in captions —
-it's the avatar speaking. The built-in renderer is the one that burns
-captions in.
+it's the avatar speaking. The slideshow format is the one that burns text
+in, which is also why it survives being watched with the sound off.
 
 ## The API
 
@@ -78,7 +145,7 @@ Everything under `/api` requires the login when `ADMIN_PASSWORD` is set.
 | `GET /api/recent` | Activity feed: every job with per-account results |
 | `GET /api/profile` | Signed-in user, workspace config, integration state |
 | `GET /api/overview` | Generator capabilities for the create form |
-| `POST /api/jobs` | Create a video. `{ productUrl, title?, scheduledAt?, platforms[], tone, style }` |
+| `POST /api/jobs` | Create a video. `{ productUrl, title?, scheduledAt?, platforms[], tone, style, format?, angle?, slides? }` |
 | `GET /api/jobs`, `GET /api/jobs/:id` | List / read jobs |
 | `PATCH /api/jobs/:id` | Retitle, rewrite caption/hashtags, move the slot |
 | `POST /api/jobs/:id/retry` | Re-run a failed job from where it died |
@@ -87,7 +154,7 @@ Everything under `/api` requires the login when `ADMIN_PASSWORD` is set.
 | `DELETE /api/jobs/:id` | Delete a job, its posts and its files |
 | `GET /api/heygen` | Avatars and voices on the HeyGen account, for the picker |
 | `POST /api/heygen/test` | Check the HeyGen key works |
-| `POST /api/plan` | Plan a set of videos from a brief. `{ brief, slots: [epochMs], productUrl?, platforms?, avatarId?, voiceId? }` |
+| `POST /api/plan` | Plan a set of videos from a brief. `{ brief, slots: [epochMs], productUrl?, platforms?, format?, angle?, slides?, avatarId?, voiceId? }` |
 | `POST /api/metrics/refresh` | Collect fresh numbers from the platform APIs now |
 | `GET /healthz` | Unauthenticated health probe |
 

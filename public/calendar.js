@@ -501,7 +501,9 @@
       detail.querySelector(".cal-post-product").textContent =
         post.productName || post.productUrl || "\u2014";
       detail.querySelector(".cal-post-model").textContent =
-        post.provider === "heygen" ? "HeyGen avatar" : "Built-in renderer";
+        post.format === "slideshow"
+          ? `AI slideshow${post.slideCount ? ` · ${post.slideCount} slides` : ""}`
+          : "HeyGen avatar";
       detail.querySelector(".cal-post-status").textContent =
         `${post.jobStatus}${post.accountCount ? ` \u00b7 ${post.accountCount} account(s)` : ""}`;
       detail.querySelector(".cal-post-prompt").textContent =

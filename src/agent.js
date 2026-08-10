@@ -3,6 +3,7 @@ import { q, q1, run as dbRun } from "./db.js";
 import { planContent } from "./ugc/plan.js";
 import { enqueueUgcJob, postJob, deleteJobFiles } from "./ugc/pipeline.js";
 import { toneOptions, styleOptions } from "./ugc/script.js";
+import { slideshowAngles } from "./ugc/slideshow.js";
 import { reschedule } from "./schedule.js";
 import { totalsSince, accountLeaderboard, viewsByPlatform } from "./metrics.js";
 
@@ -130,7 +131,27 @@ const TOOLS = [
           style: {
             type: "string",
             enum: styleOptions(),
-            description: "How the video is framed. Defaults to product_pov.",
+            description:
+              "How an avatar video is framed. Defaults to product_pov. Ignored " +
+              "by slideshows, which use angle instead.",
+          },
+          format: {
+            type: "string",
+            enum: ["avatar", "slideshow"],
+            description:
+              "avatar: a person talks to camera about it. slideshow: images cut " +
+              "every few seconds under big on-screen text with a voiceover - the " +
+              "format used to advertise software, apps and money-making methods, " +
+              "and the only one that works when there is nothing to film.",
+          },
+          angle: {
+            type: "string",
+            enum: slideshowAngles(),
+            description: "Slideshow only: the shape of the ad, e.g. tool_comparison.",
+          },
+          slides: {
+            type: "number",
+            description: "Slideshow only: how many slides, 3-10. Defaults to 6.",
           },
         },
         required: ["brief", "dates"],
@@ -241,6 +262,12 @@ const TOOLS = [
           },
           tone: { type: "string", enum: toneOptions() },
           style: { type: "string", enum: styleOptions() },
+          format: {
+            type: "string",
+            enum: ["avatar", "slideshow"],
+            description: "Re-render this video as the other format.",
+          },
+          angle: { type: "string", enum: slideshowAngles() },
         },
         required: ["videoId"],
       },
@@ -353,7 +380,7 @@ const IMPLEMENTATIONS = {
     return { asked: true };
   },
 
-  async plan_videos({ brief, dates, time, productUrl, platforms, tone, style }, ctx) {
+  async plan_videos({ brief, dates, time, productUrl, platforms, tone, style, format, angle, slides }, ctx) {
     const slots = (dates || []).map((d) => slotFor(d, time, ctx.offsetMinutes));
     if (!slots.length) throw new Error("No dates given");
     if (slots.length > 30) throw new Error("That is more than 30 videos - narrow the range");
@@ -362,7 +389,13 @@ const IMPLEMENTATIONS = {
       tone: toneOptions().includes(tone) ? tone : "casual",
       style: styleOptions().includes(style) ? style : "product_pov",
       platforms: (platforms || []).filter((p) => ENABLED_PLATFORMS.includes(p)),
+      format: format === "slideshow" ? "slideshow" : "avatar",
     };
+    if (settings.format === "slideshow") {
+      if (slideshowAngles().includes(angle)) settings.angle = angle;
+      const count = Number(slides);
+      if (Number.isInteger(count) && count >= 3 && count <= 10) settings.slides = count;
+    }
 
     const plan = await planContent({
       brief,
@@ -390,7 +423,14 @@ const IMPLEMENTATIONS = {
       created.push({ id: row.id, title: concept.title, angle: concept.angle, scheduledAt });
     }
     ctx.changed = true;
-    return { scheduled: created.length, videos: created, tone: settings.tone, style: settings.style };
+    return {
+      scheduled: created.length,
+      videos: created,
+      format: settings.format,
+      tone: settings.tone,
+      style: settings.format === "slideshow" ? undefined : settings.style,
+      angle: settings.angle,
+    };
   },
 
   async list_videos({ status = "all", limit = 20 }, ctx) {
@@ -534,7 +574,7 @@ const IMPLEMENTATIONS = {
     };
   },
 
-  async regenerate_video({ videoId, brief, tone, style }, ctx) {
+  async regenerate_video({ videoId, brief, tone, style, format, angle }, ctx) {
     const job = await q1("SELECT * FROM ugc_jobs WHERE id = ?", [videoId]);
     if (!job) throw new Error(`No video with id ${videoId}`);
     if (job.status === "posted") {
@@ -557,10 +597,14 @@ const IMPLEMENTATIONS = {
       );
       applied.push("brief");
     }
-    if (toneOptions().includes(tone) || styleOptions().includes(style)) {
+    const wantsFormat = format === "avatar" || format === "slideshow";
+    if (toneOptions().includes(tone) || styleOptions().includes(style) || wantsFormat
+        || slideshowAngles().includes(angle)) {
       const settings = JSON.parse(job.settings_json || "{}");
       if (toneOptions().includes(tone)) { settings.tone = tone; applied.push("tone"); }
       if (styleOptions().includes(style)) { settings.style = style; applied.push("style"); }
+      if (wantsFormat) { settings.format = format; applied.push("format"); }
+      if (slideshowAngles().includes(angle)) { settings.angle = angle; applied.push("angle"); }
       await dbRun("UPDATE ugc_jobs SET settings_json = ?, updated_at = ? WHERE id = ?",
         [JSON.stringify(settings), Date.now(), videoId]);
     }
@@ -674,18 +718,30 @@ function systemPrompt(ctx) {
     // Asking beats guessing on the one action that costs a render and lands on
     // a public account, so this is a rule rather than a suggestion.
     "Before generating videos, make sure you know what to make. If the request " +
-      "leaves anything material open - what the videos are about, the tone, the " +
-      "style, which platforms, which days - call ask_user with up to three " +
-      "multiple-choice questions and stop there. Every option must be a real " +
-      "choice the user can act on, drawn from this workspace: the tones are " +
-      `${toneOptions().join(", ")}, the styles are ${styleOptions().join(", ")}, ` +
-      `and the platforms are ${ENABLED_PLATFORMS.join(", ")}.`,
+      "leaves anything material open - what the videos are about, the format, " +
+      "the tone, the style or angle, which platforms, which days - call ask_user " +
+      "with up to three multiple-choice questions and stop there. Every option " +
+      "must be a real choice the user can act on, drawn from this workspace: the " +
+      `tones are ${toneOptions().join(", ")}, the avatar styles are ` +
+      `${styleOptions().join(", ")}, the slideshow angles are ` +
+      `${slideshowAngles().join(", ")}, and the platforms are ` +
+      `${ENABLED_PLATFORMS.join(", ")}.`,
+    // The format is the first real decision and the user rarely states it.
+    "There are two formats. An avatar video is a person talking to camera - it " +
+      "suits a physical product someone can hold. A slideshow is images cutting " +
+      "every few seconds under big on-screen text with a voiceover - it is how " +
+      "software, apps, tool comparisons and money-method videos are advertised, " +
+      "and it is the only format that works when there is nothing to film. When " +
+      "the subject is software or a method rather than an object, offer the " +
+      "slideshow first and say why. Slideshows also take an angle: " +
+      `${slideshowAngles().join(", ")}.`,
     "Ask once per request, not repeatedly. Never ask about something the user " +
       "already told you, and if they say you should pick, or leave part of it " +
       "open, choose sensible defaults, say what you chose, and get on with it.",
     "You can change videos that are already scheduled: edit_video for the title, " +
       "caption, hashtags or platforms, regenerate_video to rewrite and re-render " +
-      "the video itself, reschedule_video to move its slot.",
+      "the video itself - including switching it between the two formats - and " +
+      "reschedule_video to move its slot.",
     "delete_video is permanent. Always confirm first with ask_user, listing the " +
       "titles and dates that would go, and only call it with confirm true after " +
       "they choose to delete. Deleting a video that has already been published " +
