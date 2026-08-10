@@ -380,7 +380,6 @@ function systemPrompt(ctx) {
 // of what it actually did.
 export async function runAssistant({
   messages, selectedDates = [], offsetMinutes = 0, productUrl = "",
-  outputFormat = "video", platforms = [],
 }) {
   if (!assistantAvailable()) {
     throw new Error("The assistant needs an OpenAI key - set OPENAI_API_KEY");
@@ -398,18 +397,11 @@ export async function runAssistant({
       }
     }
   }
-  const pickedPlatforms = [...new Set(
-    (Array.isArray(platforms) ? platforms : [])
-      .map((p) => String(p || "").toLowerCase())
-      .filter((p) => ENABLED_PLATFORMS.includes(p))
-  )];
   const ctx = {
     offsetMinutes,
     selectedDates,
     productUrl: productUrl || "",
     productName,
-    outputFormat: outputFormat === "slideshow" ? "slideshow" : "video",
-    platforms: pickedPlatforms,
     changed: false,
     accounts: accountRows.map((a) => `${a.platform} (${a.display_name})`).join(", "),
   };
