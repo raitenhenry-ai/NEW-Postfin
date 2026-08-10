@@ -888,7 +888,15 @@
       if (dayEvents.length) {
         const list = document.createElement("div");
         list.className = "cal-cell-events";
-        list.addEventListener("pointerdown", (e) => e.stopPropagation());
+        list.addEventListener("pointerdown", (e) => {
+          e.stopPropagation();
+          // Blank area inside a day that already has posts — clear event
+          // outline only; do not date-select the cell.
+          if (isEditMode() && !e.target.closest(".cal-event-row") && selectedEvent) {
+            clearSelectedEvent();
+            render();
+          }
+        });
         list.addEventListener("mousedown", (e) => e.stopPropagation());
         list.addEventListener("touchstart", (e) => e.stopPropagation(), { passive: true });
         list.addEventListener("wheel", (e) => e.stopPropagation(), { passive: true });
