@@ -1002,9 +1002,22 @@
       return;
     }
 
+    const key = cell.dataset.date;
+    const hasEvents = Boolean(events[key]?.length);
+    const onEvent = e.target.closest(".cal-event-row");
+    // Days with posts: only event clicks select (outline). Blank space /
+    // day number must not date-highlight the cell.
+    if (hasEvents && !onEvent) {
+      if (selectedEvent) {
+        clearSelectedEvent();
+        render();
+      }
+      return;
+    }
+
     e.preventDefault();
     grid.setPointerCapture?.(e.pointerId);
-    beginDrag(cell.dataset.date);
+    beginDrag(key);
   });
 
   grid.addEventListener("pointermove", (e) => {
