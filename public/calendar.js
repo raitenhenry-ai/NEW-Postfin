@@ -671,6 +671,7 @@
 
   function setModeMenuOpen(open) {
     if (!modeSwitcher || !modeSwitcherBtn || !modeMenu) return;
+    if (open) setHistoryMenuOpen(false);
     modeSwitcher.classList.toggle("open", open);
     modeSwitcherBtn.setAttribute("aria-expanded", open ? "true" : "false");
     modeMenu.hidden = !open;
