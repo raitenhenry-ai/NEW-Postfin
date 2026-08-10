@@ -2958,11 +2958,11 @@ body.theme-light .cal-post-fields {
   gap: 10px;
   width: 100%;
   border: none;
-  border-radius: 10px;
+  border-radius: 8px;
   background: transparent;
   color: #e8e8ee;
   font: inherit;
-  font-size: 13px;
+  font-size: 12px;
   font-weight: 550;
   text-align: left;
   padding: 8px 10px;
