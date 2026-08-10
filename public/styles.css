@@ -5574,3 +5574,20 @@ body.theme-light .cal-grid.edit-mode .cal-cell.past {
 body.theme-light .cal-grid.edit-mode .cal-cell.past:hover {
   background: #fafafb;
 }
+
+/* Light: event chip platform accents */
+body.theme-light .cal-event-row.is-youtube {
+  color: #c62828;
+}
+body.theme-light .cal-event-row.is-youtube .cal-event-platform {
+  color: #c62828;
+}
+body.theme-light .cal-event-row.is-tiktok {
+  color: #0a7ea4;
+}
+body.theme-light .cal-event-row.is-tiktok .cal-event-platform {
+  color: #0a7ea4;
+}
+body.theme-light .cal-event-row.is-instagram {
+  color: #a21caf;
+}
