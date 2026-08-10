@@ -2326,6 +2326,35 @@ body.sidebar-expanded {
   flex-shrink: 0;
 }
 
+/* Agent mode: no title/subtitle header — just the thread + composer */
+.cal-shell.is-edit .cal-chat-header-text {
+  display: none;
+}
+
+.cal-shell.is-edit .cal-chat-header {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  z-index: 5;
+  padding: 0;
+  border: none;
+  background: transparent;
+  justify-content: flex-end;
+  pointer-events: none;
+}
+
+.cal-shell.is-edit .cal-chat-header:has(#cal-chat-cancel:not([hidden])) {
+  pointer-events: auto;
+}
+
+.cal-shell.is-edit .cal-chat {
+  position: relative;
+}
+
+.cal-shell.is-edit .cal-chat-header:not(:has(#cal-chat-cancel:not([hidden]))) {
+  display: none;
+}
+
 .cal-chat-header-text {
   min-width: 0;
   flex: 1;
