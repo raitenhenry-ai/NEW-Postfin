@@ -775,6 +775,7 @@
       saveMode(mode);
       return;
     }
+    if (isEditMode()) persistActiveChat();
     mode = next;
     saveMode(mode);
     drag = null;
@@ -786,6 +787,7 @@
       planAbort = null;
     }
     conversation.length = 0;
+    activeChatId = null;
     assistantBusy = false;
     setComposerActive(false);
 
