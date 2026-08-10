@@ -1278,7 +1278,7 @@
     stopLoadingShuffle();
     dayPanel.innerHTML = `
       <div class="cal-agent-empty" aria-hidden="true">
-        <img class="cal-agent-mark" src="agent-mark.jpg" alt="">
+        <img class="cal-agent-mark" src="agent-mark.png" alt="">
       </div>`;
   }
 
