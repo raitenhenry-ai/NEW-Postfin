@@ -1299,8 +1299,38 @@
     renderProductMenu();
   }
 
+  function setFormatMenuOpen(open) {
+    if (!formatMenu || !formatBtn) return;
+    formatMenu.hidden = !open;
+    formatBtn.setAttribute("aria-expanded", open ? "true" : "false");
+  }
+
+  function syncFormatPicker() {
+    if (formatBtnIcon) formatBtnIcon.innerHTML = FORMAT_ICONS[selectedFormat] || FORMAT_ICONS.video;
+    formatMenu?.querySelectorAll("[data-format]").forEach((btn) => {
+      const on = btn.getAttribute("data-format") === selectedFormat;
+      btn.classList.toggle("is-on", on);
+      btn.setAttribute("aria-checked", on ? "true" : "false");
+    });
+    formatBtn?.setAttribute(
+      "title",
+      selectedFormat === "slideshow" ? "Slideshow generation" : "Video generation"
+    );
+    formatBtn?.setAttribute(
+      "aria-label",
+      selectedFormat === "slideshow" ? "Image · slideshow generation" : "Video · video generation"
+    );
+  }
+
+  function setSelectedFormat(format) {
+    selectedFormat = format === "slideshow" ? "slideshow" : "video";
+    localStorage.setItem(FORMAT_KEY, selectedFormat);
+    syncFormatPicker();
+  }
+
   productPillBtn?.addEventListener("click", (e) => {
     e.stopPropagation();
+    setFormatMenuOpen(false);
     setProductMenuOpen(productMenu?.hidden !== false);
   });
 
@@ -1312,10 +1342,25 @@
     setProductMenuOpen(false);
   });
 
-  document.addEventListener("click", (e) => {
-    if (!productPicker?.contains(e.target)) setProductMenuOpen(false);
+  formatBtn?.addEventListener("click", (e) => {
+    e.stopPropagation();
+    setProductMenuOpen(false);
+    setFormatMenuOpen(formatMenu?.hidden !== false);
   });
 
+  formatMenu?.addEventListener("click", (e) => {
+    const item = e.target.closest("[data-format]");
+    if (!item) return;
+    setSelectedFormat(item.getAttribute("data-format"));
+    setFormatMenuOpen(false);
+  });
+
+  document.addEventListener("click", (e) => {
+    if (!productPicker?.contains(e.target)) setProductMenuOpen(false);
+    if (!formatPicker?.contains(e.target)) setFormatMenuOpen(false);
+  });
+
+  syncFormatPicker();
   syncSendState();
   resizeField();
   render();

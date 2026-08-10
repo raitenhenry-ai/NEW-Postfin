@@ -352,7 +352,11 @@ router.post("/chat", wrap(async (req, res) => {
     }
   }
 
-  res.json(await runAssistant({ messages, selectedDates, offsetMinutes, productUrl }));
+  const outputFormat = req.body.outputFormat === "slideshow" ? "slideshow" : "video";
+
+  res.json(await runAssistant({
+    messages, selectedDates, offsetMinutes, productUrl, outputFormat,
+  }));
 }));
 
 // The avatars and voices this HeyGen account can actually use, so the
