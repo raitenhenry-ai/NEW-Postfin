@@ -374,7 +374,9 @@
       planAbort.abort();
       planAbort = null;
     }
+    persistActiveChat();
     conversation.length = 0;
+    activeChatId = null;
     assistantBusy = false;
     drag = null;
     grid.classList.remove("is-dragging");
