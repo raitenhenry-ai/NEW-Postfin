@@ -407,6 +407,63 @@ function timeLabel(ms) {
   return new Date(ms).toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" });
 }
 
+/* ----------------------------------------------------------------- Products */
+
+// products.html: unique product URLs scraped across jobs, with the latest
+// name/image and how many videos have been made from each.
+router.get("/products", wrap(async (req, res) => {
+  const jobs = await q(
+    `SELECT id, product_url, product_json, created_at, status, video_filename
+     FROM ugc_jobs
+     WHERE product_url IS NOT NULL AND TRIM(product_url) <> ''
+     ORDER BY created_at DESC`
+  );
+
+  const byUrl = new Map();
+  for (const job of jobs) {
+    const url = String(job.product_url).trim();
+    if (!url) continue;
+    let product = null;
+    try {
+      product = job.product_json ? JSON.parse(job.product_json) : null;
+    } catch {
+      product = null;
+    }
+    const existing = byUrl.get(url);
+    if (!existing) {
+      byUrl.set(url, {
+        url,
+        name: product?.name || null,
+        brand: product?.brand || null,
+        price: product?.price ?? null,
+        currency: product?.currency || null,
+        description: product?.description || null,
+        image: product?.images?.[0] || null,
+        videoCount: 1,
+        lastUsedAt: Number(job.created_at),
+        latestJobId: job.id,
+        hasVideo: Boolean(job.video_filename),
+      });
+      continue;
+    }
+    existing.videoCount += 1;
+    if (!existing.name && product?.name) existing.name = product.name;
+    if (!existing.brand && product?.brand) existing.brand = product.brand;
+    if (existing.price == null && product?.price != null) {
+      existing.price = product.price;
+      existing.currency = product.currency || existing.currency;
+    }
+    if (!existing.image && product?.images?.[0]) existing.image = product.images[0];
+    if (!existing.description && product?.description) {
+      existing.description = product.description;
+    }
+    if (job.video_filename) existing.hasVideo = true;
+  }
+
+  const products = [...byUrl.values()].sort((a, b) => b.lastUsedAt - a.lastUsedAt);
+  res.json({ products });
+}));
+
 /* --------------------------------------------------------------- Connectors */
 
 // connectors.html: every platform Postfin can publish to, whether its API
