@@ -5109,17 +5109,49 @@ body.theme-light .cal-composer-send:disabled {
   opacity: 0.45;
 }
 
-body.theme-light .cal-product-pill-btn {
+body.theme-light .cal-product-pill-btn,
+body.theme-light .cal-format-btn {
   background: #f0f0f3;
   border-color: #d8d8de;
   color: #222228;
 }
 
 body.theme-light .cal-product-pill-btn:hover,
-body.theme-light .cal-product-pill-btn[aria-expanded="true"] {
+body.theme-light .cal-product-pill-btn[aria-expanded="true"],
+body.theme-light .cal-format-btn:hover,
+body.theme-light .cal-format-btn[aria-expanded="true"] {
   background: #e6e6ea;
   border-color: #ccccd4;
   color: #111114;
+}
+
+body.theme-light .cal-format-menu {
+  background: #ffffff;
+  border-color: #e0e0e6;
+  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.12);
+}
+
+body.theme-light .cal-format-menu-item:hover,
+body.theme-light .cal-format-menu-item.is-on {
+  background: #f0f0f3;
+}
+
+body.theme-light .cal-format-menu-icon {
+  background: #ececf1;
+  color: #4a4a52;
+}
+
+body.theme-light .cal-format-menu-item.is-on .cal-format-menu-icon {
+  background: rgba(59, 110, 245, 0.12);
+  color: #3b6ef5;
+}
+
+body.theme-light .cal-format-menu-copy strong {
+  color: #111114;
+}
+
+body.theme-light .cal-format-menu-copy em {
+  color: #6a6a72;
 }
 
 body.theme-light .cal-product-pill-caret {
