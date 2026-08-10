@@ -2174,6 +2174,8 @@ body.sidebar-expanded {
 }
 
 .cal-event-row {
+  -webkit-appearance: none;
+  appearance: none;
   display: grid;
   grid-template-columns: 3px minmax(0, 1fr) auto;
   grid-template-rows: auto auto;
@@ -2181,10 +2183,14 @@ body.sidebar-expanded {
     "bar title title"
     "bar platform time";
   align-items: center;
+  align-self: stretch;
   column-gap: 8px;
   row-gap: 2px;
+  box-sizing: border-box;
   width: 100%;
+  max-width: 100%;
   min-width: 0;
+  margin: 0;
   padding: 6px 8px;
   border: none;
   border-radius: 8px;
@@ -2192,14 +2198,19 @@ body.sidebar-expanded {
   color: inherit;
   font: inherit;
   text-align: left;
+  outline: none;
   pointer-events: auto;
   cursor: pointer;
-  transition: background 0.12s, box-shadow 0.12s;
+  transition: background 0.12s;
 }
 
 .cal-event-row:hover {
-  background: rgba(255, 255, 255, 0.11);
-  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.06);
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.cal-event-row:focus-visible {
+  background: rgba(255, 255, 255, 0.1);
+  box-shadow: inset 0 0 0 1px rgba(91, 140, 255, 0.45);
 }
 
 .cal-event-bar {
