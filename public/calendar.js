@@ -1139,10 +1139,50 @@
     else endDrag();
   });
 
+  dayPopupClose?.addEventListener("click", (e) => {
+    e.stopPropagation();
+    closeDayPopup();
+  });
+
+  dayPopupDrag?.addEventListener("pointerdown", (e) => {
+    if (e.button !== 0 || !dayPopup || !calBoard) return;
+    if (e.target.closest(".cal-day-popup-close")) return;
+    e.preventDefault();
+    e.stopPropagation();
+    const board = calBoard.getBoundingClientRect();
+    popupDrag = {
+      offsetX: e.clientX - board.left - dayPopup.offsetLeft,
+      offsetY: e.clientY - board.top - dayPopup.offsetTop,
+    };
+    dayPopupDrag.setPointerCapture?.(e.pointerId);
+  });
+
+  dayPopupDrag?.addEventListener("pointermove", (e) => {
+    if (!popupDrag || !dayPopup || !calBoard) return;
+    const board = calBoard.getBoundingClientRect();
+    const pos = clampPopupPosition(
+      e.clientX - board.left - popupDrag.offsetX,
+      e.clientY - board.top - popupDrag.offsetY
+    );
+    dayPopup.style.left = `${Math.round(pos.left)}px`;
+    dayPopup.style.top = `${Math.round(pos.top)}px`;
+  });
+
+  const endPopupDrag = () => { popupDrag = null; };
+  dayPopupDrag?.addEventListener("pointerup", endPopupDrag);
+  dayPopupDrag?.addEventListener("pointercancel", endPopupDrag);
+
+  dayPopup?.addEventListener("pointerdown", (e) => e.stopPropagation());
+
+  document.addEventListener("keydown", (e) => {
+    if (e.key === "Escape") closeDayPopup();
+  });
+
   modeButtons.forEach((btn) => {
     btn.addEventListener("click", () => {
       setMode(btn.getAttribute("data-cal-mode"));
       setModeMenuOpen(false);
+      closeDayPopup();
     });
   });
 
