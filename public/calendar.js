@@ -989,10 +989,8 @@
     if (!cell) return;
 
     if (isViewMode()) {
-      clearSelectedEvent();
       setFocusedDay(cell.dataset.date);
-      openedPost = null;
-      render();
+      applySelectionClasses();
       return;
     }
 
