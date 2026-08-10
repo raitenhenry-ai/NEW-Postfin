@@ -2117,8 +2117,8 @@ body.sidebar-expanded {
   border-bottom: none;
 }
 
-.cal-cell:hover:not(.selected),
-.cal-cell:has(.cal-cell-events:hover):not(.selected) {
+/* Lighten the day on hover, but not while the pointer is on an event */
+.cal-cell:hover:not(.selected):not(:has(.cal-event-row:hover)) {
   background: rgba(255, 255, 255, 0.03);
 }
 
