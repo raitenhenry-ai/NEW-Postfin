@@ -180,6 +180,18 @@
                 } catch (e) {}
               })();
             </script>
+            <div class="cal-history-picker" id="cal-history-picker">
+              <button type="button" class="cal-tool-btn" id="cal-history-btn" aria-label="Recent chats" aria-haspopup="menu" aria-expanded="false" title="Recent chats">
+                <svg viewBox="0 0 24 24" aria-hidden="true">
+                  <path class="cal-tool-icon" d="M7.5 5.5h9A2.5 2.5 0 0 1 19 8v5.25a2.5 2.5 0 0 1-2.5 2.5H12l-3.1 2.35a.6.6 0 0 1-.95-.48V15.75H7.5A2.5 2.5 0 0 1 5 13.25V8a2.5 2.5 0 0 1 2.5-2.5z"/>
+                  <path class="cal-tool-icon" d="M9 9.25h6M9 12h3.75"/>
+                </svg>
+              </button>
+              <div class="cal-history-menu" id="cal-history-menu" role="menu" hidden>
+                <div class="cal-history-menu-head">Recent chats</div>
+                <div class="cal-history-menu-list" id="cal-history-list"></div>
+              </div>
+            </div>
             <button type="button" class="cal-tool-btn" id="cal-view-tool" data-cal-mode="view" aria-label="View mode" aria-pressed="false" title="View">
               <svg viewBox="0 0 24 24" aria-hidden="true">
                 <path class="cal-tool-icon" d="M2.5 12s3.4-5.75 9.5-5.75S21.5 12 21.5 12s-3.4 5.75-9.5 5.75S2.5 12 2.5 12z"/>
