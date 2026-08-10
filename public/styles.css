@@ -2061,8 +2061,8 @@ body.sidebar-expanded {
 .cal-day-popup {
   position: absolute;
   z-index: 40;
-  width: min(300px, calc(100% - 16px));
-  max-height: min(420px, calc(100% - 16px));
+  width: min(380px, calc(100% - 16px));
+  max-height: min(560px, calc(100% - 16px));
   display: flex;
   flex-direction: column;
   border: 1px solid #2e2e34;
