@@ -5241,8 +5241,7 @@ body.theme-light .cal-cell.today .cal-cell-num {
 }
 
 body.theme-light .cal-cell.selected,
-body.theme-light .cal-cell.selected:hover,
-body.theme-light .cal-cell.selected:has(.cal-cell-events:hover) {
+body.theme-light .cal-cell.selected:hover {
   background:
     linear-gradient(#f3f6ff, #f3f6ff) padding-box,
     linear-gradient(135deg, #3d7eff, #5b8cff 50%, #7ec8ff) border-box;
