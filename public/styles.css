@@ -2928,14 +2928,10 @@ body.theme-light .cal-post-fields {
 
 .cal-product-pill {
   position: relative;
-  flex: 1 1 100%;
+  flex: 0 1 auto;
   min-width: 0;
+  max-width: 100%;
   z-index: 1;
-}
-
-.cal-product-pill .cal-product-pill-btn {
-  width: 100%;
-  max-width: none;
 }
 
 .cal-format-picker {
