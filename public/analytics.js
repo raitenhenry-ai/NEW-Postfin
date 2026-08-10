@@ -200,21 +200,31 @@
     gradient.addColorStop(0, config.fillTop);
     gradient.addColorStop(1, config.fillBottom);
 
-    ctx.beginPath();
-    curve.forEach((p, i) => (i === 0 ? ctx.moveTo(p.x, p.y) : ctx.lineTo(p.x, p.y)));
-    ctx.lineTo(points[points.length - 1].x, pad.top + plotH);
-    ctx.lineTo(points[0].x, pad.top + plotH);
-    ctx.closePath();
-    ctx.fillStyle = gradient;
-    ctx.fill();
+    if (points.length === 1) {
+      // One collected bucket: a curve needs two points, so nothing would be
+      // drawn at all. Mark the reading instead of showing an empty plot.
+      const p = points[0];
+      ctx.beginPath();
+      ctx.arc(p.x, p.y, 4.5, 0, Math.PI * 2);
+      ctx.fillStyle = config.color;
+      ctx.fill();
+    } else {
+      ctx.beginPath();
+      curve.forEach((p, i) => (i === 0 ? ctx.moveTo(p.x, p.y) : ctx.lineTo(p.x, p.y)));
+      ctx.lineTo(points[points.length - 1].x, pad.top + plotH);
+      ctx.lineTo(points[0].x, pad.top + plotH);
+      ctx.closePath();
+      ctx.fillStyle = gradient;
+      ctx.fill();
 
-    ctx.beginPath();
-    curve.forEach((p, i) => (i === 0 ? ctx.moveTo(p.x, p.y) : ctx.lineTo(p.x, p.y)));
-    ctx.strokeStyle = config.color;
-    ctx.lineWidth = 2.25;
-    ctx.lineJoin = "round";
-    ctx.lineCap = "round";
-    ctx.stroke();
+      ctx.beginPath();
+      curve.forEach((p, i) => (i === 0 ? ctx.moveTo(p.x, p.y) : ctx.lineTo(p.x, p.y)));
+      ctx.strokeStyle = config.color;
+      ctx.lineWidth = 2.25;
+      ctx.lineJoin = "round";
+      ctx.lineCap = "round";
+      ctx.stroke();
+    }
 
     if (hoverX == null) {
       tooltip.hidden = true;
