@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Products</title>
   <link rel="icon" href="logo.png?v=2">
-  <link rel="stylesheet" href="styles.css?v=50">
+  <link rel="stylesheet" href="styles.css?v=51">
 </head>
 <body>
   <aside class="sidebar" id="sidebar">
@@ -90,17 +90,35 @@
   </aside>
 
   <main class="page products-page">
-    <div class="connectors-header">
-      <h1>Products</h1>
-      <p>Products used in your videos. Add one by pasting a product URL when you plan content.</p>
+    <div class="products-header">
+      <div>
+        <h1>Products</h1>
+        <p>Save product pages here, then reuse them when planning videos.</p>
+      </div>
     </div>
 
+    <form class="products-add" id="products-add" autocomplete="off">
+      <label class="products-add-label" for="product-url">Add a product</label>
+      <div class="products-add-row">
+        <input
+          id="product-url"
+          name="url"
+          type="url"
+          inputmode="url"
+          placeholder="Paste a product URL (https://...)"
+          required
+        >
+        <button type="submit" class="pf-btn" id="product-add-btn">Add product</button>
+      </div>
+      <p class="products-add-hint" id="products-add-hint">We’ll scrape the name, price, images, and description.</p>
+    </form>
+
     <div id="products-status"></div>
-    <ul class="products-list" id="products-list"></ul>
+    <div class="products-grid" id="products-list"></div>
   </main>
 
   <script src="api.js"></script>
   <script src="app.js?v=42"></script>
-  <script src="products.js"></script>
+  <script src="products.js?v=2"></script>
 </body>
 </html>
