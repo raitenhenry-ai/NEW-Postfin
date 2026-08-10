@@ -364,6 +364,9 @@ function systemPrompt(ctx) {
       ? `The user selected this product for the current chat: ${ctx.productName || "product"} (${ctx.productUrl}). ` +
         "When planning videos, pass that URL as productUrl unless they ask for a different product."
       : "No product is selected in the chat picker. Plan from the brief alone unless they paste a product URL.",
+    ctx.outputFormat === "slideshow"
+      ? "The user selected IMAGE / slideshow generation. Plan image slideshow posts, not talking-head videos."
+      : "The user selected VIDEO generation. Plan short-form video posts.",
     ctx.accounts
       ? `Connected accounts: ${ctx.accounts}.`
       : "No social accounts are connected yet - videos will generate but cannot publish.",
@@ -380,6 +383,7 @@ function systemPrompt(ctx) {
 // of what it actually did.
 export async function runAssistant({
   messages, selectedDates = [], offsetMinutes = 0, productUrl = "",
+  outputFormat = "video",
 }) {
   if (!assistantAvailable()) {
     throw new Error("The assistant needs an OpenAI key - set OPENAI_API_KEY");
@@ -402,6 +406,7 @@ export async function runAssistant({
     selectedDates,
     productUrl: productUrl || "",
     productName,
+    outputFormat: outputFormat === "slideshow" ? "slideshow" : "video",
     changed: false,
     accounts: accountRows.map((a) => `${a.platform} (${a.display_name})`).join(", "),
   };
