@@ -1,7 +1,7 @@
 import { Router } from "express";
 import config, { PLATFORM_NAMES, ENABLED_PLATFORMS } from "../config.js";
 import { q, q1 } from "../db.js";
-import { platforms } from "../accounts.js";
+import { platforms, resolveTargetPlatforms } from "../accounts.js";
 import {
   totalsSince, postSeries, followerSeries, viewsByPlatform,
   estimateRevenue, accountLeaderboard, metricsStatus,
@@ -330,6 +330,10 @@ router.get("/calendar", wrap(async (req, res) => {
     [start, end]
   );
   const postsByJob = await postsForJobs(jobs.map((j) => j.id));
+  // Jobs that were saved with an empty platform list (agent "all connected")
+  // resolve to the same targets the publisher uses, so the calendar never
+  // shows "No platform".
+  const defaultPlatforms = await resolveTargetPlatforms([]);
 
   const days = {};
   for (const job of jobs) {
@@ -337,6 +341,8 @@ router.get("/calendar", wrap(async (req, res) => {
     const shaped = shapeJob(job, posts);
     const at = jobTimestamp(job, posts);
     const key = dateKey(at);
+    const savedPlatforms = (shaped.settings.platforms || [])
+      .filter((p) => ENABLED_PLATFORMS.includes(p));
 
     days[key] ??= { date: key, label: dayLabel(at), posts: [] };
     days[key].posts.push({
@@ -345,7 +351,7 @@ router.get("/calendar", wrap(async (req, res) => {
       // targets, or the job's requested platforms when it hasn't posted yet.
       platforms: posts.length
         ? [...new Set(posts.map((p) => p.platform))]
-        : shaped.settings.platforms || [],
+        : (savedPlatforms.length ? savedPlatforms : defaultPlatforms),
       at,
       time: timeLabel(at),
       durationSeconds: config.ugc.videoSeconds,

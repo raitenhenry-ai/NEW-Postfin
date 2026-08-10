@@ -157,9 +157,7 @@ router.post("/plan", wrap(async (req, res) => {
   const { tone, style } = normalizeSettings(req.body);
   const plan = await planContent({ brief, count: slots.length, productUrl, tone, style });
 
-  const wanted = Array.isArray(req.body.platforms)
-    ? req.body.platforms.filter((p) => ENABLED_PLATFORMS.includes(p))
-    : [];
+  const wanted = await resolveTargetPlatforms(req.body.platforms);
   const autoPost = req.body.autoPost === false ? 0 : 1;
   const now = Date.now();
 
