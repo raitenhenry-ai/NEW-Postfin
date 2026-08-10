@@ -998,21 +998,28 @@
           row.querySelector(".cal-event-title").textContent = ev.title;
           row.querySelector(".cal-event-platform").textContent = platformLabel(ev);
           row.querySelector(".cal-event-time").textContent = ev.time;
-          // Event clicks outline only the event — don't start day selection.
+          // Event click: outline that event + open the day popup (not the whole cell).
           row.addEventListener("pointerdown", (e) => {
-            if (!isEditMode()) return;
             e.preventDefault();
             e.stopPropagation();
           });
           row.addEventListener("click", (e) => {
             e.preventDefault();
             e.stopPropagation();
-            if (!isEditMode()) return;
-            selected.clear();
-            drag = null;
-            grid.classList.remove("is-dragging");
-            selectedEvent = selectedEvent?.id === eventId ? null : { id: eventId, key, index };
-            render();
+            if (isEditMode()) {
+              selected.clear();
+              drag = null;
+              grid.classList.remove("is-dragging");
+              const turningOff = selectedEvent?.id === eventId;
+              selectedEvent = turningOff ? null : { id: eventId, key, index };
+              render();
+              if (turningOff) closeDayPopup();
+              else openDayPopup(key, grid.querySelector(`.cal-cell[data-date="${key}"]`));
+              return;
+            }
+            setFocusedDay(key);
+            applySelectionClasses();
+            openDayPopup(key, cell);
           });
           list.appendChild(row);
         });
