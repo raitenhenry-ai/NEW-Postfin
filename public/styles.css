@@ -5822,6 +5822,60 @@ body.theme-light #cal-history-btn.is-on .cal-tool-icon {
   background: #121216;
 }
 
+.product-shimmer {
+  border-radius: 10px;
+  background: linear-gradient(
+    90deg,
+    #1c1c22 0%,
+    #2a2a32 45%,
+    #1c1c22 90%
+  );
+  background-size: 200% 100%;
+  animation: product-shimmer 1.25s ease-in-out infinite;
+}
+
+.product-card-shimmer .product-hero {
+  border-radius: 14px;
+}
+
+.product-card-shimmer .product-thumbs > .product-shimmer {
+  aspect-ratio: 1;
+  width: 100%;
+}
+
+.product-shimmer-title {
+  height: 26px;
+  width: min(70%, 320px);
+  margin-bottom: 10px;
+  border-radius: 8px;
+}
+
+.product-shimmer-url {
+  height: 14px;
+  width: min(88%, 420px);
+  border-radius: 7px;
+}
+
+.product-shimmer-line {
+  height: 14px;
+  width: 100%;
+  border-radius: 7px;
+}
+
+.product-shimmer-line.is-short {
+  width: 72%;
+}
+
+.product-shimmer-fact {
+  height: 42px;
+  border-radius: 10px;
+}
+
+@keyframes product-shimmer {
+  0% { background-position: 100% 0; }
+  100% { background-position: -100% 0; }
+}
+
 .product-media {
   display: flex;
   flex-direction: column;
@@ -6017,4 +6071,14 @@ body.theme-light .product-facts span {
 
 body.theme-light .products-add-hint.is-error {
   color: #c23b3b;
+}
+
+body.theme-light .product-shimmer {
+  background: linear-gradient(
+    90deg,
+    #ececf1 0%,
+    #f7f7f9 45%,
+    #ececf1 90%
+  );
+  background-size: 200% 100%;
 }
