@@ -4899,30 +4899,31 @@ body.theme-light .cal-composer-send:disabled {
   opacity: 0.45;
 }
 
-body.theme-light .cal-product-picker-label {
+body.theme-light .cal-product-dot {
+  background: #ececf1;
+}
+
+body.theme-light .cal-product-dot:hover {
+  border-color: #c8c8d0;
+}
+
+body.theme-light .cal-product-dot.is-on {
+  border-color: #3b6ef5;
+  box-shadow: 0 0 0 2px rgba(59, 110, 245, 0.18);
+}
+
+body.theme-light .cal-product-dot.is-add {
+  border-color: #c8c8d0;
   color: #6a6a72;
 }
 
-body.theme-light .cal-product-picker-control select {
-  background-color: #ffffff;
-  border-color: #d8d8de;
-  color: #111114;
-  background-image:
-    linear-gradient(45deg, transparent 50%, #6a6a72 50%),
-    linear-gradient(135deg, #6a6a72 50%, transparent 50%);
-  background-position:
-    calc(100% - 16px) 15px,
-    calc(100% - 11px) 15px;
-  background-size: 5px 5px, 5px 5px;
-  background-repeat: no-repeat;
-}
-
-body.theme-light .cal-product-picker-manage {
+body.theme-light .cal-product-dot.is-add:hover {
+  border-color: #3b6ef5;
   color: #3b6ef5;
 }
 
-body.theme-light .cal-product-picker-manage:hover {
-  color: #2a56d4;
+body.theme-light .cal-product-dot-fallback {
+  color: #3a3a42;
 }
 
 body.theme-light .cal-msg.is-user .cal-msg-body {
