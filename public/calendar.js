@@ -827,6 +827,7 @@
       btn.addEventListener("click", () => {
         view = new Date(pickerYear, index, 1);
         setMonthMenuOpen(false);
+        closeDayPopup();
         render();
         loadEvents().then(render);
       });
