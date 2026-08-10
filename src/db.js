@@ -358,4 +358,17 @@ CREATE TABLE IF NOT EXISTS oauth_states (
 );`);
     db.pragma("user_version = 4");
   }
+
+  // v5: saved product catalog (addable from the Products page).
+  if (version < 5) {
+    db.exec(`
+CREATE TABLE IF NOT EXISTS products (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  url TEXT NOT NULL UNIQUE,
+  product_json TEXT NOT NULL,
+  created_at INTEGER NOT NULL,
+  updated_at INTEGER NOT NULL
+);`);
+    db.pragma("user_version = 5");
+  }
 }

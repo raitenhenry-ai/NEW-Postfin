@@ -47,5 +47,5 @@ SELECT tablename,
        rowsecurity AS rls_enabled
 FROM pg_tables
 WHERE schemaname = 'public'
-  AND tablename IN ('accounts', 'users', 'ugc_jobs', 'ugc_posts', 'post_metrics', 'account_metrics')
+  AND tablename IN ('accounts', 'users', 'ugc_jobs', 'ugc_posts', 'post_metrics', 'account_metrics', 'products')
 ORDER BY tablename;
