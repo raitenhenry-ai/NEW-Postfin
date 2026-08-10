@@ -1878,7 +1878,6 @@
 
     productMenu.innerHTML = `
       ${items || `<p class="cal-product-menu-empty">No products yet — add one first</p>`}
-      ${selectedProductUrl ? `<button type="button" class="cal-product-menu-item" data-url="">Clear product</button>` : ""}
       <a class="cal-product-menu-foot" href="products.html">Manage products</a>
     `;
   }
