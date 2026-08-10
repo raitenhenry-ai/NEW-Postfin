@@ -2876,8 +2876,28 @@ body.theme-light .cal-post-fields {
   height: 15px;
 }
 
-.cal-shell.is-view .cal-composer {
+.cal-shell.is-view .cal-composer,
+.cal-shell.is-view .cal-product-link {
   display: none;
+}
+
+.cal-product-link {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin: 0 10px 8px;
+  padding: 10px 12px;
+  border: 1px solid #26262c;
+  border-radius: 16px;
+  background: #16161a;
+  flex-shrink: 0;
+}
+
+.cal-product-link-label {
+  color: #9a9aa2;
+  font-size: 12px;
+  font-weight: 650;
+  letter-spacing: -0.01em;
 }
 
 .cal-product-rail {
@@ -2887,15 +2907,17 @@ body.theme-light .cal-post-fields {
   overflow-x: auto;
   scrollbar-width: none;
   -ms-overflow-style: none;
-  padding: 2px 2px 0;
 }
 
 .cal-product-rail::-webkit-scrollbar {
   display: none;
 }
 
-.cal-product-rail:empty {
-  display: none;
+.cal-product-empty {
+  margin: 0;
+  color: #6a6a72;
+  font-size: 12.5px;
+  font-weight: 500;
 }
 
 .cal-product-dot {
