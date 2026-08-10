@@ -182,6 +182,87 @@
     });
   }
 
+  function formatPopupDate(key) {
+    const d = parseKey(key);
+    return d.toLocaleDateString("en-US", {
+      weekday: "short",
+      month: "short",
+      day: "numeric",
+    });
+  }
+
+  function clampPopupPosition(left, top) {
+    if (!calBoard || !dayPopup) return { left, top };
+    const board = calBoard.getBoundingClientRect();
+    const width = dayPopup.offsetWidth || 260;
+    const height = dayPopup.offsetHeight || 180;
+    const pad = 8;
+    return {
+      left: Math.max(pad, Math.min(left, board.width - width - pad)),
+      top: Math.max(pad, Math.min(top, board.height - height - pad)),
+    };
+  }
+
+  function placeDayPopupBeside(cell) {
+    if (!calBoard || !dayPopup || !cell) return;
+    const board = calBoard.getBoundingClientRect();
+    const rect = cell.getBoundingClientRect();
+    const width = dayPopup.offsetWidth || 260;
+    const gap = 10;
+    let left = rect.right - board.left + gap;
+    if (left + width > board.width - 8) {
+      left = rect.left - board.left - width - gap;
+    }
+    let top = rect.top - board.top;
+    const pos = clampPopupPosition(left, top);
+    dayPopup.style.left = `${Math.round(pos.left)}px`;
+    dayPopup.style.top = `${Math.round(pos.top)}px`;
+  }
+
+  function closeDayPopup() {
+    dayPopupKey = null;
+    if (!dayPopup) return;
+    dayPopup.hidden = true;
+    dayPopupList && (dayPopupList.innerHTML = "");
+  }
+
+  function openDayPopup(key, cell) {
+    if (!dayPopup || !dayPopupList || !key) return;
+    dayPopupKey = key;
+    const posts = events[key] || [];
+    if (dayPopupDate) dayPopupDate.textContent = formatPopupDate(key);
+    if (dayPopupCount) {
+      dayPopupCount.textContent = posts.length
+        ? `${posts.length} post${posts.length === 1 ? "" : "s"}`
+        : "No posts";
+    }
+    if (!posts.length) {
+      dayPopupList.innerHTML = `<p class="cal-day-popup-empty">Nothing scheduled this day.</p>`;
+    } else {
+      dayPopupList.innerHTML = posts.map((post) => `
+        <div class="cal-day-popup-item is-${platformKey(primaryPlatform(post))}">
+          <i class="cal-day-popup-item-bar" aria-hidden="true"></i>
+          <div class="cal-day-popup-item-copy">
+            <div class="cal-day-popup-item-title"></div>
+            <div class="cal-day-popup-item-meta">
+              <span class="cal-day-popup-platform"></span>
+              <span class="cal-day-popup-time"></span>
+            </div>
+          </div>
+        </div>
+      `).join("");
+      [...dayPopupList.children].forEach((row, i) => {
+        const post = posts[i];
+        row.querySelector(".cal-day-popup-item-title").textContent = post.title || "Untitled";
+        row.querySelector(".cal-day-popup-platform").textContent = platformLabel(post);
+        row.querySelector(".cal-day-popup-time").textContent = post.time || "";
+      });
+    }
+    dayPopup.hidden = false;
+    // Measure after show, then pin beside the cell inside the board.
+    placeDayPopupBeside(cell || grid.querySelector(`.cal-cell[data-date="${key}"]`));
+  }
+
   function keysInRange(a, b) {
     const from = a < b ? a : b;
     const to = a < b ? b : a;
