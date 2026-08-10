@@ -2427,7 +2427,7 @@ body.sidebar-expanded {
 }
 
 .cal-agent-mark {
-  width: min(148px, 42%);
+  width: min(240px, 68%);
   height: auto;
   display: block;
   opacity: 0.9;
