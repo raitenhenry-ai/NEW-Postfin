@@ -1309,7 +1309,7 @@
     dayPanel.innerHTML = `
       <div class="cal-thread">
         ${bubbles}
-        ${pending ? `<div class="cal-msg is-assistant"><p class="cal-loading-status" aria-live="polite"></p></div>` : ""}
+        ${pending ? `<div class="cal-msg is-assistant cal-msg-loading"><p class="cal-loading-status" aria-live="polite"></p></div>` : ""}
       </div>`;
     dayPanel.scrollTop = dayPanel.scrollHeight;
     if (pending) startLoadingShuffle();

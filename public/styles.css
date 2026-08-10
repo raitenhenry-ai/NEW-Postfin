@@ -4928,25 +4928,62 @@ body.theme-light .cal-post-fields {
 }
 
 /* loading status lines */
+.cal-msg:has(.cal-loading-status) {
+  align-self: flex-start;
+  align-items: flex-start;
+  width: auto;
+  max-width: 100%;
+  margin-right: auto;
+}
+
 .cal-loading-status {
   align-self: flex-start;
+  width: max-content;
   max-width: 100%;
-  padding: 8px 2px;
-  color: #9a9aa2;
+  margin: 2px 0 0;
+  padding: 2px 0;
+  text-align: left;
   font-size: 13px;
-  font-weight: 500;
+  font-weight: 550;
   line-height: 1.4;
   letter-spacing: 0.01em;
+  background-image: linear-gradient(
+    90deg,
+    #6e6e76 0%,
+    #6e6e76 38%,
+    #f4f4f8 50%,
+    #6e6e76 62%,
+    #6e6e76 100%
+  );
+  background-size: 220% 100%;
+  background-position: 100% 0;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  -webkit-text-fill-color: transparent;
   opacity: 1;
   transition: opacity 0.35s ease;
+  animation: cal-loading-shimmer 1.7s linear infinite;
 }
 
 .cal-loading-status.is-fading {
   opacity: 0;
 }
 
+@keyframes cal-loading-shimmer {
+  0% { background-position: 100% 0; }
+  100% { background-position: -120% 0; }
+}
+
 body.theme-light .cal-loading-status {
-  color: #6a6a72;
+  background-image: linear-gradient(
+    90deg,
+    #8a8a92 0%,
+    #8a8a92 38%,
+    #111114 50%,
+    #8a8a92 62%,
+    #8a8a92 100%
+  );
 }
 
 /* --- light theme (white + light grey) --- */
