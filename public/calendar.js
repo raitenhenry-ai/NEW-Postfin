@@ -33,14 +33,26 @@
   const dayPopupClose = document.getElementById("cal-day-popup-close");
   const PRODUCT_KEY = "cal-product-url";
   const FORMAT_KEY = "cal-output-format";
-  const PLATFORM_KEY = "cal-target-platform";
-  const PLATFORM_OPTS = new Set(["all", "tiktok", "youtube", "instagram"]);
+  const PLATFORM_KEY = "cal-target-platforms";
+  const PLATFORM_CHOICES = ["tiktok", "youtube", "instagram"];
   const PLATFORM_PICKER_LABELS = {
-    all: "All platforms",
     tiktok: "TikTok",
     youtube: "YouTube",
     instagram: "Instagram",
   };
+
+  function loadSelectedPlatforms() {
+    try {
+      const raw = JSON.parse(localStorage.getItem(PLATFORM_KEY) || "[]");
+      if (!Array.isArray(raw)) return new Set();
+      return new Set(raw.filter((p) => PLATFORM_CHOICES.includes(p)));
+    } catch {
+      // Migrate old single-platform key if present.
+      const legacy = localStorage.getItem("cal-target-platform");
+      if (legacy && PLATFORM_CHOICES.includes(legacy)) return new Set([legacy]);
+      return new Set();
+    }
+  }
   const FORMAT_ICONS = {
     slideshow:
       '<svg viewBox="0 0 16 16" fill="none"><rect x="2.5" y="3.5" width="11" height="9" rx="1.5" stroke="currentColor" stroke-width="1.4"/><circle cx="5.75" cy="6.5" r="1" fill="currentColor"/><path d="M2.75 10.5l2.8-2.4 2.1 1.7 2.4-2.6 3.2 3.3" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>',
@@ -49,8 +61,7 @@
   };
   let selectedProductUrl = localStorage.getItem(PRODUCT_KEY) || "";
   let selectedFormat = localStorage.getItem(FORMAT_KEY) === "slideshow" ? "slideshow" : "video";
-  const savedPlatform = localStorage.getItem(PLATFORM_KEY) || "all";
-  let selectedPlatform = PLATFORM_OPTS.has(savedPlatform) ? savedPlatform : "all";
+  let selectedPlatforms = loadSelectedPlatforms(); // empty Set => all platforms
   let productCatalog = [];
   const modeButtons = document.querySelectorAll("[data-cal-mode]");
   const modeSwitcher = document.getElementById("cal-mode-switcher");
@@ -1512,7 +1523,7 @@
           offsetMinutes: -new Date().getTimezoneOffset(),
           productUrl: selectedProductUrl || "",
           outputFormat: selectedFormat,
-          platforms: selectedPlatform === "all" ? [] : [selectedPlatform],
+          platforms: [...selectedPlatforms],
         },
       });
 
@@ -1715,18 +1726,44 @@
     platformBtn.setAttribute("aria-expanded", open ? "true" : "false");
   }
 
+  function platformPickerLabel() {
+    if (!selectedPlatforms.size || selectedPlatforms.size >= PLATFORM_CHOICES.length) {
+      return "All platforms";
+    }
+    return PLATFORM_CHOICES
+      .filter((p) => selectedPlatforms.has(p))
+      .map((p) => PLATFORM_PICKER_LABELS[p])
+      .join(", ");
+  }
+
+  function persistSelectedPlatforms() {
+    localStorage.setItem(PLATFORM_KEY, JSON.stringify([...selectedPlatforms]));
+  }
+
   function syncPlatformPicker() {
-    if (platformBtnLabel) platformBtnLabel.textContent = PLATFORM_PICKER_LABELS[selectedPlatform] || "All platforms";
+    const allOn = !selectedPlatforms.size || selectedPlatforms.size >= PLATFORM_CHOICES.length;
+    if (platformBtnLabel) platformBtnLabel.textContent = platformPickerLabel();
     platformMenu?.querySelectorAll("[data-platform]").forEach((btn) => {
-      const on = btn.getAttribute("data-platform") === selectedPlatform;
+      const key = btn.getAttribute("data-platform");
+      const on = key === "all" ? allOn : selectedPlatforms.has(key);
       btn.classList.toggle("is-on", on);
       btn.setAttribute("aria-checked", on ? "true" : "false");
     });
   }
 
-  function setSelectedPlatform(platform) {
-    selectedPlatform = PLATFORM_OPTS.has(platform) ? platform : "all";
-    localStorage.setItem(PLATFORM_KEY, selectedPlatform);
+  function toggleSelectedPlatform(platform) {
+    if (platform === "all") {
+      selectedPlatforms = new Set();
+      persistSelectedPlatforms();
+      syncPlatformPicker();
+      return;
+    }
+    if (!PLATFORM_CHOICES.includes(platform)) return;
+    if (selectedPlatforms.has(platform)) selectedPlatforms.delete(platform);
+    else selectedPlatforms.add(platform);
+    // Selecting every platform is the same as All.
+    if (selectedPlatforms.size >= PLATFORM_CHOICES.length) selectedPlatforms = new Set();
+    persistSelectedPlatforms();
     syncPlatformPicker();
   }
 
@@ -1769,8 +1806,9 @@
   platformMenu?.addEventListener("click", (e) => {
     const item = e.target.closest("[data-platform]");
     if (!item) return;
-    setSelectedPlatform(item.getAttribute("data-platform"));
-    setPlatformMenuOpen(false);
+    e.preventDefault();
+    toggleSelectedPlatform(item.getAttribute("data-platform"));
+    // Keep the menu open so multiple platforms can be toggled.
   });
 
   document.addEventListener("click", (e) => {
