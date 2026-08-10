@@ -938,6 +938,7 @@
       // Edit needs the side panel for the composer
       setChatCollapsed(false);
     }
+    closeDayPopup();
     render();
   }
 
@@ -1617,6 +1618,9 @@
     } catch (err) {
       toast(`Couldn't load the calendar: ${err.message}`, "error");
       events = {};
+    }
+    if (dayPopupKey && dayPopup && !dayPopup.hidden) {
+      openDayPopup(dayPopupKey, grid.querySelector(`.cal-cell[data-date="${dayPopupKey}"]`));
     }
   }
 
