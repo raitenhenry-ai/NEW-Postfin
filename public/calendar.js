@@ -980,14 +980,23 @@
     renderMonthMenu();
   });
 
+  historyBtn?.addEventListener("click", (e) => {
+    e.stopPropagation();
+    const open = historyBtn.getAttribute("aria-expanded") !== "true";
+    setHistoryMenuOpen(open);
+  });
+  historyMenu?.addEventListener("click", (e) => e.stopPropagation());
+
   document.addEventListener("click", () => {
     setModeMenuOpen(false);
     setMonthMenuOpen(false);
+    setHistoryMenuOpen(false);
   });
   document.addEventListener("keydown", (e) => {
     if (e.key === "Escape") {
       setModeMenuOpen(false);
       setMonthMenuOpen(false);
+      setHistoryMenuOpen(false);
     }
   });
 
