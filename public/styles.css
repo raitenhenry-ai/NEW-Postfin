@@ -5227,8 +5227,8 @@ body.theme-light .cal-cell {
   color: #222228;
 }
 
-body.theme-light .cal-cell:hover,
-body.theme-light .cal-cell:has(.cal-cell-events:hover) {
+body.theme-light .cal-cell:hover:not(.selected),
+body.theme-light .cal-cell:has(.cal-cell-events:hover):not(.selected) {
   background: #f7f7f9;
 }
 
