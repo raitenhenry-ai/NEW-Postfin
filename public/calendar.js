@@ -889,23 +889,7 @@
       if (dayEvents.length) {
         const list = document.createElement("div");
         list.className = "cal-cell-events";
-        list.addEventListener("pointerdown", (e) => {
-          // Only steal the gesture when outlining an event (no days selected).
-          // Otherwise let day select/drag work like normal.
-          if (isEditMode() && selected.size === 0 && e.target.closest(".cal-event-row")) {
-            e.stopPropagation();
-          }
-        });
-        list.addEventListener("mousedown", (e) => {
-          if (isEditMode() && selected.size === 0 && e.target.closest(".cal-event-row")) {
-            e.stopPropagation();
-          }
-        });
-        list.addEventListener("touchstart", (e) => {
-          if (isEditMode() && selected.size === 0 && e.target.closest(".cal-event-row")) {
-            e.stopPropagation();
-          }
-        }, { passive: true });
+        // Keep wheel scrolling local; day select/drag still reaches the grid.
         list.addEventListener("wheel", (e) => e.stopPropagation(), { passive: true });
         dayEvents.forEach((ev, index) => {
           const row = document.createElement("button");
@@ -924,13 +908,38 @@
           row.querySelector(".cal-event-title").textContent = ev.title;
           row.querySelector(".cal-event-platform").textContent = platformLabel(ev);
           row.querySelector(".cal-event-time").textContent = ev.time;
+          row.addEventListener("pointerdown", (e) => {
+            if (!isEditMode() || selected.size > 0) {
+              eventOutlineIntent = null;
+              return;
+            }
+            eventOutlineIntent = {
+              id: eventId,
+              key,
+              index,
+              x: e.clientX,
+              y: e.clientY,
+            };
+          });
           row.addEventListener("click", (e) => {
             e.preventDefault();
+            // Pure click on an event while no days were highlighted → outline
+            // the event (and undo the day select that pointerdown started).
+            const intent = eventOutlineIntent;
+            eventOutlineIntent = null;
+            if (
+              !isEditMode()
+              || !intent
+              || intent.id !== eventId
+              || Math.hypot(e.clientX - intent.x, e.clientY - intent.y) > 6
+            ) {
+              return;
+            }
             e.stopPropagation();
-            // Edit only, and only when no days are highlighted.
-            if (!isEditMode() || selected.size > 0) return;
-            const id = eventIdentity(ev, key, index);
-            selectedEvent = selectedEvent?.id === id ? null : { id, key, index };
+            drag = null;
+            grid.classList.remove("is-dragging");
+            selected.clear();
+            selectedEvent = selectedEvent?.id === eventId ? null : { id: eventId, key, index };
             render();
           });
           list.appendChild(row);
