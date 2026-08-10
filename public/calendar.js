@@ -1219,8 +1219,36 @@
     }
   }
 
+  async function loadProductOptions() {
+    if (!productSelect) return;
+    const saved = localStorage.getItem(PRODUCT_KEY) || "";
+    try {
+      const data = await api("/api/products");
+      const products = data.products || [];
+      productSelect.innerHTML = `<option value="">No product selected</option>`;
+      for (const product of products) {
+        if (!product.url) continue;
+        const label = product.name || product.site || product.url;
+        const opt = document.createElement("option");
+        opt.value = product.url;
+        opt.textContent = label.length > 56 ? `${label.slice(0, 55)}…` : label;
+        productSelect.appendChild(opt);
+      }
+      if (saved && [...productSelect.options].some((o) => o.value === saved)) {
+        productSelect.value = saved;
+      }
+    } catch {
+      /* picker stays on the empty option */
+    }
+  }
+
+  productSelect?.addEventListener("change", () => {
+    localStorage.setItem(PRODUCT_KEY, productSelect.value || "");
+  });
+
   syncSendState();
   resizeField();
   render();
+  loadProductOptions();
   loadEvents().then(render);
 })();
