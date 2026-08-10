@@ -1006,7 +1006,7 @@
       clearSelectedEvent();
       setFocusedDay(cell.dataset.date);
       openedPost = null;
-      applySelectionClasses();
+      render();
       return;
     }
 
