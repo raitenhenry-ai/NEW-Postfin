@@ -24,6 +24,13 @@
   const platformMenu = document.getElementById("cal-platform-menu");
   const hint = document.getElementById("cal-hint");
   const shell = document.querySelector(".cal-shell");
+  const calBoard = document.getElementById("cal-board");
+  const dayPopup = document.getElementById("cal-day-popup");
+  const dayPopupDrag = document.getElementById("cal-day-popup-drag");
+  const dayPopupDate = document.getElementById("cal-day-popup-date");
+  const dayPopupCount = document.getElementById("cal-day-popup-count");
+  const dayPopupList = document.getElementById("cal-day-popup-list");
+  const dayPopupClose = document.getElementById("cal-day-popup-close");
   const PRODUCT_KEY = "cal-product-url";
   const FORMAT_KEY = "cal-output-format";
   const PLATFORM_KEY = "cal-target-platform";
