@@ -5706,3 +5706,13 @@ body.theme-light .cal-history-item.is-active {
 body.theme-light .cal-history-item-meta {
   color: #6a6a72;
 }
+
+/* Recent chats uses a clock outline — don't solid-fill it when open */
+#cal-history-btn.is-on .cal-tool-icon {
+  fill: none;
+  stroke: #5b8cff;
+}
+
+body.theme-light #cal-history-btn.is-on .cal-tool-icon {
+  stroke: #3b6ef5;
+}
