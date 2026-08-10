@@ -2887,6 +2887,9 @@ body.theme-light .cal-post-fields {
   gap: 8px;
   margin: 0 10px 0;
   flex-shrink: 0;
+  overflow: visible;
+  position: relative;
+  z-index: 20;
 }
 
 .cal-chat-tools + .cal-composer {
@@ -2896,11 +2899,14 @@ body.theme-light .cal-post-fields {
 .cal-product-pill {
   position: relative;
   flex-shrink: 0;
+  z-index: 1;
 }
 
 .cal-format-picker {
   position: relative;
   flex-shrink: 0;
+  z-index: 2;
+  overflow: visible;
 }
 
 .cal-format-btn {
