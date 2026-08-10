@@ -836,6 +836,7 @@
     drag = null;
     grid.classList.remove("is-dragging");
     openedPost = null;
+    clearSelectedEvent();
 
     if (planAbort) {
       planAbort.abort();
@@ -905,7 +906,11 @@
         dayEvents.forEach((ev, index) => {
           const row = document.createElement("button");
           row.type = "button";
-          row.className = `cal-event-row is-${platformKey(primaryPlatform(ev))}`;
+          const eventId = eventIdentity(ev, key, index);
+          const isSelected = selectedEvent?.id === eventId;
+          row.className = `cal-event-row is-${platformKey(primaryPlatform(ev))}${isSelected ? " is-selected" : ""}`;
+          row.setAttribute("aria-pressed", isSelected ? "true" : "false");
+          row.dataset.eventId = eventId;
           row.innerHTML = `
             <i class="cal-event-bar" aria-hidden="true"></i>
             <span class="cal-event-title"></span>
@@ -918,20 +923,18 @@
           row.addEventListener("click", (e) => {
             e.preventDefault();
             e.stopPropagation();
-            if (isEditMode()) {
-              if (planAbort) {
-                planAbort.abort();
-                planAbort = null;
-              }
-              persistActiveChat();
-              mode = "view";
-              saveMode(mode);
-              setChatCollapsed(false);
-            }
-            setFocusedDay(key);
-            openedPost = index;
+            const on = selectEvent(ev, key, index);
             editingPost = null;
-            applySelectionClasses();
+            if (isViewMode()) {
+              setFocusedDay(key);
+              openedPost = on ? index : null;
+              applySelectionClasses();
+              return;
+            }
+            // Edit mode: highlight this event and select only its day.
+            selected.clear();
+            if (on && !isPastKey(key)) selected.add(key);
+            render();
           });
           list.appendChild(row);
         });
@@ -962,6 +965,8 @@
   function beginDrag(key) {
     if (!isEditMode()) return;
     if (isPastKey(key)) return;
+
+    clearSelectedEvent();
 
     // Clicking any day in a connected highlighted block clears the whole block.
     if (selected.has(key)) {
@@ -999,7 +1004,9 @@
     if (!cell) return;
 
     if (isViewMode()) {
+      clearSelectedEvent();
       setFocusedDay(cell.dataset.date);
+      openedPost = null;
       applySelectionClasses();
       return;
     }
