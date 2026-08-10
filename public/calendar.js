@@ -40,6 +40,11 @@
     youtube: "YouTube",
     instagram: "Instagram",
   };
+  const PLATFORM_PICKER_SHORT = {
+    tiktok: "TT",
+    youtube: "YT",
+    instagram: "IG",
+  };
 
   function loadSelectedPlatforms() {
     try {
@@ -1884,10 +1889,9 @@
     if (!selectedPlatforms.size || selectedPlatforms.size >= PLATFORM_CHOICES.length) {
       return "All platforms";
     }
-    return PLATFORM_CHOICES
-      .filter((p) => selectedPlatforms.has(p))
-      .map((p) => PLATFORM_PICKER_LABELS[p])
-      .join(", ");
+    const picked = PLATFORM_CHOICES.filter((p) => selectedPlatforms.has(p));
+    if (picked.length === 1) return PLATFORM_PICKER_LABELS[picked[0]];
+    return picked.map((p) => PLATFORM_PICKER_SHORT[p] || PLATFORM_PICKER_LABELS[p]).join(" · ");
   }
 
   function persistSelectedPlatforms() {
