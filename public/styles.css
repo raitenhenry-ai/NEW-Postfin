@@ -2937,10 +2937,10 @@ body.theme-light .cal-post-fields {
   max-height: 240px;
   overflow: auto;
   padding: 6px;
-  border: 1px solid #2e2e34;
-  border-radius: 14px;
+  border: 1px solid #2e2e32;
+  border-radius: 10px;
   background: #1a1a1e;
-  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.35);
+  box-shadow: 0 10px 28px rgba(0, 0, 0, 0.35);
   scrollbar-width: none;
 }
 
