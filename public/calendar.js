@@ -1024,13 +1024,20 @@
   });
 
   grid.addEventListener("pointermove", (e) => {
+    if (eventOutlineIntent) {
+      const dist = Math.hypot(e.clientX - eventOutlineIntent.x, e.clientY - eventOutlineIntent.y);
+      if (dist > 6) eventOutlineIntent = null;
+    }
     if (!drag || !isEditMode()) return;
     const cell = cellFromPoint(e.clientX, e.clientY);
     if (cell?.dataset.date) updateDrag(cell.dataset.date);
   });
 
   grid.addEventListener("pointerup", endDrag);
-  grid.addEventListener("pointercancel", endDrag);
+  grid.addEventListener("pointercancel", (e) => {
+    eventOutlineIntent = null;
+    endDrag(e);
+  });
   window.addEventListener("pointerup", endDrag);
 
   modeButtons.forEach((btn) => {
