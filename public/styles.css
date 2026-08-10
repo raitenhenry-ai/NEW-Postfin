@@ -2186,7 +2186,14 @@ body.sidebar-expanded {
   padding: 6px 8px;
   border-radius: 8px;
   background: rgba(255, 255, 255, 0.045);
-  pointer-events: none;
+  pointer-events: auto;
+  cursor: pointer;
+  transition: background 0.12s, box-shadow 0.12s;
+}
+
+.cal-event-row:hover {
+  background: rgba(255, 255, 255, 0.11);
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.06);
 }
 
 .cal-event-bar {
