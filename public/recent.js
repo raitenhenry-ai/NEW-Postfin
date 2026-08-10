@@ -40,12 +40,15 @@
       </span>`;
   }
 
+  // The finished video is what the tile is about, so it wins over the
+  // product photo whenever it exists. #t=0.5 asks the browser for a frame
+  // half a second in - without it a poster-less video paints black.
   function thumbMedia(job) {
+    if (job.videoUrl) {
+      return `<video src="${escapeHtml(job.videoUrl)}#t=0.5" muted playsinline preload="metadata"></video>`;
+    }
     const img = job.product?.images?.[0];
     if (img) return `<img src="${escapeHtml(img)}" alt="" loading="lazy">`;
-    if (job.videoUrl) {
-      return `<video src="${escapeHtml(job.videoUrl)}" muted playsinline preload="metadata"></video>`;
-    }
     return `<div class="video-thumb-fallback" aria-hidden="true"></div>`;
   }
 
@@ -84,13 +87,48 @@
     return job.posts.reduce((sum, p) => sum + (Number(p.views) || 0), 0);
   }
 
+  // This is where you actually watch it, so it is a real player - the old
+  // one had no controls, which made the video unplayable from this page.
   function detailThumb(job) {
+    if (job.videoUrl) {
+      return `<video src="${escapeHtml(job.videoUrl)}" controls playsinline preload="metadata"></video>`;
+    }
     const img = job.product?.images?.[0];
     if (img) return `<img src="${escapeHtml(img)}" alt="">`;
-    if (job.videoUrl) {
-      return `<video src="${escapeHtml(job.videoUrl)}" muted playsinline preload="metadata"></video>`;
-    }
     return `<div class="video-thumb-fallback" aria-hidden="true"></div>`;
+  }
+
+  // Said under the player, where there is room for it, rather than inside
+  // the fixed-aspect box the media sits in.
+  function videoNote(job) {
+    if (job.videoUrl) return "";
+    if (ACTIVE.includes(job.status)) return "Still generating - this updates itself.";
+    if (job.status === "failed") return "This video never rendered.";
+    return "No video yet.";
+  }
+
+  // A slideshow is worth reading as well as watching: the overlay lines are
+  // the ad, and seeing them listed is how you tell whether it is any good
+  // without playing 25 seconds of video.
+  function slideList(job) {
+    const slides = job.script?.slides || [];
+    if (job.format !== "slideshow" || !slides.length) return "";
+    return `
+      <ol class="recent-slides">
+        ${slides.map((slide) => `
+          <li>
+            <span class="recent-slide-overlay">${escapeHtml(slide.overlay || "")}</span>
+            ${slide.spoken ? `<span class="recent-slide-spoken">${escapeHtml(slide.spoken)}</span>` : ""}
+          </li>`).join("")}
+      </ol>`;
+  }
+
+  function rendererLabel(job) {
+    if (job.format === "slideshow") {
+      const count = job.script?.slides?.length;
+      return `AI slideshow${count ? ` · ${count} slides` : ""}`;
+    }
+    return "HeyGen avatar";
   }
 
   function openDetail(jobId) {
@@ -113,13 +151,20 @@
       <div class="recent-detail-thumb">${detailThumb(job)}</div>
       <div class="recent-detail-meta">
         ${statusChip(job.status)}
-        <span>${when} · ${escapeHtml(job.provider === "heygen" ? "HeyGen" : "built-in")}</span>
+        <span>${when} · ${escapeHtml(rendererLabel(job))}</span>
       </div>
+      ${job.videoUrl
+        ? `<a class="recent-post-link" href="${escapeHtml(job.videoUrl)}" target="_blank" rel="noopener">Open the video file</a>`
+        : `<p class="recent-card-meta">${escapeHtml(videoNote(job))}</p>`}
       ${text ? `<p class="recent-detail-caption">${escapeHtml(text)}</p>` : ""}
+      ${slideList(job)}
       ${job.productUrl
         ? `<a class="recent-card-product" href="${escapeHtml(job.productUrl)}" target="_blank" rel="noopener">${escapeHtml(job.productUrl)}</a>`
         : ""}
       ${job.error ? `<p class="recent-card-error">${escapeHtml(job.error)}</p>` : ""}
+      ${!job.error && job.script?.imageNote
+        ? `<p class="recent-card-warning">${escapeHtml(job.script.imageNote)}</p>`
+        : ""}
       ${job.posts.length
         ? `<ul class="recent-posts">${job.posts.map(postRow).join("")}</ul>`
         : `<p class="recent-card-meta">Not published yet.</p>`}

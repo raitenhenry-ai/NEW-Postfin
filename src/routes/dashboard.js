@@ -646,19 +646,18 @@ const PLATFORM_DESCRIPTIONS = {
 
 /* ------------------------------------------------------------------- Recent */
 
-// recent.html: only videos that have actually been posted. Scheduled /
-// still-rendering jobs stay on the calendar until they go live.
+// recent.html: every video this workspace has made, in the order it was
+// made - rendered, scheduled, published, still working or failed.
 router.get("/recent", wrap(async (req, res) => {
   const limit = Math.min(100, Math.max(1, Number(req.query.limit) || 50));
+
+  // Everything that has been made, newest first - not only what has been
+  // published. A video that has rendered and is waiting for its slot is the
+  // one you most want to watch, and it used to be visible nowhere but the
+  // calendar. Jobs that are still working or that failed show too, so this
+  // is the page that answers "what happened to my video".
   const jobs = await q(
-    `SELECT j.* FROM ugc_jobs j
-     WHERE j.status = 'posted'
-        OR EXISTS (
-          SELECT 1 FROM ugc_posts p
-          WHERE p.job_id = j.id AND p.status = 'done'
-        )
-     ORDER BY j.created_at DESC
-     LIMIT ?`,
+    `SELECT * FROM ugc_jobs ORDER BY created_at DESC LIMIT ?`,
     [limit]
   );
   const postsByJob = await postsForJobs(jobs.map((j) => j.id));

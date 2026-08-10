@@ -161,7 +161,7 @@ Everything under `/api` requires the login when `ADMIN_PASSWORD` is set.
 | `GET /api/analytics` | Chart series, engagement totals, recent videos. `?range=1h\|24h\|7d\|30d\|custom&days=N&platform=<key>` |
 | `GET /api/calendar` | Jobs keyed by local date. `?start=&end=` (epoch ms) |
 | `GET /api/connectors` | Every platform, its credential state and linked accounts |
-| `GET /api/recent` | Activity feed: every job with per-account results |
+| `GET /api/recent` | Activity feed: every video made, newest first - rendered, scheduled, published, working or failed - with per-account results |
 | `GET /api/profile` | Signed-in user, workspace config, integration state |
 | `GET /api/overview` | Generator capabilities for the create form |
 | `POST /api/jobs` | Create a video. `{ productUrl, title?, scheduledAt?, platforms[], tone, style, format?, angle?, slides? }` |

@@ -198,6 +198,9 @@ export function shapeJob(job, posts = []) {
     status: job.status,
     error: job.error,
     provider: job.provider,
+    // Which of the two formats this video is, so the UI can name it and
+    // show a slideshow's slides.
+    format: settings.format === "slideshow" ? "slideshow" : "avatar",
     autoPost: Boolean(job.auto_post),
     scheduledAt: job.scheduled_at ? Number(job.scheduled_at) : null,
     videoUrl: job.video_filename ? `/ugc-media/${encodeURIComponent(job.video_filename)}` : null,
