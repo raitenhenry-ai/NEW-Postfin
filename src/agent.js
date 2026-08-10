@@ -364,13 +364,6 @@ function systemPrompt(ctx) {
       ? `The user selected this product for the current chat: ${ctx.productName || "product"} (${ctx.productUrl}). ` +
         "When planning videos, pass that URL as productUrl unless they ask for a different product."
       : "No product is selected in the chat picker. Plan from the brief alone unless they paste a product URL.",
-    ctx.outputFormat === "slideshow"
-      ? "The user selected IMAGE / slideshow generation. Plan image slideshow posts, not talking-head videos."
-      : "The user selected VIDEO generation. Plan short-form video posts.",
-    ctx.platforms?.length
-      ? `The user selected these target platforms in the chat picker: ${ctx.platforms.join(", ")}. ` +
-        "When planning videos, pass those as platforms unless they ask for different ones."
-      : "The user selected All platforms in the chat picker. Omit platforms (post to every connected account) unless they name specific ones.",
     ctx.accounts
       ? `Connected accounts: ${ctx.accounts}.`
       : "No social accounts are connected yet - videos will generate but cannot publish.",
