@@ -342,7 +342,17 @@ router.post("/chat", wrap(async (req, res) => {
     ? Math.max(-840, Math.min(840, req.body.offsetMinutes))
     : 0;
 
-  res.json(await runAssistant({ messages, selectedDates, offsetMinutes }));
+  let productUrl = "";
+  if (typeof req.body.productUrl === "string" && req.body.productUrl.trim()) {
+    try {
+      const parsed = new URL(req.body.productUrl.trim());
+      if (/^https?:$/.test(parsed.protocol)) productUrl = parsed.toString();
+    } catch {
+      productUrl = "";
+    }
+  }
+
+  res.json(await runAssistant({ messages, selectedDates, offsetMinutes, productUrl }));
 }));
 
 // The avatars and voices this HeyGen account can actually use, so the
