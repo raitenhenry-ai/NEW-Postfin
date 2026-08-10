@@ -5090,6 +5090,8 @@ body.theme-light .cal-post-fields {
   background: #2a2a2e;
   color: #f0f0f4;
   max-width: 88%;
+  /* Answers to a set of questions come back one per line. */
+  white-space: pre-wrap;
 }
 
 .cal-msg.is-assistant .cal-msg-body {
@@ -5109,6 +5111,107 @@ body.theme-light .cal-post-fields {
   border: 1px solid #232328;
   border-radius: 8px;
   padding: 8px 11px;
+}
+
+/* --- assistant multiple-choice questions --- */
+
+.cal-ask {
+  display: flex;
+  flex-direction: column;
+  gap: 11px;
+  background: #161616;
+  border: 1px solid #232328;
+  border-radius: 12px;
+  padding: 12px;
+}
+
+.cal-ask-q {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+}
+
+.cal-ask-label {
+  margin: 0;
+  color: #d8d8de;
+  font-size: 12.5px;
+  font-weight: 600;
+  line-height: 1.45;
+}
+
+.cal-ask-options {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.cal-ask-chip {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 2px;
+  max-width: 100%;
+  background: #1f1f24;
+  border: 1px solid #2c2c33;
+  border-radius: 9px;
+  padding: 7px 11px;
+  color: #e6e6ec;
+  font: inherit;
+  font-size: 12.5px;
+  text-align: left;
+  cursor: pointer;
+  transition: background 0.15s ease, border-color 0.15s ease;
+}
+
+.cal-ask-chip:hover {
+  background: #26262c;
+  border-color: #3a3a44;
+}
+
+.cal-ask-chip.is-picked {
+  background: #1e2432;
+  border-color: #5b8cff;
+  color: #ffffff;
+}
+
+.cal-ask-chip-hint {
+  color: #8a8a92;
+  font-size: 11.5px;
+  line-height: 1.4;
+}
+
+.cal-ask-chip.is-picked .cal-ask-chip-hint { color: #a8b6d8; }
+
+.cal-ask-foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.cal-ask-hint {
+  color: #6f6f78;
+  font-size: 11.5px;
+}
+
+.cal-ask-send {
+  background: #5b8cff;
+  border: 1px solid #5b8cff;
+  border-radius: 8px;
+  padding: 6px 14px;
+  color: #ffffff;
+  font: inherit;
+  font-size: 12.5px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.cal-ask-send:disabled {
+  background: #23232a;
+  border-color: #2c2c33;
+  color: #6f6f78;
+  cursor: default;
 }
 
 /* loading status lines */
@@ -6390,6 +6493,54 @@ body.theme-light .cal-action-note {
   background: #f4f4f6 !important;
   border: 1px solid #e2e2e8 !important;
   color: #6a6a72 !important;
+}
+
+/* Light: assistant multiple-choice questions */
+body.theme-light .cal-ask {
+  background: #f7f7f9 !important;
+  border: 1px solid #e2e2e8 !important;
+}
+
+body.theme-light .cal-ask-label {
+  color: #1a1a1f !important;
+}
+
+body.theme-light .cal-ask-chip {
+  background: #ffffff !important;
+  border: 1px solid #d8d8de !important;
+  color: #1a1a1f !important;
+}
+
+body.theme-light .cal-ask-chip:hover {
+  background: #f0f0f3 !important;
+  border-color: #c4c4cc !important;
+}
+
+body.theme-light .cal-ask-chip.is-picked {
+  background: #e9effd !important;
+  border-color: #3b6ef5 !important;
+  color: #16224a !important;
+}
+
+body.theme-light .cal-ask-chip-hint,
+body.theme-light .cal-ask-hint {
+  color: #6a6a72 !important;
+}
+
+body.theme-light .cal-ask-chip.is-picked .cal-ask-chip-hint {
+  color: #40527f !important;
+}
+
+body.theme-light .cal-ask-send {
+  background: #3b6ef5 !important;
+  border-color: #3b6ef5 !important;
+  color: #ffffff !important;
+}
+
+body.theme-light .cal-ask-send:disabled {
+  background: #ececef !important;
+  border-color: #e2e2e8 !important;
+  color: #9a9aa2 !important;
 }
 
 body.theme-light .cal-post-item.is-youtube {

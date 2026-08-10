@@ -6,11 +6,17 @@ import { platforms, freshAccount } from "../accounts.js";
 import { scrapeProduct, downloadImages } from "./scrape.js";
 import { generateScript, captionText, spokenText } from "./script.js";
 import { heygenConfigured, startAvatarVideo, waitAndDownload } from "./heygen.js";
+import { planSlideshow, generateSlideImages, renderSlideshowVideo } from "./slideshow.js";
 
 // UGC job lifecycle:
 //   queued -> scraping -> scripting -> rendering -> ready -> posting -> posted
 // Any stage can land in 'failed' (error says which stage). Jobs process one
 // at a time - rendering is CPU-heavy and the HeyGen plan rate-limits anyway.
+//
+// A job is either an avatar video (HeyGen reads the script to camera) or a
+// slideshow ad (images cut on the beat under burned-in text). The format is
+// chosen per job and decides both how the script is written and how the
+// video is rendered.
 
 const queue = [];
 let draining = false;
@@ -54,10 +60,17 @@ async function setJob(id, fields) {
   );
 }
 
-// HeyGen is the only renderer. Without a key a job fails with that reason
-// rather than quietly producing something else.
-export function pickProvider() {
-  return "heygen";
+// Which renderer a job will use. Slideshows are rendered in-process with
+// ffmpeg; avatar videos need HeyGen, and without a key such a job fails with
+// that reason rather than quietly producing something else.
+export function pickProvider(settings) {
+  return jobFormat(settings) === "slideshow" ? "slideshow" : "heygen";
+}
+
+export function jobFormat(settings) {
+  return settings?.format === "slideshow" || (!settings?.format && config.ugc.format === "slideshow")
+    ? "slideshow"
+    : "avatar";
 }
 
 async function processJob(jobId) {
@@ -70,6 +83,7 @@ async function processJob(jobId) {
   if (["ready", "posted", "failed"].includes(job.status)) return;
 
   const settings = JSON.parse(job.settings_json || "{}");
+  const format = jobFormat(settings);
   const workDir = path.join(config.ugcDir, `job${job.id}`);
 
   try {
@@ -84,16 +98,24 @@ async function processJob(jobId) {
     }
 
     // 2. Write the script, from the product, the planned concept, or both.
+    // A slideshow needs a different script - slides, not spoken scenes - so
+    // the format decides which writer runs.
     let script = job.script_json ? JSON.parse(job.script_json) : null;
     if (!script) {
       await setJob(job.id, { status: "scripting" });
-      script = await generateScript(product, {
+      const brief = {
         ...settings,
         brief: job.brief || undefined,
         concept: job.concept_json ? JSON.parse(job.concept_json) : undefined,
-      });
+      };
+      script = format === "slideshow"
+        ? await planSlideshow(product, brief)
+        : await generateScript(product, brief);
       await setJob(job.id, { script_json: JSON.stringify(script) });
-      console.log(`[ugc] job ${job.id}: script ready (${script.generatedBy})`);
+      console.log(
+        `[ugc] job ${job.id}: ${format} script ready (${script.generatedBy})` +
+          (script.slides ? `, ${script.slides.length} slides` : "")
+      );
     }
 
     // 3. Render the video.
@@ -102,33 +124,55 @@ async function processJob(jobId) {
     const filename = `ugc-job${job.id}.mp4`;
     const outputPath = path.join(config.ugcDir, filename);
 
-    if (!heygenConfigured()) {
-      throw new Error(
-        "HeyGen is not configured - set HEYGEN_API_KEY to generate videos"
+    if (format === "slideshow") {
+      // Real photos beat drawn ones whenever there are any, so the scraped
+      // product shots are downloaded first and the planner's per-slide choice
+      // decides which slides use them. Everything here is scratch - the mp4
+      // is the artifact - so it all lands in the work dir.
+      const photos = product?.images?.length
+        ? await downloadImages(product.images, path.join(workDir, "photos"))
+        : [];
+      const images = await generateSlideImages(script, path.join(workDir, "slides"), photos);
+      const drawn = images.filter(Boolean).length;
+      console.log(
+        `[ugc] job ${job.id}: ${drawn}/${script.slides.length} slide images ready ` +
+          `(${photos.length} product photo(s) available)`
       );
+      const { durationSeconds } = await renderSlideshowVideo({
+        script, images, workDir, outputPath, settings,
+      });
+      await setJob(job.id, { status: "ready", video_filename: filename });
+      console.log(`[ugc] job ${job.id}: slideshow ready (${durationSeconds.toFixed(1)}s)`);
+    } else {
+      if (!heygenConfigured()) {
+        throw new Error(
+          "HeyGen is not configured - set HEYGEN_API_KEY to generate avatar videos, " +
+            "or switch this video to the slideshow format"
+        );
+      }
+
+      // Product photos are downloaded once into a durable per-job directory,
+      // not the scratch dir: HeyGen fetches them over HTTP as scene
+      // backgrounds, so they have to outlive the render and stay reachable.
+      const assetDir = path.join(config.ugcDir, "assets", `job${job.id}`);
+      const localImages = product?.images?.length
+        ? await downloadImages(product.images, assetDir)
+        : [];
+      const sceneImages = localImages.map(
+        (file) => `${config.baseUrl}/ugc-media/assets/job${job.id}/${path.basename(file)}`
+      );
+
+      const videoId = await startAvatarVideo({
+        text: spokenText(script), script, sceneImages, settings,
+      });
+      console.log(
+        `[ugc] job ${job.id}: HeyGen render started (${videoId}), ` +
+          `${script.storyboard?.length || 1} scene(s), ${sceneImages.length} product photo(s)`
+      );
+      await waitAndDownload(videoId, outputPath);
+      await setJob(job.id, { status: "ready", video_filename: filename });
+      console.log(`[ugc] job ${job.id}: video ready (${provider})`);
     }
-
-    // Product photos are downloaded once into a durable per-job directory,
-    // not the scratch dir: HeyGen fetches them over HTTP as scene
-    // backgrounds, so they have to outlive the render and stay reachable.
-    const assetDir = path.join(config.ugcDir, "assets", `job${job.id}`);
-    const localImages = product?.images?.length
-      ? await downloadImages(product.images, assetDir)
-      : [];
-    const sceneImages = localImages.map(
-      (file) => `${config.baseUrl}/ugc-media/assets/job${job.id}/${path.basename(file)}`
-    );
-
-    const videoId = await startAvatarVideo({
-      text: spokenText(script), script, sceneImages, settings,
-    });
-    console.log(
-      `[ugc] job ${job.id}: HeyGen render started (${videoId}), ` +
-        `${script.storyboard?.length || 1} scene(s), ${sceneImages.length} product photo(s)`
-    );
-    await waitAndDownload(videoId, outputPath);
-    await setJob(job.id, { status: "ready", video_filename: filename });
-    console.log(`[ugc] job ${job.id}: video ready (${provider})`);
 
     // 4. Auto-post when asked to. A job with a future slot stops here at
     // 'ready' with the video finished; the scheduler posts it when due.

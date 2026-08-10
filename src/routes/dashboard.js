@@ -6,7 +6,7 @@ import {
   totalsSince, postSeries, followerSeries, viewsByPlatform,
   estimateRevenue, accountLeaderboard, metricsStatus,
 } from "../metrics.js";
-import { ugcQueueLength, pickProvider } from "../ugc/pipeline.js";
+import { ugcQueueLength, pickProvider, jobFormat } from "../ugc/pipeline.js";
 import { heygenConfigured } from "../ugc/heygen.js";
 import { scrapeProduct } from "../ugc/scrape.js";
 import { postUrl } from "../postUrl.js";
@@ -360,6 +360,10 @@ router.get("/calendar", wrap(async (req, res) => {
       status: jobDotStatus(job, posts),
       jobStatus: job.status,
       provider: shaped.provider,
+      // Which of the two video formats this is, so the panel can name the
+      // renderer and show the slides a slideshow was built from.
+      format: jobFormat(shaped.settings),
+      slideCount: shaped.script?.slides?.length || null,
       productUrl: shaped.productUrl,
       videoUrl: shaped.videoUrl,
       prompt: promptText(shaped.script, shaped.settings, shaped.concept),
@@ -376,7 +380,8 @@ router.get("/calendar", wrap(async (req, res) => {
 }));
 
 // The brief the video was generated from: the hook, the scenes and the CTA
-// the script module produced, plus the tone/style that shaped them.
+// the script module produced, plus the tone/style that shaped them. A
+// slideshow is shown as its slides instead - that is what it actually is.
 function promptText(script, settings, concept) {
   const parts = [];
   // A planned video shows its concept even before the script exists, so the
@@ -384,6 +389,17 @@ function promptText(script, settings, concept) {
   if (concept?.title) parts.push(`Concept: ${concept.title}`);
   if (concept?.angle) parts.push(`Angle: ${concept.angle}`);
   if (!script) return parts.join("\n\n");
+
+  if (script.slides?.length) {
+    parts.push(
+      script.slides
+        .map((slide, i) => `Slide ${i + 1}: ${slide.overlay}${slide.spoken ? `\n   ${slide.spoken}` : ""}`)
+        .join("\n")
+    );
+    if (script.angle) parts.push(`Angle: ${script.angle}`);
+    return parts.join("\n\n");
+  }
+
   if (script.hook) parts.push(`Hook: ${script.hook}`);
   const scenes = (script.scenes || []).map((s, i) => `${i + 1}. ${s.text || s}`);
   if (scenes.length) parts.push(`Scenes:\n${scenes.join("\n")}`);

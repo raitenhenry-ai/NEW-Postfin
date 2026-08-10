@@ -3,6 +3,7 @@ import config, { PLATFORM_NAMES, ENABLED_PLATFORMS } from "../config.js";
 import { q, q1, run as dbRun } from "../db.js";
 import { platforms, resolveTargetPlatforms } from "../accounts.js";
 import { toneOptions, styleOptions } from "../ugc/script.js";
+import { slideshowAngles, slideshowConfigured } from "../ugc/slideshow.js";
 import { planContent, normalizeSettings } from "../ugc/plan.js";
 import { heygenConfigured, heygenCatalog, testConnection } from "../ugc/heygen.js";
 import { collectMetrics } from "../metrics.js";
@@ -34,10 +35,13 @@ router.get("/overview", wrap(async (req, res) => {
     ),
     generator: {
       provider: pickProvider(),
+      defaultFormat: config.ugc.format,
       heygenConfigured: heygenConfigured(),
+      slideshowConfigured: slideshowConfigured(),
       openaiConfigured: Boolean(config.openaiApiKey),
       tones: toneOptions(),
       styles: styleOptions(),
+      slideshowAngles: slideshowAngles(),
       queueDepth: ugcQueueLength(),
     },
     totals: {
@@ -102,6 +106,7 @@ router.post("/jobs", wrap(async (req, res) => {
     platforms: wanted,
     provider: ["heygen", "local", "auto"].includes(req.body.provider) ? req.body.provider : undefined,
     voice: typeof req.body.voice === "string" ? req.body.voice.slice(0, 40) : undefined,
+    ...formatSettings(req.body),
     ...avatarSettings(req.body),
   };
   const autoPost = req.body.autoPost === false ? 0 : 1;
@@ -166,7 +171,11 @@ router.post("/plan", wrap(async (req, res) => {
     // A slot in the past would publish the moment it renders; nudge it just
     // far enough out that the video finishes first.
     const scheduledAt = slots[i] > now ? slots[i] : now + 60000;
-    const settings = { tone, style, platforms: wanted, ...avatarSettings(req.body) };
+    const settings = {
+      tone, style, platforms: wanted,
+      ...formatSettings(req.body),
+      ...avatarSettings(req.body),
+    };
     const row = await q1(
       `INSERT INTO ugc_jobs (product_url, settings_json, status, auto_post, title,
          brief, concept_json, scheduled_at, created_at, updated_at)
@@ -187,6 +196,18 @@ router.post("/plan", wrap(async (req, res) => {
     videos: created,
   });
 }));
+
+// Which of the two video formats a job is, plus the settings only the
+// slideshow uses. Stored per job, so changing the workspace default later
+// doesn't silently re-shape videos that are already scheduled.
+function formatSettings(body) {
+  const format = body.format === "slideshow" ? "slideshow" : body.format === "avatar" ? "avatar" : null;
+  const out = format ? { format } : {};
+  if (slideshowAngles().includes(body.angle)) out.angle = body.angle;
+  const slides = Number(body.slides);
+  if (Number.isInteger(slides) && slides >= 3 && slides <= 10) out.slides = slides;
+  return out;
+}
 
 // HeyGen avatar/voice selection. Stored per job so re-rendering a video
 // months later still uses the avatar it was made with, even if the
@@ -352,7 +373,17 @@ router.post("/chat", wrap(async (req, res) => {
     }
   }
 
-  res.json(await runAssistant({ messages, selectedDates, offsetMinutes, productUrl }));
+  // The composer's Video/Slideshow switch. "video" is this app's avatar
+  // format; anything unrecognised leaves the choice to the assistant.
+  const outputFormat = req.body.outputFormat === "slideshow"
+    ? "slideshow"
+    : req.body.outputFormat === "video" || req.body.outputFormat === "avatar"
+      ? "avatar"
+      : "";
+
+  res.json(await runAssistant({
+    messages, selectedDates, offsetMinutes, productUrl, outputFormat,
+  }));
 }));
 
 // The avatars and voices this HeyGen account can actually use, so the

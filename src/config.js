@@ -43,6 +43,15 @@ function numberOrNull(raw) {
   return String(raw ?? "").trim() && Number.isFinite(value) ? value : null;
 }
 
+// The first path that actually exists - used to find a font for the
+// slideshow renderer without demanding the operator name one.
+function firstExisting(candidates) {
+  for (const candidate of candidates) {
+    if (candidate && fs.existsSync(candidate)) return candidate;
+  }
+  return null;
+}
+
 // The platforms Postfin can publish to, in the order the UI lists them.
 // Kept here (rather than imported from accounts.js) so config stays free of
 // circular imports - accounts.js pulls the platform modules, which read this.
@@ -116,8 +125,15 @@ const config = {
   // How often the scheduler scans for jobs whose scheduled time has passed.
   schedulerIntervalSeconds: Number(process.env.SCHEDULER_INTERVAL_SECONDS || 30),
 
-  // Video generation. HeyGen is the only renderer.
+  // Video generation. Two formats:
+  //   avatar    - HeyGen renders a talking-head UGC clip (needs HEYGEN_API_KEY)
+  //   slideshow - the built-in renderer builds the short-form slideshow ad
+  //               format: AI-generated images, one big text overlay per slide,
+  //               a voiceover, hard cuts (needs OPENAI_API_KEY + ffmpeg)
   ugc: {
+    format: ["avatar", "slideshow"].includes(env("UGC_FORMAT"))
+      ? env("UGC_FORMAT")
+      : "avatar",
     heygenApiKey: env("HEYGEN_API_KEY"),
     heygenApiBase: env("HEYGEN_API_BASE", "https://api.heygen.com").replace(/\/+$/, ""),
     // Fallbacks only - the create form lists the avatars and voices this
@@ -127,7 +143,40 @@ const config = {
     heygenBackground: env("HEYGEN_BACKGROUND", "#0b0d12"),
     heygenSpeed: Number(process.env.HEYGEN_SPEED || 1.05),
     videoSeconds: Number(process.env.UGC_VIDEO_SECONDS || 24),
+
+    // Slideshow renderer. Slide art comes from OpenAI's image model; a
+    // 1024x1536 portrait frame is the closest it offers to 9:16 and crops to
+    // it with the least loss. Quality drives both look and cost - at medium a
+    // six-slide ad is roughly $0.38 of image generation, at low about $0.10,
+    // at high about $1.50.
+    imageModel: env("OPENAI_IMAGE_MODEL", "gpt-image-1"),
+    imageQuality: ["low", "medium", "high", "auto"].includes(env("OPENAI_IMAGE_QUALITY"))
+      ? env("OPENAI_IMAGE_QUALITY")
+      : "medium",
+    imageSize: "1024x1536",
+    // 6 slides at ~3s is the shape the format converges on: long enough to
+    // land a hook, a payoff and a CTA, short enough to loop.
+    slides: Math.max(3, Math.min(10, Number(process.env.UGC_SLIDE_COUNT || 6))),
+    slideSeconds: Number(process.env.UGC_SLIDE_SECONDS || 3.2),
+    ttsModel: env("UGC_TTS_MODEL", "gpt-4o-mini-tts"),
+    ttsVoice: env("UGC_TTS_VOICE", "nova"),
   },
+
+  // Encode settings for the slideshow renderer.
+  videoCrf: Number(process.env.VIDEO_CRF || 20),
+  videoPreset: process.env.VIDEO_PRESET || "veryfast",
+  ffmpegPath: process.env.FFMPEG_PATH || "ffmpeg",
+  ffprobePath: process.env.FFPROBE_PATH || "ffprobe",
+  // Overlay text is the whole ad when the sound is off, so a font has to be
+  // found. The bundled one is the last resort that always exists.
+  fontPath: firstExisting([
+    env("FONT_PATH"),
+    "/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf",
+    "/usr/share/fonts/truetype/liberation/LiberationSans-Bold.ttf",
+    "/usr/share/fonts/dejavu/DejaVuSans-Bold.ttf",
+    "/System/Library/Fonts/Helvetica.ttc",
+    path.join(rootDir, "public", "fonts", "Merriweather.ttf"),
+  ]),
 
   dataDir: path.join(rootDir, "data"),
   ugcDir: path.join(rootDir, "data", "ugc"),

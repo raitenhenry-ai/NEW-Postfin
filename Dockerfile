@@ -1,5 +1,11 @@
 FROM node:22-slim
 
+# The slideshow format is rendered in-process: ffmpeg cuts the slides
+# together and burns the overlay text in, which needs a font on disk.
+RUN apt-get update \
+  && apt-get install -y --no-install-recommends ffmpeg fonts-dejavu-core \
+  && rm -rf /var/lib/apt/lists/*
+
 WORKDIR /app
 
 COPY package.json package-lock.json ./

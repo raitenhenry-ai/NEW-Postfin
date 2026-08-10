@@ -272,7 +272,11 @@
           </div>
           <div class="post-meta-item">
             <span class="post-field-label">Renderer</span>
-            <span class="post-meta-value">${escapeHtml(post.provider === "heygen" ? "HeyGen avatar" : "Built-in renderer")}</span>
+            <span class="post-meta-value">${escapeHtml(
+              post.format === "slideshow"
+                ? `AI slideshow${post.slideCount ? ` · ${post.slideCount} slides` : ""}`
+                : "HeyGen avatar"
+            )}</span>
           </div>
         </div>
 
@@ -424,13 +428,25 @@
 
         <div class="pf-form-row">
           <div>
+            <label class="post-field-label" for="sched-format">Format</label>
+            <select class="pf-input" id="sched-format">
+              <option value="avatar">Avatar (talking head)</option>
+              <option value="slideshow">Slideshow (images + text)</option>
+            </select>
+          </div>
+          <div>
             <label class="post-field-label" for="sched-tone">Tone</label>
             <select class="pf-input" id="sched-tone"></select>
           </div>
-          <div>
-            <label class="post-field-label" for="sched-style">Style</label>
-            <select class="pf-input" id="sched-style"></select>
-          </div>
+        </div>
+
+        <div id="sched-style-wrap">
+          <label class="post-field-label" for="sched-style">Style</label>
+          <select class="pf-input" id="sched-style"></select>
+        </div>
+        <div id="sched-angle-wrap" hidden>
+          <label class="post-field-label" for="sched-angle">Angle</label>
+          <select class="pf-input" id="sched-angle"></select>
         </div>
 
         <div id="sched-heygen" hidden>
@@ -475,12 +491,34 @@
       style.innerHTML = (overview.generator.styles || [])
         .map((s) => `<option value="${s}">${s.replace(/_/g, " ")}</option>`).join("");
 
+      const angle = document.getElementById("sched-angle");
+      angle.innerHTML = (overview.generator.slideshowAngles || [])
+        .map((a) => `<option value="${a}">${a.replace(/_/g, " ")}</option>`).join("");
+
+      // Style belongs to avatar videos and angle to slideshows; only one of
+      // them is ever the right question, so only one is ever shown.
+      const format = document.getElementById("sched-format");
+      format.value = overview.generator.defaultFormat === "slideshow" ? "slideshow" : "avatar";
+      const syncFormat = () => {
+        const slideshow = format.value === "slideshow";
+        document.getElementById("sched-style-wrap").hidden = slideshow;
+        document.getElementById("sched-angle-wrap").hidden = !slideshow;
+        syncHeygenVisibility();
+      };
+      format.addEventListener("change", syncFormat);
+      syncFormat();
+
       const hint = document.getElementById("sched-hint");
       hint.textContent = overview.generator.openaiConfigured
-        ? `Scripts written by AI · ${overview.generator.provider === "heygen" ? "HeyGen avatar" : "built-in"} renderer`
+        ? `Scripts written by AI · ${
+            overview.generator.defaultFormat === "slideshow" ? "AI slideshow" : "HeyGen avatar"
+          } by default`
         : "No OpenAI key set - scripts fall back to templates.";
 
-      if (overview.generator.provider === "heygen") loadHeygenPickers();
+      // The avatar pickers only mean anything for avatar videos.
+      if (overview.generator.heygenConfigured && overview.generator.defaultFormat !== "slideshow") {
+        loadHeygenPickers();
+      }
 
       if (!connected.length) {
         document.getElementById("sched-submit").disabled = true;
@@ -504,8 +542,10 @@
             scheduledAt: whenValue ? new Date(whenValue).getTime() : null,
             platforms,
             tone: document.getElementById("sched-tone").value,
-            style: document.getElementById("sched-style").value,
-            ...avatarChoice(),
+            format: document.getElementById("sched-format").value,
+            ...(document.getElementById("sched-format").value === "slideshow"
+              ? { angle: document.getElementById("sched-angle").value }
+              : { style: document.getElementById("sched-style").value, ...avatarChoice() }),
           },
         });
         toast("Scheduled - generating the video now");
@@ -528,14 +568,16 @@
     const preview = document.getElementById("sched-avatar-preview");
     if (!wrap || !avatarSel || !voiceSel) return;
 
-    wrap.hidden = false;
+    wrap.dataset.loaded = "1";
+    syncHeygenVisibility();
     avatarSel.innerHTML = `<option>Loading…</option>`;
     voiceSel.innerHTML = `<option>Loading…</option>`;
 
     try {
       const catalog = await api("/api/heygen");
       if (catalog.error && !catalog.avatars.length) {
-        wrap.hidden = true;
+        delete wrap.dataset.loaded;
+        syncHeygenVisibility();
         toast(`HeyGen: ${catalog.error}`, "error");
         return;
       }
@@ -562,9 +604,19 @@
       avatarSel.addEventListener("change", showPreview);
       showPreview();
     } catch (err) {
-      wrap.hidden = true;
+      delete wrap.dataset.loaded;
+      syncHeygenVisibility();
       toast(`Couldn't load HeyGen avatars: ${err.message}`, "error");
     }
+  }
+
+  // The avatar pickers belong to avatar videos, and only once the catalog
+  // has actually loaded - a slideshow has no avatar to choose.
+  function syncHeygenVisibility() {
+    const wrap = document.getElementById("sched-heygen");
+    if (!wrap) return;
+    const format = document.getElementById("sched-format")?.value || "avatar";
+    wrap.hidden = format === "slideshow" || wrap.dataset.loaded !== "1";
   }
 
   document.getElementById("dash-schedule-btn")?.addEventListener("click", openScheduleDialog);
