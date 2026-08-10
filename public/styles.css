@@ -2877,19 +2877,150 @@ body.theme-light .cal-post-fields {
 }
 
 .cal-shell.is-view .cal-composer,
-.cal-shell.is-view .cal-product-pill {
+.cal-shell.is-view .cal-chat-tools {
   display: none;
 }
 
-.cal-product-pill {
-  position: relative;
-  align-self: flex-start;
+.cal-chat-tools {
+  display: flex;
+  align-items: center;
+  gap: 8px;
   margin: 0 10px 0;
   flex-shrink: 0;
 }
 
-.cal-product-pill + .cal-composer {
+.cal-chat-tools + .cal-composer {
   margin-top: 6px;
+}
+
+.cal-product-pill {
+  position: relative;
+  flex-shrink: 0;
+}
+
+.cal-format-picker {
+  position: relative;
+  flex-shrink: 0;
+}
+
+.cal-format-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  width: 44px;
+  height: 32px;
+  padding: 0 6px;
+  border: 1px solid #3a3a42;
+  border-radius: 8px;
+  background: #2a2a30;
+  color: #f0f0f4;
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s, color 0.15s;
+}
+
+.cal-format-btn:hover,
+.cal-format-btn[aria-expanded="true"] {
+  background: #34343c;
+  border-color: #4a4a54;
+  color: #fff;
+}
+
+.cal-format-btn-icon {
+  width: 16px;
+  height: 16px;
+  display: inline-flex;
+}
+
+.cal-format-btn-icon svg {
+  width: 16px;
+  height: 16px;
+  display: block;
+}
+
+.cal-format-btn .cal-product-pill-caret {
+  width: 10px;
+  height: 10px;
+}
+
+.cal-format-menu {
+  position: absolute;
+  left: 0;
+  bottom: calc(100% + 6px);
+  z-index: 30;
+  min-width: 210px;
+  padding: 6px;
+  border: 1px solid #2e2e32;
+  border-radius: 10px;
+  background: #1a1a1e;
+  box-shadow: 0 10px 28px rgba(0, 0, 0, 0.35);
+}
+
+.cal-format-menu[hidden] {
+  display: none;
+}
+
+.cal-format-menu-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  border: none;
+  border-radius: 8px;
+  background: transparent;
+  color: #e8e8ee;
+  font: inherit;
+  text-align: left;
+  padding: 8px 10px;
+  cursor: pointer;
+}
+
+.cal-format-menu-item:hover,
+.cal-format-menu-item.is-on {
+  background: #2a2a30;
+}
+
+.cal-format-menu-icon {
+  width: 28px;
+  height: 28px;
+  border-radius: 7px;
+  background: #242428;
+  color: #c8c8d0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.cal-format-menu-icon svg {
+  width: 15px;
+  height: 15px;
+  display: block;
+}
+
+.cal-format-menu-item.is-on .cal-format-menu-icon {
+  background: rgba(91, 140, 255, 0.16);
+  color: #5b8cff;
+}
+
+.cal-format-menu-copy {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.cal-format-menu-copy strong {
+  font-size: 12px;
+  font-weight: 650;
+  color: #f0f0f4;
+}
+
+.cal-format-menu-copy em {
+  font-style: normal;
+  font-size: 11px;
+  font-weight: 500;
+  color: #8a8a92;
 }
 
 .cal-product-pill-btn {
