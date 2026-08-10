@@ -2899,10 +2899,10 @@ body.theme-light .cal-post-fields {
   max-width: 220px;
   height: 32px;
   padding: 0 10px 0 12px;
-  border: 1px solid #222226;
+  border: 1px solid #3a3a42;
   border-radius: 8px;
-  background: #1a1a1e;
-  color: #e8e8e8;
+  background: #2a2a30;
+  color: #f0f0f4;
   font: inherit;
   font-size: 12px;
   font-weight: 550;
@@ -2912,8 +2912,8 @@ body.theme-light .cal-post-fields {
 
 .cal-product-pill-btn:hover,
 .cal-product-pill-btn[aria-expanded="true"] {
-  background: #222226;
-  border-color: #2e2e32;
+  background: #34343c;
+  border-color: #4a4a54;
   color: #fff;
 }
 
