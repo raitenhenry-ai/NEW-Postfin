@@ -2131,8 +2131,7 @@ body.sidebar-expanded {
 }
 
 .cal-cell.selected,
-.cal-cell.selected:hover,
-.cal-cell.selected:has(.cal-cell-events:hover) {
+.cal-cell.selected:hover {
   background:
     linear-gradient(#121214, #121214) padding-box,
     linear-gradient(135deg, #3d7eff, #5b8cff 50%, #7ec8ff) border-box;
