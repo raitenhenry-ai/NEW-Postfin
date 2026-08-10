@@ -95,6 +95,13 @@ CREATE TABLE IF NOT EXISTS oauth_states (
   data_json TEXT,
   expires_at BIGINT NOT NULL
 );
+CREATE TABLE IF NOT EXISTS products (
+  id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+  url TEXT NOT NULL UNIQUE,
+  product_json TEXT NOT NULL,
+  created_at BIGINT NOT NULL,
+  updated_at BIGINT NOT NULL
+);
 `;
 
 // Columns added after the first release. Postgres supports IF NOT EXISTS on
@@ -104,6 +111,14 @@ ALTER TABLE ugc_jobs ADD COLUMN IF NOT EXISTS title TEXT;
 ALTER TABLE ugc_jobs ADD COLUMN IF NOT EXISTS scheduled_at BIGINT;
 ALTER TABLE ugc_jobs ADD COLUMN IF NOT EXISTS brief TEXT;
 ALTER TABLE ugc_jobs ADD COLUMN IF NOT EXISTS concept_json TEXT;
+
+CREATE TABLE IF NOT EXISTS products (
+  id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+  url TEXT NOT NULL UNIQUE,
+  product_json TEXT NOT NULL,
+  created_at BIGINT NOT NULL,
+  updated_at BIGINT NOT NULL
+);
 
 -- Indexes for the queries that degrade first as history builds up: the
 -- per-post "latest snapshot" lookup behind every chart, the published-post

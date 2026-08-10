@@ -23,7 +23,7 @@ DECLARE
   t text;
 BEGIN
   FOREACH t IN ARRAY ARRAY[
-    'accounts', 'users', 'ugc_jobs', 'ugc_posts', 'post_metrics', 'account_metrics'
+    'accounts', 'users', 'ugc_jobs', 'ugc_posts', 'post_metrics', 'account_metrics', 'products'
   ] LOOP
     IF EXISTS (SELECT 1 FROM pg_tables WHERE schemaname = 'public' AND tablename = t) THEN
       EXECUTE format('ALTER TABLE public.%I ENABLE ROW LEVEL SECURITY', t);
