@@ -2876,8 +2876,73 @@ body.theme-light .cal-post-fields {
   height: 15px;
 }
 
-.cal-shell.is-view .cal-composer {
+.cal-shell.is-view .cal-composer,
+.cal-shell.is-view .cal-product-picker {
   display: none;
+}
+
+.cal-product-picker {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin: 0 10px 12px;
+  flex-shrink: 0;
+}
+
+.cal-product-picker-label {
+  color: #8a8a92;
+  font-size: 11px;
+  font-weight: 650;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.cal-product-picker-control {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.cal-product-picker-control select {
+  flex: 1;
+  min-width: 0;
+  height: 36px;
+  border: 1px solid #2a2a30;
+  border-radius: 10px;
+  background: #16161a;
+  color: #e8e8ee;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 550;
+  padding: 0 32px 0 12px;
+  appearance: none;
+  background-image:
+    linear-gradient(45deg, transparent 50%, #8a8a92 50%),
+    linear-gradient(135deg, #8a8a92 50%, transparent 50%);
+  background-position:
+    calc(100% - 16px) 15px,
+    calc(100% - 11px) 15px;
+  background-size: 5px 5px, 5px 5px;
+  background-repeat: no-repeat;
+  cursor: pointer;
+}
+
+.cal-product-picker-control select:focus {
+  outline: none;
+  border-color: #5b8cff;
+}
+
+.cal-product-picker-manage {
+  color: #5b8cff;
+  font-size: 12px;
+  font-weight: 600;
+  text-decoration: none;
+  white-space: nowrap;
+  padding: 0 2px;
+}
+
+.cal-product-picker-manage:hover {
+  color: #7aa3ff;
 }
 
 @media (max-width: 1100px) {
@@ -4824,6 +4889,32 @@ body.theme-light .cal-composer-send {
 
 body.theme-light .cal-composer-send:disabled {
   opacity: 0.45;
+}
+
+body.theme-light .cal-product-picker-label {
+  color: #6a6a72;
+}
+
+body.theme-light .cal-product-picker-control select {
+  background-color: #ffffff;
+  border-color: #d8d8de;
+  color: #111114;
+  background-image:
+    linear-gradient(45deg, transparent 50%, #6a6a72 50%),
+    linear-gradient(135deg, #6a6a72 50%, transparent 50%);
+  background-position:
+    calc(100% - 16px) 15px,
+    calc(100% - 11px) 15px;
+  background-size: 5px 5px, 5px 5px;
+  background-repeat: no-repeat;
+}
+
+body.theme-light .cal-product-picker-manage {
+  color: #3b6ef5;
+}
+
+body.theme-light .cal-product-picker-manage:hover {
+  color: #2a56d4;
 }
 
 body.theme-light .cal-msg.is-user .cal-msg-body {
