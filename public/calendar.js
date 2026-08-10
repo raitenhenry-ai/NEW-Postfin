@@ -40,6 +40,11 @@
     youtube: "YouTube",
     instagram: "Instagram",
   };
+  const PLATFORM_PICKER_SHORT = {
+    tiktok: "TT",
+    youtube: "YT",
+    instagram: "IG",
+  };
 
   function loadSelectedPlatforms() {
     try {
