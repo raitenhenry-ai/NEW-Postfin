@@ -1372,7 +1372,7 @@
   }
 
   function syncPlatformPicker() {
-    if (platformLabel) platformLabel.textContent = PLATFORM_PICKER_LABELS[selectedPlatform] || "All";
+    if (platformBtnLabel) platformBtnLabel.textContent = PLATFORM_PICKER_LABELS[selectedPlatform] || "All";
     if (platformBtnIcon) {
       if (selectedPlatform === "all") {
         platformBtnIcon.hidden = true;
