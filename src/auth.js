@@ -83,8 +83,15 @@ function recordFailure(req) {
   attempts.set(ip, { count: cur.count + 1, resetAt: Date.now() + LOCKOUT_MS });
 }
 
-// The dashboard and its APIs are operator-only; signed-in members are sent
-// to the waitlist page instead.
+// Marketing pages stay public; the dashboard/APIs are operator-only.
+// Signed-in members are sent to the waitlist page instead.
+const PUBLIC_PATHS = new Set(["/", "/index.html", "/onboard.html"]);
+
+function isPublicPath(pathname) {
+  if (PUBLIC_PATHS.has(pathname)) return true;
+  return pathname.startsWith("/assets/");
+}
+
 export function authMiddleware(req, res, next) {
   // Routes read req.session to report who is signed in. With auth disabled
   // there is no session at all, so it stays undefined and callers fall back.
@@ -92,6 +99,7 @@ export function authMiddleware(req, res, next) {
   if (!authEnabled()) return next();
   const session = req.session;
   if (session?.role === "operator") return next();
+  if (isPublicPath(req.path)) return next();
   if (req.path.startsWith("/api/")) {
     return res.status(401).json({ error: "unauthorized" });
   }
