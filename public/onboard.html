@@ -1157,7 +1157,6 @@
           steps.forEach((step) => {
             step.classList.toggle("is-active", step.dataset.step === String(n));
           });
-          stepLabel.textContent = "Step " + n + " of 8";
           window.scrollTo({ top: 0, behavior: "smooth" });
         }
 
@@ -1165,7 +1164,6 @@
           steps.forEach((step) => step.classList.remove("is-active"));
           shell.classList.add("is-setup");
           setupScreen.classList.add("is-active");
-          stepLabel.textContent = "Almost there";
           window.scrollTo({ top: 0, behavior: "smooth" });
 
           setupItems.forEach((item) => {
