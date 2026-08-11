@@ -346,7 +346,7 @@
     const grid = document.getElementById("dash-videos");
     if (!grid) return;
     if (!videos.length) {
-      grid.innerHTML = emptyBlock("No videos yet. Paste a product URL to make one.");
+      grid.innerHTML = emptyBlock("Nothing posted yet. Top videos show up once something goes live.");
       return;
     }
     grid.innerHTML = videos.slice(0, 3).map((v) => `

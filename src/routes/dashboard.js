@@ -70,7 +70,7 @@ router.get("/dashboard", wrap(async (req, res) => {
   });
 }));
 
-// Best-performing finished videos by view count. Views are broken down per
+// Best-performing posted videos by view count. Views are broken down per
 // platform so each video's CPM uses that video's own rates rather than a
 // workspace-wide average.
 async function topVideos(limit) {
@@ -78,11 +78,11 @@ async function topVideos(limit) {
     `SELECT j.id, j.title, j.product_json, j.script_json, j.video_filename,
             p.platform, COALESCE(SUM(m.views), 0) AS views
      FROM ugc_jobs j
-     LEFT JOIN ugc_posts p ON p.job_id = j.id
+     LEFT JOIN ugc_posts p ON p.job_id = j.id AND p.status = 'done'
      LEFT JOIN post_metrics m ON m.post_id = p.id AND m.collected_at = (
        SELECT MAX(m2.collected_at) FROM post_metrics m2 WHERE m2.post_id = p.id
      )
-     WHERE j.video_filename IS NOT NULL
+     WHERE j.status = 'posted' AND j.video_filename IS NOT NULL
      GROUP BY j.id, j.title, j.product_json, j.script_json, j.video_filename, p.platform`
   );
 
