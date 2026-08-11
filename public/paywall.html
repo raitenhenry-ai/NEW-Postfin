@@ -147,25 +147,46 @@
           0 48px 80px rgba(30, 70, 120, 0.1);
       }
 
-      .plan-card.is-featured {
+      .plan-card.is-suggested {
         z-index: 1;
         transform: translateY(-10px);
+        border-color: rgba(47, 127, 214, 0.55);
         box-shadow:
           0 1px 0 rgba(255, 255, 255, 1) inset,
-          0 0 0 1px rgba(15, 23, 42, 0.04),
+          0 0 0 3px #2f7fd6,
+          0 0 0 6px rgba(47, 127, 214, 0.18),
           0 12px 26px rgba(30, 70, 120, 0.07),
           0 28px 56px rgba(30, 70, 120, 0.09),
           0 52px 90px rgba(30, 70, 120, 0.11);
       }
 
-      .plan-card.is-featured:hover {
+      .plan-card.is-suggested:hover {
         transform: translateY(-14px);
         box-shadow:
           0 1px 0 rgba(255, 255, 255, 1) inset,
-          0 0 0 1px rgba(15, 23, 42, 0.05),
+          0 0 0 3px #2f7fd6,
+          0 0 0 7px rgba(47, 127, 214, 0.22),
           0 16px 32px rgba(30, 70, 120, 0.08),
           0 36px 64px rgba(30, 70, 120, 0.1),
           0 60px 100px rgba(30, 70, 120, 0.12);
+      }
+
+      .plan-suggested {
+        position: absolute;
+        top: -13px;
+        left: 50%;
+        transform: translateX(-50%);
+        display: inline-flex;
+        align-items: center;
+        padding: 6px 12px;
+        border-radius: 999px;
+        background: linear-gradient(180deg, #5aa8f0 0%, #2f7fd6 100%);
+        color: #fff;
+        font-size: 0.75rem;
+        font-weight: 700;
+        letter-spacing: -0.01em;
+        white-space: nowrap;
+        box-shadow: 0 6px 14px rgba(47, 127, 214, 0.28);
       }
 
       .plan-name {
