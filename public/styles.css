@@ -2706,17 +2706,21 @@ body.sidebar-expanded {
   flex: 1;
   min-height: 0;
   display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
-  pointer-events: none;
+  padding: 16px 8px;
+  /* The suggestions underneath the mark are clickable, so this can no longer
+     be inert as a whole - the mark itself still is. */
 }
 
 .cal-agent-mark {
-  width: min(240px, 68%);
+  width: min(180px, 52%);
   height: auto;
   display: block;
   opacity: 0.9;
   user-select: none;
+  pointer-events: none;
 }
 
 .cal-day-empty {
@@ -5320,6 +5324,55 @@ body.theme-light .cal-post-error { color: #b42318 !important; }
 }
 
 body.theme-light .cal-post-warning { color: #8a6100 !important; }
+
+/* What the assistant can do, offered in an empty chat. */
+.cal-agent-empty-lead {
+  margin: 14px 0 0;
+  color: #8a8a92;
+  font-size: 13.5px;
+  text-align: center;
+}
+
+.cal-agent-starters {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 7px;
+  margin-top: 14px;
+  padding: 0 10px;
+  max-width: 420px;
+}
+
+.cal-starter {
+  background: #1a1a1f;
+  border: 1px solid #2a2a31;
+  border-radius: 999px;
+  padding: 7px 13px;
+  color: #d8d8de;
+  font: inherit;
+  font-size: 12.5px;
+  cursor: pointer;
+  transition: background 0.15s ease, border-color 0.15s ease;
+}
+
+.cal-starter:hover {
+  background: #23232a;
+  border-color: #3a3a44;
+  color: #fff;
+}
+
+body.theme-light .cal-agent-empty-lead { color: #6a6a72 !important; }
+
+body.theme-light .cal-starter {
+  background: #ffffff !important;
+  border-color: #d8d8de !important;
+  color: #1a1a1f !important;
+}
+
+body.theme-light .cal-starter:hover {
+  background: #f0f0f3 !important;
+  border-color: #c4c4cc !important;
+}
 
 /* --- assistant multiple-choice questions --- */
 
