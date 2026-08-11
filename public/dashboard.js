@@ -40,22 +40,8 @@
     };
 
     set("views", fmtCompact(stats.views.value, 1), stats.views.delta);
-    // CPM has no source unless the operator configured rates, so it shows a
-    // dash rather than a made-up number.
-    set("cpm", stats.cpm.configured ? fmtMoney(stats.cpm.value) : "—", null, {
-      animate: stats.cpm.configured,
-    });
     set("followers", fmtSigned(stats.followers.value), stats.followers.delta);
     set("videosPosted", fmtInt(stats.videosPosted.value), null);
-
-    const cpmCard = document.querySelector('[data-stat="cpm"]');
-    if (cpmCard && !stats.cpm.configured) {
-      const meta = cpmCard.querySelector(".stat-up");
-      if (meta) {
-        meta.textContent = "Set ESTIMATED_CPM";
-        meta.className = "stat-up muted";
-      }
-    }
   }
 
   /* ---------- calendar ---------- */
