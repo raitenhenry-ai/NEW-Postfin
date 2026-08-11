@@ -1050,10 +1050,8 @@
         continueLink.addEventListener("click", () => {
           if (continueLink.disabled || !isValidUrl(productLink.value)) return;
           state.productLink = normalizeUrl(productLink.value);
-          runSetupSequence(() => showStep(8));
+          runSetupSequence(goToPaywall);
         });
-
-        backPlan.addEventListener("click", () => showStep(7));
       })();
     </script>
   </body>
