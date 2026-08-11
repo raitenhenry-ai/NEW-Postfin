@@ -112,10 +112,10 @@ export async function testConnection() {
 // storyboard becomes a multi-scene video: each spoken line gets its own
 // scene with the product photo the script picked behind the avatar.
 //
-// `script` carries the lines and the storyboard; `sceneImages` are public
-// URLs for the scraped product photos, indexed the way the storyboard
-// refers to them. Falls back to a single scene when there is no storyboard.
-export async function startAvatarVideo({ text, script, sceneImages = [], settings = {} }) {
+// `script` carries the lines and the storyboard; `backgrounds` is one public
+// image URL per line - the room that line is set in - or null to stand her
+// against a flat colour. Falls back to a single scene with no storyboard.
+export async function startAvatarVideo({ text, script, backgrounds = [], settings = {} }) {
   // A video only names an avatar when someone picked one from the scheduler.
   // Anything the assistant schedules names none, so the account's own first
   // avatar and voice stand in - asking HeyGen what exists beats guessing an
@@ -133,7 +133,7 @@ export async function startAvatarVideo({ text, script, sceneImages = [], setting
   }
 
   const body = {
-    video_inputs: buildScenes({ text, script, sceneImages, settings, fallback }),
+    video_inputs: buildScenes({ text, script, backgrounds, settings, fallback }),
     // Match the built-in renderer: full vertical 1080x1920, which is what
     // every short-form surface expects.
     dimension: { width: 1080, height: 1920 },
@@ -177,7 +177,7 @@ function spokenLines(script) {
     .filter(Boolean);
 }
 
-function buildScenes({ text, script, sceneImages, settings, fallback }) {
+function buildScenes({ text, script, backgrounds = [], settings, fallback }) {
   const character = buildCharacter(settings, fallback?.avatar);
   const voiceId = settings.voiceId || config.ugc.heygenVoiceId || fallback?.voice?.id;
   const voiceFor = (input) => ({
@@ -200,9 +200,12 @@ function buildScenes({ text, script, sceneImages, settings, fallback }) {
     }];
   }
 
+  // One scene per line, each standing the creator in the room its own line
+  // is about. These are generated environments, not the product's catalogue
+  // photo pasted behind her - which is what made every video look like a
+  // talking head in front of a screenshot.
   return lines.map((line, i) => {
-    const imageIndex = storyboard[i]?.imageIndex ?? -1;
-    const url = imageIndex >= 0 ? sceneImages[imageIndex] : null;
+    const url = backgrounds[i] || null;
     return {
       character,
       voice: voiceFor(line),

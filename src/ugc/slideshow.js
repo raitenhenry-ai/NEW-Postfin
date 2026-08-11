@@ -524,16 +524,29 @@ async function generateSlideImage(prompt, styleNote, outPath, references = []) {
 // reported, rather than burning five more requests to arrive at the same
 // answer more slowly.
 export async function generateSlideImages(script, dir, productPhotos = []) {
+  return generateSceneImages(
+    script.slides.map((slide) => ({
+      prompt: slide.imagePrompt,
+      withProduct: slide.showsProduct,
+    })),
+    { dir, styleNote: script.styleNote, productPhotos }
+  );
+}
+
+// The same drawing, for any list of scenes - the slideshow's slides, or the
+// shots an avatar video cuts away to. Each item is { prompt, withProduct },
+// and a withProduct item is drawn with the product's own photos in hand.
+export async function generateSceneImages(items, { dir, styleNote = "", productPhotos = [] }) {
   fs.mkdirSync(dir, { recursive: true });
-  const images = new Array(script.slides.length).fill(null);
+  const images = new Array(items.length).fill(null);
 
   // Up to four references: enough for the model to see the product from
   // more than one angle without the request becoming unwieldy.
   const references = productPhotos.filter((p) => p && fs.existsSync(p)).slice(0, 4);
 
   const queue = [];
-  script.slides.forEach((slide, i) => {
-    if (slide.imagePrompt) queue.push(i);
+  items.forEach((item, i) => {
+    if (item.prompt) queue.push(i);
   });
 
   const failures = [];
@@ -544,11 +557,11 @@ export async function generateSlideImages(script, dir, productPhotos = []) {
     while (cursor < queue.length && !stopped) {
       const i = queue[cursor++];
       const target = path.join(dir, `slide${i}.png`);
-      const slide = script.slides[i];
-      // Slides that show the product are drawn with its photos in hand.
-      const refs = slide.showsProduct ? references : [];
+      const item = items[i];
+      // Scenes that show the product are drawn with its photos in hand.
+      const refs = item.withProduct ? references : [];
       try {
-        images[i] = await generateSlideImage(slide.imagePrompt, script.styleNote, target, refs);
+        images[i] = await generateSlideImage(item.prompt, styleNote, target, refs);
       } catch (err) {
         const message = err.message || String(err);
         failures.push({ slide: i + 1, message });
@@ -565,8 +578,8 @@ export async function generateSlideImages(script, dir, productPhotos = []) {
     images,
     requested: queue.length,
     generated: queue.filter((i) => images[i]).length,
-    // How many slides were drawn with the product's own photos in hand.
-    fromReferences: queue.filter((i) => script.slides[i].showsProduct && images[i]).length,
+    // How many were drawn with the product's own photos in hand.
+    fromReferences: queue.filter((i) => items[i].withProduct && images[i]).length,
     references: references.length,
     failures,
     // Set when the account itself cannot generate images - the caller turns

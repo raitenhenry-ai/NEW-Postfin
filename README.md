@@ -47,7 +47,7 @@ Every video is one of two things, chosen per video and stored on it:
 
 | | **avatar** | **slideshow** |
 |---|---|---|
-| What it is | a person talking to camera | images cutting every few seconds under one big line of text, with a voiceover |
+| What it is | a creator to camera, cutting away to the product being used | images cutting every few seconds under one big line of text, with a voiceover |
 | Needs | `HEYGEN_API_KEY` | `OPENAI_API_KEY` + ffmpeg |
 | Good for | a physical product someone can hold | software, apps, tool comparisons, method videos — anything with nothing to film |
 | Posted as | a video | photos (TikTok photo mode, Instagram carousel); video where photos aren't supported |
@@ -158,6 +158,28 @@ default for new videos.
 
 The key is in HeyGen under **Settings → API**. API access requires a paid
 HeyGen plan, and each render spends credits from that plan.
+
+**It is not a talking head.** HeyGen can only ever return a person in front
+of a background, which on its own is a creator with a screenshot stuck
+behind her — the thing people scroll past. So the script is written as a
+storyboard that marks each line either *creator* or *product*, and both are
+built:
+
+- **Creator lines** stand her in a generated room that the line is actually
+  about — a bathroom at dawn, a desk at night — not the product's catalogue
+  photo blown up behind her.
+- **Product lines** cut away entirely. The image model draws the product
+  being used — hands fitting it, tapping through it, the result of it
+  working — recreated from the product's own photos, and ffmpeg lays that
+  shot over her line while **the voice keeps running**, so it reads as one
+  continuous take rather than a video with pictures dropped in.
+
+The first line stays on her face (that is what stops the scroll) and so does
+the call to action; the middle is where the cutaways go. Line timings are
+estimated from how long each line takes to say and then snapped to the
+pauses in the speech, so a cut lands between sentences instead of inside a
+word. A video with no product photos gets no cutaways — there would be
+nothing real to cut to.
 
 **Avatars are resolved from your account.** `HEYGEN_AVATAR_ID` and
 `HEYGEN_VOICE_ID` are empty by default, and a video that names no avatar -

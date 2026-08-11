@@ -4,11 +4,13 @@ import config from "../config.js";
 import { q, q1, run } from "../db.js";
 import { platforms, freshAccount } from "../accounts.js";
 import { scrapeProduct, downloadImages } from "./scrape.js";
-import { generateScript, captionText, spokenText } from "./script.js";
+import { generateScript, captionText, spokenText, spokenLines } from "./script.js";
 import { heygenConfigured, startAvatarVideo, waitAndDownload } from "./heygen.js";
 import {
-  planSlideshow, generateSlideImages, renderSlideImages, renderSlideshowVideo,
+  planSlideshow, generateSlideImages, generateSceneImages, renderSlideImages,
+  renderSlideshowVideo,
 } from "./slideshow.js";
+import { spliceCutaways } from "./cutaways.js";
 
 // UGC job lifecycle:
 //   queued -> scraping -> scripting -> rendering -> ready -> posting -> posted
@@ -197,24 +199,70 @@ async function processJob(jobId) {
       }
 
       // Product photos are downloaded once into a durable per-job directory,
-      // not the scratch dir: HeyGen fetches them over HTTP as scene
-      // backgrounds, so they have to outlive the render and stay reachable.
+      // not the scratch dir: HeyGen fetches images over HTTP, so anything it
+      // needs has to outlive this function and stay reachable.
       const assetDir = path.join(config.ugcDir, "assets", `job${job.id}`);
       const localImages = product?.images?.length
         ? await downloadImages(product.images, assetDir)
         : [];
-      const sceneImages = localImages.map(
-        (file) => `${config.baseUrl}/ugc-media/assets/job${job.id}/${path.basename(file)}`
+
+      // A talking head in front of a pasted screenshot is the thing people
+      // scroll past. The storyboard says, line by line, whether the creator
+      // is on camera or the video cuts away to the product being used, and
+      // both are drawn here: rooms for her to stand in, and shots of the
+      // product in hand recreated from its own photos.
+      const storyboard = script.storyboard || [];
+      const shots = await generateSceneImages(
+        storyboard.map((entry) => ({
+          prompt: entry.visual,
+          withProduct: entry.shot === "product",
+        })),
+        {
+          dir: assetDir,
+          styleNote: `Filmed for a ${settings.tone || "casual"} UGC ad.`,
+          productPhotos: localImages,
+        }
+      );
+      const shotUrl = (file) =>
+        `${config.baseUrl}/ugc-media/assets/job${job.id}/${path.basename(file)}`;
+
+      // Only the creator's lines get a background - a cutaway replaces the
+      // whole frame afterwards, so its image would never be seen behind her.
+      const backgrounds = storyboard.map((entry, i) =>
+        entry.shot === "creator" && shots.images[i] ? shotUrl(shots.images[i]) : null
       );
 
       const videoId = await startAvatarVideo({
-        text: spokenText(script), script, sceneImages, settings,
+        text: spokenText(script), script, backgrounds, settings,
       });
+      const cutawayCount = storyboard.filter((e) => e.shot === "product").length;
       console.log(
         `[ugc] job ${job.id}: HeyGen render started (${videoId}), ` +
-          `${script.storyboard?.length || 1} scene(s), ${sceneImages.length} product photo(s)`
+          `${storyboard.length || 1} scene(s), ${cutawayCount} cutaway(s), ` +
+          `${shots.generated} generated shot(s)`
       );
       await waitAndDownload(videoId, outputPath);
+
+      // Lay the product shots over her lines. The voice keeps running, so it
+      // reads as one take rather than a video with photos dropped into it.
+      const cuts = storyboard
+        .map((entry, i) => ({ index: i, image: entry.shot === "product" ? shots.images[i] : null }))
+        .filter((cut) => cut.image);
+      if (cuts.length) {
+        const cutPath = path.join(workDir, "cutaways.mp4");
+        fs.mkdirSync(workDir, { recursive: true });
+        const spliced = await spliceCutaways({
+          videoPath: outputPath,
+          outPath: cutPath,
+          lines: spokenLines(script),
+          shots: cuts,
+        });
+        if (spliced.cutaways) {
+          fs.copyFileSync(cutPath, outputPath);
+          console.log(`[ugc] job ${job.id}: cut to the product ${spliced.cutaways} time(s)`);
+        }
+      }
+
       await setJob(job.id, { status: "ready", video_filename: filename });
       console.log(`[ugc] job ${job.id}: video ready (${provider})`);
     }

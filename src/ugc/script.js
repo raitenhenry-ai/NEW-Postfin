@@ -79,27 +79,33 @@ function visionContent(product, settings) {
   ];
 }
 
-// One entry per spoken line, with the image index clamped to what actually
-// exists so a hallucinated index can't point at a missing photo.
+// One entry per spoken line: what is on screen, and whether the creator is
+// on camera for it or the video cuts away to the product being used.
 function shapeStoryboard(raw, expectedLength, product) {
-  const imageCount = Math.min(product?.images?.length || 0, MAX_VISION_IMAGES);
-  const entries = (Array.isArray(raw) ? raw : []).map((entry) => {
-    const index = Number(entry?.imageIndex);
-    return {
-      visual: String(entry?.visual || "").trim().slice(0, 300),
-      imageIndex: Number.isInteger(index) && index >= 0 && index < imageCount ? index : -1,
-    };
-  });
+  const entries = (Array.isArray(raw) ? raw : []).map((entry) => ({
+    visual: String(entry?.visual || "").trim().slice(0, 300),
+    // Anything not explicitly a product shot keeps the creator on camera,
+    // which is the safe default - a cutaway with nothing to cut to is worse
+    // than a talking head.
+    shot: entry?.shot === "product" ? "product" : "creator",
+  }));
 
-  // Pad or trim so the storyboard lines up with the spoken lines. Padding
-  // cycles through the photos rather than repeating one.
   while (entries.length < expectedLength) {
-    entries.push({
-      visual: "",
-      imageIndex: imageCount ? entries.length % imageCount : -1,
-    });
+    entries.push({ visual: "", shot: "creator" });
   }
-  return entries.slice(0, expectedLength);
+  const shaped = entries.slice(0, expectedLength);
+
+  // The first line is the scroll-stopper and belongs on a face; the last is
+  // the call to action, which lands better from a person than from a photo.
+  if (shaped[0]) shaped[0].shot = "creator";
+  if (shaped.length > 2 && shaped.at(-1)) shaped.at(-1).shot = "creator";
+
+  // Nothing to cut away to without photos of the product, so an all-creator
+  // storyboard is left alone.
+  if (!product?.images?.length) {
+    for (const entry of shaped) entry.shot = "creator";
+  }
+  return shaped;
 }
 
 export async function generateScript(product, settings = {}) {
@@ -128,7 +134,7 @@ export async function generateScript(product, settings = {}) {
                 "camera about the topic. ") +
             'Reply with JSON only: {"hook": string, "scenes": [{"text": string}], ' +
             '"cta": string, "caption": string, "hashtags": string[], ' +
-            '"storyboard": [{"visual": string, "imageIndex": number}]}. ' +
+            '"storyboard": [{"visual": string, "shot": string}]}. ' +
             "hook: a scroll-stopping first line, max 12 words, no hashtags. " +
             (product
               ? "scenes: 3-4 short spoken lines (max 20 words each) covering what the product is, " +
@@ -140,10 +146,20 @@ export async function generateScript(product, settings = {}) {
             "caption: 1-2 sentences for the post text, may include 1-2 emoji. " +
             "storyboard: one entry per line of the video, in order, covering the " +
             "hook, then each scene, then the CTA - so its length is scenes.length + 2. " +
-            "visual: what is on screen for that line, one short sentence. " +
-            "imageIndex: which of the supplied product photos to show, as a 0-based " +
-            "index, or -1 for no photo. Pick the photo that actually matches what " +
-            "the line is talking about. " +
+            // A talking head for 25 seconds is the thing people scroll past.
+            // The ad works when it keeps cutting to the product being used.
+            'shot: "creator" when the creator is on camera saying this line, or ' +
+            '"product" when the video cuts away to the product being used while ' +
+            "she keeps talking over it. Use a product shot for at least a third of " +
+            "the lines - any line about what the product does or how it feels to " +
+            "use should be one - but keep the first line on the creator, since a " +
+            "face is what stops the scroll. " +
+            "visual: what is on screen for that line, one short sentence. For a " +
+            "creator line, describe the room she is standing in, not her. For a " +
+            "product line, describe the product being used in a real moment - " +
+            "hands holding it, fitting it, tapping through it, the result of it " +
+            "working - in a real place with real light. Never describe what the " +
+            "product looks like; that is taken from its photos. " +
             "hashtags: 6-10 lowercase hashtags starting with #, mixing product-specific and " +
             "discovery tags (#tiktokmademebuyit #fyp style). " +
             `Overall voice: ${TONES[tone]}. ` +
@@ -243,9 +259,18 @@ function briefTemplateScript(tone, settings) {
   };
 }
 
+// The spoken lines in order: hook, each scene, then the CTA. One per
+// storyboard entry, which is what lets a cutaway be placed on a line.
+export function spokenLines(script) {
+  if (!script) return [];
+  return [script.hook, ...(script.scenes || []), script.cta]
+    .map((line) => String(line || "").trim())
+    .filter(Boolean);
+}
+
 // Full spoken text, used for the voiceover / avatar input.
 export function spokenText(script) {
-  return [script.hook, ...script.scenes, script.cta].filter(Boolean).join(" ");
+  return spokenLines(script).join(" ");
 }
 
 // Post caption assembled the same way the shortform tool builds captions.
