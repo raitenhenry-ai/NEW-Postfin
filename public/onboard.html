@@ -1091,6 +1091,7 @@
         const revenueOptions = [...document.querySelectorAll("[data-revenue]")];
         const frequencyOptions = [...document.querySelectorAll("[data-frequency]")];
         const moodOptions = [...document.querySelectorAll("[data-mood]")];
+        const planOptions = [...document.querySelectorAll("[data-plan]")];
         const otherField = document.getElementById("other-field");
         const otherInput = document.getElementById("other-niche");
         const productLink = document.getElementById("product-link");
@@ -1107,6 +1108,7 @@
         const backFrequency = document.getElementById("back-frequency");
         const backMood = document.getElementById("back-mood");
         const backLink = document.getElementById("back-link");
+        const backPlan = document.getElementById("back-plan");
         const shell = document.querySelector(".shell");
         const setupScreen = document.getElementById("setup-screen");
         const setupStatus = document.getElementById("setup-status");
@@ -1122,6 +1124,8 @@
           frequency: null,
           mood: null,
           productLink: null,
+          plan: null,
+          planPrice: null,
         };
 
         const setupMessages = [
