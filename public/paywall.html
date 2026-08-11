@@ -5,12 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Choose your plan — Postfin</title>
     <link rel="icon" href="assets/logo-white.png?v=2" />
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link
-      href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@1,6..72,200;1,6..72,300&display=swap"
-      rel="stylesheet"
-    />
     <style>
       *,
       *::before,
@@ -35,7 +29,7 @@
           Helvetica,
           Arial,
           sans-serif;
-        background: #ffffff;
+        background: #eef2f7;
         color: #111114;
         overflow-x: hidden;
       }
@@ -47,20 +41,18 @@
         pointer-events: none;
         background: linear-gradient(
           to bottom,
-          #5a9fe0 0%,
-          #8ec0ef 28%,
-          #c5dff7 55%,
-          #eaf4fc 78%,
-          #ffffff 100%
+          #d7e6f5 0%,
+          #e8eef5 42%,
+          #f3f5f8 100%
         );
       }
 
       .shell {
         position: relative;
         z-index: 1;
-        width: min(1080px, calc(100% - 32px));
+        width: min(1120px, calc(100% - 32px));
         margin: 0 auto;
-        padding: 28px 0 80px;
+        padding: 28px 0 72px;
         min-height: 100dvh;
         display: flex;
         flex-direction: column;
@@ -69,12 +61,11 @@
       .top {
         display: flex;
         align-items: center;
-        margin-bottom: 40px;
+        margin-bottom: 28px;
       }
 
       .top a {
         display: inline-flex;
-        align-items: center;
         text-decoration: none;
       }
 
@@ -85,197 +76,166 @@
       }
 
       .paywall {
-        text-align: center;
         flex: 1;
         display: flex;
         flex-direction: column;
         justify-content: center;
+        text-align: center;
       }
 
       h1 {
-        font-family:
-          "SF Pro Rounded",
-          ui-rounded,
-          "SF Pro Display",
-          -apple-system,
-          BlinkMacSystemFont,
-          "Helvetica Neue",
-          Helvetica,
-          Arial,
-          sans-serif;
-        font-size: clamp(1.85rem, 4vw, 2.5rem);
-        font-weight: 500;
+        font-size: clamp(1.7rem, 3.4vw, 2.2rem);
+        font-weight: 650;
         letter-spacing: -0.035em;
-        line-height: 1.15;
         margin: 0 0 8px;
       }
 
       .lead {
-        margin: 0 auto 40px;
-        font-size: 1.05rem;
+        margin: 0 auto 36px;
+        max-width: 38ch;
+        font-size: 1rem;
+        line-height: 1.45;
         color: rgba(17, 17, 20, 0.55);
         letter-spacing: -0.015em;
-        line-height: 1.45;
-        max-width: 36ch;
       }
 
       .plans {
         display: grid;
         grid-template-columns: repeat(3, minmax(0, 1fr));
-        gap: 20px;
-        align-items: end;
+        gap: 18px;
+        align-items: stretch;
         width: 100%;
-        max-width: 980px;
+        max-width: 1040px;
         margin: 0 auto;
-        padding: 20px 0 0;
       }
 
       .plan-card {
         appearance: none;
-        position: relative;
         width: 100%;
-        border: 1px solid rgba(15, 23, 42, 0.08);
+        border: 1px solid rgba(15, 23, 42, 0.06);
         background: #ffffff;
-        border-radius: 24px;
-        padding: 30px 24px 24px;
-        text-align: center;
+        border-radius: 28px;
+        padding: 28px 26px 26px;
+        text-align: left;
         cursor: pointer;
         display: flex;
         flex-direction: column;
-        align-items: center;
+        align-items: stretch;
         font: inherit;
         color: inherit;
         box-shadow:
           0 1px 0 rgba(255, 255, 255, 0.9) inset,
-          0 16px 40px rgba(30, 70, 120, 0.1);
+          0 18px 40px rgba(30, 50, 80, 0.08);
         transition:
-          border-color 0.15s ease,
+          transform 0.15s ease,
           box-shadow 0.15s ease,
-          transform 0.15s ease;
+          border-color 0.15s ease;
       }
 
       .plan-card:hover {
-        border-color: rgba(47, 127, 214, 0.28);
         transform: translateY(-3px);
+        border-color: rgba(15, 23, 42, 0.1);
         box-shadow:
-          0 1px 0 rgba(255, 255, 255, 0.9) inset,
-          0 22px 48px rgba(30, 70, 120, 0.14);
+          0 1px 0 rgba(255, 255, 255, 0.95) inset,
+          0 22px 48px rgba(30, 50, 80, 0.12);
       }
 
       .plan-card.is-featured {
-        z-index: 1;
-        min-height: 100%;
-        padding-top: 40px;
-        padding-bottom: 28px;
-        border-color: rgba(47, 127, 214, 0.4);
+        border-color: rgba(15, 23, 42, 0.12);
         box-shadow:
           0 1px 0 rgba(255, 255, 255, 0.95) inset,
-          0 24px 56px rgba(30, 70, 120, 0.16);
+          0 24px 52px rgba(30, 50, 80, 0.14);
+        transform: translateY(-6px);
       }
 
       .plan-card.is-featured:hover {
-        transform: translateY(-5px);
-      }
-
-      .plan-badge {
-        position: absolute;
-        top: -13px;
-        left: 50%;
-        transform: translateX(-50%);
-        display: inline-flex;
-        align-items: center;
-        gap: 6px;
-        padding: 7px 14px;
-        border-radius: 999px;
-        background: linear-gradient(180deg, #5aa8f0 0%, #2f7fd6 100%);
-        color: #fff;
-        font-size: 0.78rem;
-        font-weight: 700;
-        letter-spacing: -0.01em;
-        white-space: nowrap;
-        box-shadow: 0 8px 18px rgba(47, 127, 214, 0.28);
-      }
-
-      .plan-badge svg {
-        width: 12px;
-        height: 12px;
-        flex-shrink: 0;
-      }
-
-      .plan-icon {
-        width: 54px;
-        height: 54px;
-        border-radius: 50%;
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        margin-bottom: 16px;
-        background: #eaf3fc;
-        color: #2f7fd6;
-      }
-
-      .plan-card.is-scale .plan-icon {
-        background: #eee8ff;
-        color: #5b4cdb;
-      }
-
-      .plan-icon svg {
-        width: 26px;
-        height: 26px;
+        transform: translateY(-8px);
       }
 
       .plan-name {
         display: block;
-        font-size: 1.25rem;
+        font-size: 1.05rem;
         font-weight: 700;
         letter-spacing: -0.03em;
         color: #111114;
-        margin-bottom: 12px;
+        margin-bottom: 10px;
       }
 
       .plan-price {
         display: flex;
         align-items: baseline;
-        justify-content: center;
-        gap: 5px;
-        color: #2f7fd6;
-        margin-bottom: 20px;
-        white-space: nowrap;
-      }
-
-      .plan-card.is-scale .plan-price {
-        color: #5b4cdb;
+        flex-wrap: wrap;
+        gap: 6px;
+        margin-bottom: 18px;
+        color: #111114;
       }
 
       .plan-price strong {
-        font-size: clamp(2.1rem, 3.2vw, 2.6rem);
-        font-weight: 800;
-        letter-spacing: -0.045em;
+        font-size: clamp(2.2rem, 3.4vw, 2.75rem);
+        font-weight: 750;
+        letter-spacing: -0.05em;
         line-height: 1;
       }
 
       .plan-price span {
-        font-size: 0.95rem;
+        font-size: 1rem;
         font-weight: 500;
-        color: rgba(17, 17, 20, 0.42);
+        color: rgba(17, 17, 20, 0.45);
+        letter-spacing: -0.02em;
+      }
+
+      .plan-cta {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 100%;
+        min-height: 48px;
+        margin-bottom: 14px;
+        padding: 0 18px;
+        border-radius: 14px;
+        background: #1a1a1e;
+        color: #fff;
+        font-size: 0.98rem;
+        font-weight: 650;
+        letter-spacing: -0.02em;
+      }
+
+      .plan-card:hover .plan-cta {
+        background: #000;
+      }
+
+      .plan-desc {
+        display: block;
+        margin-bottom: 18px;
+        font-size: 0.92rem;
+        font-weight: 500;
+        color: rgba(17, 17, 20, 0.5);
+        letter-spacing: -0.015em;
+        line-height: 1.4;
       }
 
       .plan-card hr {
         width: 100%;
         border: none;
-        border-top: 1px solid #ececf0;
-        margin: 0 0 18px;
+        border-top: 1px solid #ececf1;
+        margin: 0 0 16px;
+      }
+
+      .plan-includes {
+        display: block;
+        margin-bottom: 12px;
+        font-size: 0.92rem;
+        font-weight: 700;
+        letter-spacing: -0.02em;
+        color: #111114;
       }
 
       .plan-card ul {
         list-style: none;
-        width: 100%;
         display: flex;
         flex-direction: column;
         gap: 11px;
-        text-align: left;
-        margin: 0 0 24px;
-        flex: 1;
+        margin: 0;
       }
 
       .plan-card li {
@@ -283,7 +243,7 @@
         grid-template-columns: 18px minmax(0, 1fr);
         gap: 10px;
         align-items: start;
-        font-size: 0.93rem;
+        font-size: 0.92rem;
         font-weight: 500;
         color: #3a3a42;
         letter-spacing: -0.015em;
@@ -294,38 +254,8 @@
         width: 16px;
         height: 16px;
         margin-top: 2px;
-        color: #2f7fd6;
+        color: #7eb6f0;
         flex-shrink: 0;
-      }
-
-      .plan-card.is-scale li svg {
-        color: #5b4cdb;
-      }
-
-      .plan-cta {
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        width: 100%;
-        min-height: 50px;
-        margin-top: auto;
-        padding: 0 18px;
-        border-radius: 999px;
-        background: linear-gradient(180deg, #5aa8f0 0%, #2f7fd6 100%);
-        color: #fff;
-        font-size: 1rem;
-        font-weight: 700;
-        letter-spacing: -0.02em;
-        box-shadow:
-          0 1px 0 rgba(255, 255, 255, 0.35) inset,
-          0 8px 18px rgba(47, 127, 214, 0.28);
-      }
-
-      .plan-card.is-scale .plan-cta {
-        background: linear-gradient(180deg, #7a6cf0 0%, #5b4cdb 100%);
-        box-shadow:
-          0 1px 0 rgba(255, 255, 255, 0.3) inset,
-          0 8px 18px rgba(91, 76, 219, 0.28);
       }
 
       .plan-back {
@@ -334,7 +264,7 @@
         padding: 10px 14px;
         border: none;
         background: none;
-        color: rgba(17, 17, 20, 0.5);
+        color: rgba(17, 17, 20, 0.48);
         font: inherit;
         font-size: 0.95rem;
         font-weight: 500;
@@ -353,12 +283,16 @@
 
         .plans {
           grid-template-columns: 1fr;
-          align-items: stretch;
           max-width: 400px;
         }
 
         .plan-card.is-featured {
           order: -1;
+          transform: none;
+        }
+
+        .plan-card.is-featured:hover {
+          transform: translateY(-3px);
         }
       }
     </style>
@@ -374,18 +308,16 @@
 
       <main class="paywall">
         <h1>Choose your plan</h1>
-        <p class="lead">
-          Pick the plan that fits your brand — cancel anytime.
-        </p>
+        <p class="lead">Pick the plan that fits your brand — cancel anytime.</p>
 
         <div class="plans" role="radiogroup" aria-label="Plans">
           <button type="button" class="plan-card" role="radio" aria-checked="false" data-plan="starter" data-price="19">
-            <span class="plan-icon" aria-hidden="true">
-              <svg viewBox="0 0 24 24" fill="none"><path d="M12 20c2.5-1.2 6-4.2 6-8.2A4.2 4.2 0 0 0 12 8a4.2 4.2 0 0 0-6 3.8C6 15.8 9.5 18.8 12 20Z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><path d="M12 8V4M10 5.5h4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
-            </span>
             <span class="plan-name">Starter</span>
-            <span class="plan-price"><strong>$19</strong><span>/mo</span></span>
+            <span class="plan-price"><strong>$19</strong><span>/ month</span></span>
+            <span class="plan-cta">Subscribe</span>
+            <span class="plan-desc">Great for getting started with slideshows.</span>
             <hr />
+            <span class="plan-includes">Includes</span>
             <ul>
               <li><svg viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M3 8.2L6.2 11.2L13 4.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>AI slideshow generation</li>
               <li><svg viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M3 8.2L6.2 11.2L13 4.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>Core brand templates</li>
@@ -393,48 +325,39 @@
               <li><svg viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M3 8.2L6.2 11.2L13 4.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>Caption rewriting</li>
               <li><svg viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M3 8.2L6.2 11.2L13 4.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>Basic analytics</li>
             </ul>
-            <span class="plan-cta">Get Starter</span>
           </button>
 
           <button type="button" class="plan-card is-featured" role="radio" aria-checked="false" data-plan="growth" data-price="29">
-            <span class="plan-badge">
-              <svg viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M8 2.5c.4 2.2 1.4 3.4 3.5 4.5-1.5.4-2.5 1.2-3.1 2.5-.6-1.3-1.6-2.1-3.1-2.5C7 5.9 7.6 4.7 8 2.5Z" fill="currentColor"/><path d="M4.5 12.5h7" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
-              Most Popular
-            </span>
-            <span class="plan-icon" aria-hidden="true">
-              <svg viewBox="0 0 24 24" fill="none"><path d="M12 4l2.1 4.3 4.7.7-3.4 3.3.8 4.7L12 14.8 7.8 17l.8-4.7L5.2 9l4.7-.7L12 4Z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg>
-            </span>
             <span class="plan-name">Growth</span>
-            <span class="plan-price"><strong>$29</strong><span>/mo</span></span>
+            <span class="plan-price"><strong>$29</strong><span>/ month</span></span>
+            <span class="plan-cta">Subscribe</span>
+            <span class="plan-desc">For brands posting consistently.</span>
             <hr />
+            <span class="plan-includes">Everything in Starter, plus...</span>
             <ul>
-              <li><svg viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M3 8.2L6.2 11.2L13 4.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>Everything in Starter</li>
               <li><svg viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M3 8.2L6.2 11.2L13 4.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>Higher slideshow volume</li>
               <li><svg viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M3 8.2L6.2 11.2L13 4.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>More connected accounts</li>
               <li><svg viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M3 8.2L6.2 11.2L13 4.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>Priority generation</li>
               <li><svg viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M3 8.2L6.2 11.2L13 4.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>Advanced brand templates</li>
               <li><svg viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M3 8.2L6.2 11.2L13 4.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>Deeper performance insights</li>
             </ul>
-            <span class="plan-cta">Get Growth</span>
           </button>
 
-          <button type="button" class="plan-card is-scale" role="radio" aria-checked="false" data-plan="scale" data-price="249">
-            <span class="plan-icon" aria-hidden="true">
-              <svg viewBox="0 0 24 24" fill="none"><path d="M4 18V9.5L8 7l4 2.5L16 7l4 2.5V18H4Z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><path d="M8 18v-5h8v5M10 7V4.5h4V7" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
-            </span>
+          <button type="button" class="plan-card" role="radio" aria-checked="false" data-plan="scale" data-price="249">
             <span class="plan-name">Scale</span>
-            <span class="plan-price"><strong>$249</strong><span>/mo</span></span>
+            <span class="plan-price"><strong>$249</strong><span>/ month</span></span>
+            <span class="plan-cta">Subscribe</span>
+            <span class="plan-desc">Full autopilot with video included.</span>
             <hr />
+            <span class="plan-includes">Everything in Growth, plus...</span>
             <ul>
-              <li><svg viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M3 8.2L6.2 11.2L13 4.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>Everything in Growth</li>
-              <li><svg viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M3 8.2L6.2 11.2L13 4.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>AI video generation included</li>
+              <li><svg viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M3 8.2L6.2 11.2L13 4.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>AI video generation</li>
               <li><svg viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M3 8.2L6.2 11.2L13 4.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>HeyGen avatar videos</li>
               <li><svg viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M3 8.2L6.2 11.2L13 4.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>Multi-brand workspaces</li>
               <li><svg viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M3 8.2L6.2 11.2L13 4.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>Priority support</li>
               <li><svg viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M3 8.2L6.2 11.2L13 4.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>Custom brand voice</li>
               <li><svg viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M3 8.2L6.2 11.2L13 4.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>Dedicated generation capacity</li>
             </ul>
-            <span class="plan-cta">Get Scale</span>
           </button>
         </div>
 
