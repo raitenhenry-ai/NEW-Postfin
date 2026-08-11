@@ -20,7 +20,7 @@ const DAY_MS = 86400000;
 
 /* ---------------------------------------------------------------- Dashboard */
 
-// Everything index.html draws: the four stat tiles, the embedded calendar,
+// Everything dashboard.html draws: the four stat tiles, the embedded calendar,
 // the account leaderboard, top videos and the suggestion list.
 router.get("/dashboard", wrap(async (req, res) => {
   const range = resolveRange(req.query.range || "30d", req.query.days, req.query.tz);

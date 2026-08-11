@@ -254,7 +254,7 @@ export function registerAuthRoutes(app) {
   app.get("/pending", (req, res) => {
     const session = sessionOf(req);
     if (!session) return res.redirect("/login");
-    if (session.role === "operator") return res.redirect("/");
+    if (session.role === "operator") return res.redirect("/dashboard.html");
     res.send(pendingPage(session.email));
   });
 
