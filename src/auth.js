@@ -193,13 +193,13 @@ function pendingPage(email) {
 export function registerAuthRoutes(app) {
   app.get("/login", (req, res) => {
     const session = sessionOf(req);
-    if (!authEnabled() || session?.role === "operator") return res.redirect("/");
+    if (!authEnabled() || session?.role === "operator") return res.redirect("/dashboard.html");
     if (session) return res.redirect("/pending");
     res.send(loginPage(req.query.error));
   });
 
   app.post("/login", async (req, res) => {
-    if (!authEnabled()) return res.redirect("/");
+    if (!authEnabled()) return res.redirect("/dashboard.html");
     if (rateLimited(req, res)) return;
 
     const email = String(req.body.email || "").trim().toLowerCase();
@@ -210,7 +210,7 @@ export function registerAuthRoutes(app) {
     if (safeEqual(password, config.adminPassword)) {
       attempts.delete(req.socket.remoteAddress || "unknown");
       startSession(res, "operator", email);
-      return res.redirect("/");
+      return res.redirect("/dashboard.html");
     }
 
     const user = await q1("SELECT * FROM users WHERE email = ?", [email]).catch(() => null);
@@ -221,12 +221,12 @@ export function registerAuthRoutes(app) {
 
     attempts.delete(req.socket.remoteAddress || "unknown");
     startSession(res, user.role === "operator" ? "operator" : "member", email);
-    res.redirect(user.role === "operator" ? "/" : "/pending");
+    res.redirect(user.role === "operator" ? "/dashboard.html" : "/pending");
   });
 
   app.get("/signup", (req, res) => {
     const session = sessionOf(req);
-    if (session?.role === "operator") return res.redirect("/");
+    if (session?.role === "operator") return res.redirect("/dashboard.html");
     if (session) return res.redirect("/pending");
     res.send(signupPage(req.query.error));
   });
