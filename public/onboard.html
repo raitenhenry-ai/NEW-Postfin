@@ -63,6 +63,11 @@
         min-height: 100dvh;
         display: flex;
         flex-direction: column;
+        transition: width 0.2s ease;
+      }
+
+      .shell.is-plans {
+        width: min(1120px, calc(100% - 32px));
       }
 
       .top {
