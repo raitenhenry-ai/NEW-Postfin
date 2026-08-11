@@ -1341,7 +1341,7 @@
         bindSelect(planOptions, (btn) => {
           state.plan = btn.dataset.plan;
           state.planPrice = btn.dataset.price;
-          syncPlanContinue();
+          finishOnboard();
         });
 
         otherInput.addEventListener("input", () => {
