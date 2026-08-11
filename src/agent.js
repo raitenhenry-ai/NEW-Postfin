@@ -349,6 +349,33 @@ const TOOLS = [
 // offsetMinutes is minutes AHEAD of UTC (UTC+2 sends 120), so the wall-clock
 // time has to be moved back by it to get the actual instant: 09:00 in UTC+2
 // is 07:00Z.
+// Does this reply announce work rather than report it? Two shapes: an
+// intention followed by a doing-word ("I'll schedule those for Friday"), and
+// a bare stall ("one moment", "on it"). Past tense is deliberately not
+// matched - "I've scheduled them" is a report, and the caller only asks
+// about this when nothing was actually changed.
+const INTENT_THEN_VERB = new RegExp(
+  "\\b(i'?ll|i will|let me|i'?m going to|i am going to|going to|i can|shall i just)\\b" +
+    "[^.!?]{0,90}\\b(" +
+    "schedul|creat|generat|plan|mak|add|delet|remov|mov|edit|updat|post|render|" +
+    "regenerat|re-?run|retry|queue|" +
+    // "set it up", "sort that out" - the verb and its particle get separated
+    // by whatever is being acted on.
+    "set(?:\\s+\\w+){0,2}\\s+up|sort(?:\\s+\\w+){0,2}\\s+out|put(?:\\s+\\w+){0,2}\\s+together" +
+    ")",
+  "i"
+);
+const BARE_STALL =
+  /\b(one moment|just a moment|give me a (?:sec|second|moment)|hold on|on it|right away|working on it|starting now|proceeding|stand by)\b/i;
+
+export function promisesAction(text) {
+  const reply = String(text || "").trim();
+  if (!reply) return false;
+  // A question is a question, even when it contains "I'll".
+  if (reply.endsWith("?")) return false;
+  return INTENT_THEN_VERB.test(reply) || BARE_STALL.test(reply);
+}
+
 function slotFor(date, time, offsetMinutes) {
   const [h, m] = String(time || "09:00").split(":").map(Number);
   const [y, mo, d] = String(date).split("-").map(Number);
@@ -864,6 +891,10 @@ function systemPrompt(ctx) {
       "Aug 18?'), the options are to delete or keep, and only after they choose " +
       "to delete do you call it with confirm true. Deleting a video that has already been published " +
       "does not remove it from the platform - say so when it applies.",
+    "Never announce work you have not done. If you can act, call the tool in " +
+      "the same reply and then report it in the past tense - 'I'll schedule " +
+      "that' followed by nothing is the one answer that is always wrong. If " +
+      "something is missing, ask for it instead of promising.",
     "Be brief and concrete. Plain sentences, no headings. When you schedule " +
       "something, say what and when in one line. When you ask a question, write " +
       "one short line - the options are shown as buttons, so do not list them " +
@@ -912,6 +943,9 @@ export async function runAssistant({
 
   const thread = [{ role: "system", content: systemPrompt(ctx) }, ...history];
   const actions = [];
+  // Only ever nudged once - if it still only talks after being told, its
+  // answer stands rather than the loop spinning.
+  let nudged = false;
 
   for (let round = 0; round < MAX_TOOL_ROUNDS; round++) {
     const res = await fetch(`${config.openaiApiBase}/chat/completions`, {
@@ -936,6 +970,23 @@ export async function runAssistant({
     if (!message) throw new Error("The assistant returned nothing");
 
     if (!message.tool_calls?.length) {
+      // "Sure, I'll schedule that now." and then nothing - the single most
+      // annoying thing a tool-calling model does, because the user has to
+      // ask again to get work that was never started. A promise is not an
+      // answer: push it back and make it act in the same turn.
+      if (!nudged && !ctx.changed && promisesAction(message.content) && round < MAX_TOOL_ROUNDS - 1) {
+        nudged = true;
+        thread.push(message);
+        thread.push({
+          role: "user",
+          content:
+            "You said you would do that but did not call a tool, so nothing " +
+            "happened. Do it now, in this reply, by calling the tool - then " +
+            "report what you did in the past tense. If you cannot, say what is " +
+            "missing instead of saying you will do it.",
+        });
+        continue;
+      }
       return { reply: message.content || "", actions, changed: ctx.changed, questions: [] };
     }
 
