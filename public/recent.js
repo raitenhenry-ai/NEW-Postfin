@@ -235,8 +235,6 @@
         ? `<div class="recent-grid">${jobs.map(jobTile).join("")}</div>`
         : emptyBlock("Nothing posted yet. Once a video goes live, it shows up here.");
       bind();
-
-      clearTimeout(pollTimer);
     } catch (err) {
       feed.innerHTML = errorBlock(`Couldn't load recent activity: ${err.message}`);
     }
