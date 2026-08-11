@@ -85,7 +85,7 @@ function recordFailure(req) {
 
 // Marketing pages stay public; the dashboard/APIs are operator-only.
 // Signed-in members are sent to the waitlist page instead.
-const PUBLIC_PATHS = new Set(["/", "/index.html", "/onboard.html"]);
+const PUBLIC_PATHS = new Set(["/", "/index.html", "/onboard.html", "/paywall.html"]);
 
 function isPublicPath(pathname) {
   if (PUBLIC_PATHS.has(pathname)) return true;

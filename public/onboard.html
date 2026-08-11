@@ -816,7 +816,6 @@
 
         function showStep(n) {
           shell.classList.remove("is-setup");
-          shell.classList.toggle("is-plans", n === 8);
           setupScreen.classList.remove("is-active");
           steps.forEach((step) => {
             step.classList.toggle("is-active", step.dataset.step === String(n));
@@ -824,8 +823,7 @@
           window.scrollTo({ top: 0, behavior: "smooth" });
         }
 
-        function finishOnboard() {
-          if (!state.plan) return;
+        function goToPaywall() {
           const payload = {
             niche: state.niche,
             category: state.category,
@@ -836,20 +834,17 @@
             frequency: state.frequency,
             mood: state.mood,
             productLink: state.productLink,
-            plan: state.plan,
-            planPrice: state.planPrice,
             at: new Date().toISOString(),
           };
           try {
-            localStorage.setItem("postfin_onboard", JSON.stringify(payload));
+            localStorage.setItem("postfin_onboard_draft", JSON.stringify(payload));
           } catch (_) {}
-          window.location.href = "dashboard.html";
+          window.location.href = "paywall.html";
         }
 
         function runSetupSequence(onDone) {
           steps.forEach((step) => step.classList.remove("is-active"));
           shell.classList.add("is-setup");
-          shell.classList.remove("is-plans");
           setupScreen.classList.add("is-active");
           window.scrollTo({ top: 0, behavior: "smooth" });
 
