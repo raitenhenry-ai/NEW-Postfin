@@ -1186,6 +1186,7 @@
         function runSetupSequence(onDone) {
           steps.forEach((step) => step.classList.remove("is-active"));
           shell.classList.add("is-setup");
+          shell.classList.remove("is-plans");
           setupScreen.classList.add("is-active");
           window.scrollTo({ top: 0, behavior: "smooth" });
 
