@@ -1288,10 +1288,6 @@
           continueLink.disabled = !isValidUrl(productLink.value);
         }
 
-        function syncPlanContinue() {
-          continuePlan.disabled = !state.plan;
-        }
-
         function bindSelect(buttons, onSelect) {
           buttons.forEach((btn) => {
             btn.addEventListener("click", () => {
