@@ -1402,28 +1402,6 @@
         });
 
         backPlan.addEventListener("click", () => showStep(7));
-
-        continuePlan.addEventListener("click", () => {
-          if (continuePlan.disabled || !state.plan) return;
-          const payload = {
-            niche: state.niche,
-            category: state.category,
-            nicheOther: state.niche === "other" ? state.nicheOther : null,
-            goal: state.goal,
-            age: state.age,
-            revenue: state.revenue,
-            frequency: state.frequency,
-            mood: state.mood,
-            productLink: state.productLink,
-            plan: state.plan,
-            planPrice: state.planPrice,
-            at: new Date().toISOString(),
-          };
-          try {
-            localStorage.setItem("postfin_onboard", JSON.stringify(payload));
-          } catch (_) {}
-          window.location.href = "dashboard.html";
-        });
       })();
     </script>
   </body>
