@@ -2583,8 +2583,7 @@ body.sidebar-expanded {
 .cal-shell.is-edit .cal-chat-cancel:not([hidden]) {
   position: absolute;
   top: 10px;
-  right: calc(minmax(280px, 320px) + 12px + 10px);
-  right: calc(320px + 12px + 10px);
+  right: calc(320px + 22px);
   z-index: 6;
 }
 
