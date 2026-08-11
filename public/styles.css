@@ -2698,8 +2698,7 @@ body.sidebar-expanded {
   align-items: center;
   justify-content: center;
   padding: 16px 8px;
-  /* The suggestions underneath the mark are clickable, so this can no longer
-     be inert as a whole - the mark itself still is. */
+  pointer-events: none;
 }
 
 .cal-agent-mark {
