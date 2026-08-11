@@ -1153,11 +1153,34 @@
 
         function showStep(n) {
           shell.classList.remove("is-setup");
+          shell.classList.toggle("is-plans", n === 8);
           setupScreen.classList.remove("is-active");
           steps.forEach((step) => {
             step.classList.toggle("is-active", step.dataset.step === String(n));
           });
           window.scrollTo({ top: 0, behavior: "smooth" });
+        }
+
+        function finishOnboard() {
+          if (!state.plan) return;
+          const payload = {
+            niche: state.niche,
+            category: state.category,
+            nicheOther: state.niche === "other" ? state.nicheOther : null,
+            goal: state.goal,
+            age: state.age,
+            revenue: state.revenue,
+            frequency: state.frequency,
+            mood: state.mood,
+            productLink: state.productLink,
+            plan: state.plan,
+            planPrice: state.planPrice,
+            at: new Date().toISOString(),
+          };
+          try {
+            localStorage.setItem("postfin_onboard", JSON.stringify(payload));
+          } catch (_) {}
+          window.location.href = "dashboard.html";
         }
 
         function runSetupSequence(onDone) {
