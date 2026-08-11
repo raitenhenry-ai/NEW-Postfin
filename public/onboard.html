@@ -997,12 +997,6 @@
           syncMoodContinue();
         });
 
-        bindSelect(planOptions, (btn) => {
-          state.plan = btn.dataset.plan;
-          state.planPrice = btn.dataset.price;
-          finishOnboard();
-        });
-
         otherInput.addEventListener("input", () => {
           state.nicheOther = otherInput.value.trim();
           syncNicheContinue();
