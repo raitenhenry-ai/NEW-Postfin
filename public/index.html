@@ -1,230 +1,2027 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Dashboard</title>
-  <link rel="icon" href="logo.png?v=2">
-  <link rel="stylesheet" href="styles.css?v=50">
-</head>
-<body>
-  <aside class="sidebar" id="sidebar">
-    <div class="sidebar-top">
-      <button class="logo-btn" type="button" aria-label="Expand sidebar" aria-expanded="false" id="logo-btn">
-        <img class="logo-default" src="logo.png?v=2" alt="">
-        <img class="logo-hover" src="logo-hover.png?v=2" alt="">
-      </button>
-      <div class="top-actions">
-        <button class="top-icon-btn" type="button" aria-label="Collapse sidebar" id="collapse-btn">
-          <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
-            <rect x="3" y="4" width="18" height="16" rx="3.5" stroke="currentColor" stroke-width="1.75"/>
-            <path d="M9 4v16" stroke="currentColor" stroke-width="1.75"/>
-            <path d="M16.5 12H12m0 0l2-2m-2 2l2 2" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"/>
-          </svg>
-        </button>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Postfin</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@1,6..72,200;1,6..72,300&family=Press+Start+2P&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      *,
+      *::before,
+      *::after {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+
+      html {
+        height: 100%;
+        scroll-behavior: smooth;
+      }
+
+      body {
+        min-height: 100%;
+        overflow-x: hidden;
+        overflow-y: auto;
+        background: #ffffff;
+        font-family:
+          -apple-system,
+          BlinkMacSystemFont,
+          "SF Pro Display",
+          "SF Pro Text",
+          "Helvetica Neue",
+          Helvetica,
+          Arial,
+          sans-serif;
+      }
+
+      .wallpaper {
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 140%;
+        min-height: 120dvh;
+        z-index: 0;
+        pointer-events: none;
+        background: linear-gradient(
+          to bottom,
+          #5a9fe0 0%,
+          #8ec0ef 22%,
+          #c5dff7 48%,
+          #eaf4fc 72%,
+          #ffffff 100%
+        );
+      }
+
+      .wallpaper::before {
+        content: "";
+        position: absolute;
+        inset: 0;
+        background:
+          radial-gradient(
+            ellipse 100% 60% at 50% 0%,
+            rgba(255, 255, 255, 0.35) 0%,
+            rgba(255, 255, 255, 0) 55%
+          );
+        animation: drift 28s ease-in-out infinite alternate;
+        will-change: transform;
+      }
+
+      .wallpaper::after {
+        display: none;
+      }
+
+      .stage {
+        position: relative;
+        z-index: 1;
+        min-height: 100dvh;
+        height: auto;
+        display: flex;
+        flex-direction: column;
+      }
+
+      .topbar {
+        position: relative;
+        top: auto;
+        z-index: 50;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 16px;
+        width: min(1120px, calc(100% - 32px));
+        margin: clamp(12px, 2vh, 20px) auto 0;
+        padding: 0;
+        background: none;
+        border: none;
+        box-shadow: none;
+        flex-shrink: 0;
+      }
+
+      .topbar-brand {
+        display: inline-flex;
+        align-items: center;
+        flex-shrink: 0;
+        text-decoration: none;
+      }
+
+      .topbar-brand img {
+        width: 40px;
+        height: 40px;
+        display: block;
+        object-fit: contain;
+      }
+
+      .topbar-nav {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: clamp(14px, 2.4vw, 28px);
+        flex: 1;
+        min-width: 0;
+      }
+
+      .topbar-nav a {
+        font-size: 0.92rem;
+        font-weight: 500;
+        color: rgba(17, 17, 20, 0.72);
+        text-decoration: none;
+        letter-spacing: -0.015em;
+        white-space: nowrap;
+        transition: color 0.15s ease;
+      }
+
+      .topbar-nav a:hover {
+        color: #0b0b0f;
+      }
+
+      .topbar-actions {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        flex-shrink: 0;
+      }
+
+      .topbar-login {
+        padding: 9px 4px;
+        font-size: 0.92rem;
+        font-weight: 500;
+        color: rgba(17, 17, 20, 0.82);
+        text-decoration: none;
+        letter-spacing: -0.015em;
+        background: none;
+        border: none;
+        box-shadow: none;
+        backdrop-filter: none;
+        -webkit-backdrop-filter: none;
+        transition: color 0.15s ease;
+      }
+
+      .topbar-login:hover {
+        color: #0b0b0f;
+        background: none;
+      }
+
+      .topbar-cta {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        padding: 9px 16px;
+        border: none;
+        border-radius: 12px;
+        background: linear-gradient(180deg, #6eb0f5 0%, #2f7fd6 48%, #1f6ec4 100%);
+        color: #fff;
+        font-size: 0.9rem;
+        font-weight: 600;
+        letter-spacing: -0.02em;
+        text-decoration: none;
+        box-shadow:
+          0 1px 0 rgba(255, 255, 255, 0.45) inset,
+          0 -2px 0 rgba(12, 60, 120, 0.35) inset,
+          0 3px 0 #154a8c,
+          0 8px 18px rgba(20, 70, 140, 0.28);
+        transition:
+          transform 0.15s ease,
+          filter 0.15s ease,
+          box-shadow 0.15s ease;
+      }
+
+      .topbar-cta:hover {
+        filter: brightness(1.05);
+        transform: translateY(-1px);
+      }
+
+      .topbar-cta:active {
+        transform: translateY(2px);
+        filter: brightness(0.98);
+      }
+
+      @media (max-width: 820px) {
+        .topbar-nav {
+          display: none;
+        }
+      }
+
+      @media (max-width: 520px) {
+        .topbar {
+          width: calc(100% - 20px);
+          margin-top: 12px;
+        }
+      }
+
+      .hero {
+        --u: clamp(7.5px, 2.15vmin, 26px);
+        position: relative;
+        z-index: 1;
+        flex: 1 1 auto;
+        min-height: 0;
+        height: auto;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        padding: calc(var(--u) * 1.2) calc(var(--u) * 1.6) calc(var(--u) * 2);
+        text-align: center;
+        gap: calc(var(--u) * 3.2);
+      }
+
+      .hero-copy {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        flex-shrink: 0;
+        width: 100%;
+        max-width: min(920px, 100%);
+      }
+
+      .hero h1 {
+        font-family:
+          "SF Pro Rounded",
+          ui-rounded,
+          "SF Pro Display",
+          -apple-system,
+          BlinkMacSystemFont,
+          "Helvetica Neue",
+          Helvetica,
+          Arial,
+          sans-serif;
+        font-size: calc(var(--u) * 4.85);
+        font-weight: 500;
+        color: #000000;
+        letter-spacing: -0.03em;
+        line-height: 1.05;
+        margin: 0 auto;
+        flex-shrink: 0;
+        max-width: none;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+      }
+
+      .hero h1 .hero-line {
+        display: block;
+        white-space: nowrap;
+      }
+
+      .hero h1 .autopilot {
+        font-family: "Newsreader", "Times New Roman", Times, serif;
+        font-style: italic;
+        font-weight: 200;
+        font-optical-sizing: auto;
+        letter-spacing: -0.02em;
+      }
+
+      .hero-mid {
+        flex: 0 0 auto;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 100%;
+        min-height: 0;
+        padding: 0;
+      }
+
+      .pixel-stats-section {
+        position: relative;
+        z-index: 1;
+        padding: 64px 24px 100px;
+        text-align: center;
+        opacity: 0;
+        transform: translateY(36px);
+        transition:
+          opacity 1.15s cubic-bezier(0.22, 1, 0.36, 1),
+          transform 1.15s cubic-bezier(0.22, 1, 0.36, 1);
+      }
+
+      .pixel-stats-section.is-inview {
+        opacity: 1;
+        transform: translateY(0);
+      }
+
+      .pixel-stats-section h2 {
+        font-family:
+          "SF Pro Rounded",
+          ui-rounded,
+          "SF Pro Display",
+          -apple-system,
+          BlinkMacSystemFont,
+          "Helvetica Neue",
+          Helvetica,
+          Arial,
+          sans-serif;
+        font-size: clamp(2rem, 4.5vw, 3.25rem);
+        font-weight: 500;
+        color: #000;
+        letter-spacing: -0.035em;
+        line-height: 1.15;
+        margin: 0 auto 16px;
+      }
+
+      .pixel-stats-section .section-sub {
+        margin: 0 auto 36px;
+        max-width: 36ch;
+        font-size: 1.05rem;
+        font-weight: 400;
+        color: rgba(17, 17, 20, 0.55);
+        letter-spacing: -0.015em;
+        line-height: 1.45;
+      }
+
+      .results-shell {
+        width: min(980px, 100%);
+        margin: 0 auto;
+        padding: 22px;
+        background: #ffffff;
+        border: 1px solid rgba(15, 23, 42, 0.06);
+        border-radius: 22px;
+        box-shadow:
+          0 1px 0 rgba(255, 255, 255, 0.8) inset,
+          0 18px 48px rgba(30, 70, 120, 0.1);
+        text-align: left;
+      }
+
+      .results-shell-top {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 16px;
+        margin-bottom: 18px;
+      }
+
+      .results-shell-top h3 {
+        margin: 0;
+        color: #111114;
+        font-size: 1.15rem;
+        font-weight: 600;
+        letter-spacing: -0.02em;
+      }
+
+      .results-range {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 8px 12px;
+        border: 1px solid #e6e6ea;
+        border-radius: 10px;
+        background: #f6f7fa;
+        color: #5a5a62;
+        font-size: 0.8rem;
+        font-weight: 500;
+      }
+
+      .stat-grid {
+        display: grid;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        gap: 12px;
+      }
+
+      .stat-card {
+        background: #f6f7fa;
+        border: 1px solid #ececf0;
+        border-radius: 14px;
+        padding: 24px 22px;
+        min-height: 168px;
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start;
+      }
+
+      .stat-label {
+        display: inline-block;
+        color: #8a8a92;
+        font-size: 12px;
+        margin-bottom: 14px;
+        padding-bottom: 2px;
+        border-bottom: 1.5px dotted #b8b8c0;
+        width: fit-content;
+      }
+
+      .stat-value {
+        display: block;
+        color: #111114;
+        font-size: clamp(1.85rem, 3.2vw, 2.75rem);
+        font-weight: 700;
+        letter-spacing: -0.045em;
+        line-height: 1;
+        margin-top: auto;
+        margin-bottom: 12px;
+      }
+
+      .stat-up {
+        display: block;
+        color: #16a34a;
+        font-size: 13px;
+        font-weight: 500;
+        letter-spacing: -0.01em;
+      }
+
+      .stat-meta {
+        display: block;
+        color: #8a8a92;
+        font-size: 13px;
+        font-weight: 500;
+      }
+
+      @media (max-width: 900px) {
+        .stat-grid {
+          grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+      }
+
+      @media (max-width: 520px) {
+        .results-shell {
+          padding: 14px;
+        }
+
+        .stat-grid {
+          grid-template-columns: 1fr;
+        }
+
+        .stat-card {
+          min-height: 132px;
+        }
+      }
+
+      .why {
+        position: relative;
+        z-index: 1;
+        padding: 40px 24px 96px;
+        text-align: center;
+        opacity: 0;
+        transform: translateY(36px);
+        transition:
+          opacity 1.15s cubic-bezier(0.22, 1, 0.36, 1),
+          transform 1.15s cubic-bezier(0.22, 1, 0.36, 1);
+      }
+
+      .why.is-inview {
+        opacity: 1;
+        transform: translateY(0);
+      }
+
+      .why h2 {
+        font-family:
+          "SF Pro Rounded",
+          ui-rounded,
+          "SF Pro Display",
+          -apple-system,
+          BlinkMacSystemFont,
+          "Helvetica Neue",
+          Helvetica,
+          Arial,
+          sans-serif;
+        font-size: clamp(2rem, 4.5vw, 3.25rem);
+        font-weight: 500;
+        color: #000;
+        letter-spacing: -0.035em;
+        line-height: 1.15;
+        max-width: 16ch;
+        margin: 0 auto 40px;
+      }
+
+      .why-list {
+        list-style: none;
+        width: min(720px, 100%);
+        margin: 0 auto;
+        padding: 0;
+        text-align: left;
+        display: flex;
+        flex-direction: column;
+        gap: 22px;
+      }
+
+      .why-list li {
+        display: grid;
+        grid-template-columns: auto 1fr;
+        gap: 14px 18px;
+        align-items: start;
+      }
+
+      .why-list .why-mark {
+        width: 28px;
+        height: 28px;
+        border-radius: 50%;
+        background: #e8f1fb;
+        color: #2f7fd6;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 0.85rem;
+        font-weight: 700;
+        margin-top: 2px;
+      }
+
+      .why-list strong {
+        display: block;
+        font-size: 1.15rem;
+        font-weight: 700;
+        color: #111114;
+        letter-spacing: -0.025em;
+        margin-bottom: 4px;
+      }
+
+      .why-list span {
+        display: block;
+        font-size: 1rem;
+        color: rgba(17, 17, 20, 0.55);
+        line-height: 1.45;
+        letter-spacing: -0.01em;
+      }
+
+      .final-cta {
+        position: relative;
+        z-index: 1;
+        padding: 56px 24px 88px;
+        text-align: center;
+        opacity: 0;
+        transform: translateY(36px);
+        transition:
+          opacity 1.15s cubic-bezier(0.22, 1, 0.36, 1),
+          transform 1.15s cubic-bezier(0.22, 1, 0.36, 1);
+      }
+
+      .site-footer {
+        position: relative;
+        z-index: 1;
+        background: #ffffff;
+        border-top: 1px solid rgba(15, 23, 42, 0.06);
+        padding: 48px 24px 36px;
+      }
+
+      .site-footer-inner {
+        width: min(980px, 100%);
+        margin: 0 auto;
+        display: grid;
+        grid-template-columns: 1.2fr repeat(3, minmax(0, 1fr));
+        gap: 36px 28px;
+      }
+
+      .site-footer-brand {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 12px;
+        max-width: 28ch;
+      }
+
+      .site-footer-brand a {
+        display: inline-flex;
+        text-decoration: none;
+      }
+
+      .site-footer-brand img {
+        width: 36px;
+        height: 36px;
+        display: block;
+        object-fit: contain;
+      }
+
+      .site-footer-brand p {
+        margin: 0;
+        font-size: 0.92rem;
+        line-height: 1.45;
+        letter-spacing: -0.015em;
+        color: rgba(17, 17, 20, 0.52);
+      }
+
+      .site-footer-col h3 {
+        margin: 0 0 14px;
+        font-size: 0.78rem;
+        font-weight: 650;
+        letter-spacing: 0.04em;
+        text-transform: uppercase;
+        color: rgba(17, 17, 20, 0.42);
+      }
+
+      .site-footer-col a {
+        display: block;
+        margin-bottom: 10px;
+        font-size: 0.95rem;
+        font-weight: 500;
+        letter-spacing: -0.015em;
+        color: rgba(17, 17, 20, 0.72);
+        text-decoration: none;
+        transition: color 0.15s ease;
+      }
+
+      .site-footer-col a:hover {
+        color: #0b0b0f;
+      }
+
+      .site-footer-bottom {
+        width: min(980px, 100%);
+        margin: 36px auto 0;
+        padding-top: 22px;
+        border-top: 1px solid rgba(15, 23, 42, 0.06);
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 16px;
+        flex-wrap: wrap;
+      }
+
+      .site-footer-bottom p,
+      .site-footer-legal a {
+        margin: 0;
+        font-size: 0.82rem;
+        font-weight: 500;
+        letter-spacing: -0.01em;
+        color: rgba(17, 17, 20, 0.42);
+        text-decoration: none;
+      }
+
+      .site-footer-legal {
+        display: inline-flex;
+        align-items: center;
+        gap: 16px;
+      }
+
+      .site-footer-legal a:hover {
+        color: rgba(17, 17, 20, 0.72);
+      }
+
+      @media (max-width: 800px) {
+        .site-footer-inner {
+          grid-template-columns: 1fr 1fr;
+        }
+
+        .site-footer-brand {
+          grid-column: 1 / -1;
+          max-width: none;
+        }
+      }
+
+      @media (max-width: 520px) {
+        .site-footer {
+          padding: 40px 20px 28px;
+        }
+
+        .site-footer-inner {
+          grid-template-columns: 1fr;
+          gap: 28px;
+        }
+
+        .site-footer-bottom {
+          flex-direction: column;
+          align-items: flex-start;
+        }
+      }
+
+      .final-cta.is-inview {
+        opacity: 1;
+        transform: translateY(0);
+      }
+
+      .final-cta h2 {
+        font-family:
+          "SF Pro Rounded",
+          ui-rounded,
+          "SF Pro Display",
+          -apple-system,
+          BlinkMacSystemFont,
+          "Helvetica Neue",
+          Helvetica,
+          Arial,
+          sans-serif;
+        font-size: clamp(2.1rem, 4.8vw, 3.5rem);
+        font-weight: 500;
+        color: #000;
+        letter-spacing: -0.035em;
+        line-height: 1.12;
+        max-width: 14ch;
+        margin: 0 auto 14px;
+      }
+
+      .final-cta h2 em {
+        font-family: "Newsreader", "Times New Roman", Times, serif;
+        font-style: italic;
+        font-weight: 200;
+      }
+
+      .final-cta p {
+        margin: 0 auto 28px;
+        max-width: 34ch;
+        font-size: 1.08rem;
+        color: rgba(17, 17, 20, 0.55);
+        line-height: 1.45;
+      }
+
+      .final-cta .cta {
+        --u: 14px;
+      }
+
+      .cta {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: calc(var(--u, 14px) * 0.55);
+        margin-top: 0;
+        padding: calc(var(--u, 14px) * 1.15) calc(var(--u, 14px) * 2.3);
+        border: none;
+        border-radius: calc(var(--u, 14px) * 1.15);
+        background: linear-gradient(180deg, #6eb0f5 0%, #2f7fd6 48%, #1f6ec4 100%);
+        color: #fff;
+        font-family:
+          -apple-system,
+          BlinkMacSystemFont,
+          "SF Pro Display",
+          "SF Pro Text",
+          "Helvetica Neue",
+          Helvetica,
+          Arial,
+          sans-serif;
+        font-size: calc(var(--u, 14px) * 1.18);
+        font-weight: 600;
+        letter-spacing: -0.02em;
+        text-decoration: none;
+        cursor: pointer;
+        box-shadow:
+          0 1px 0 rgba(255, 255, 255, 0.45) inset,
+          0 calc(var(--u, 14px) * -0.22) 0 rgba(12, 60, 120, 0.35) inset,
+          0 calc(var(--u, 14px) * 0.42) 0 #154a8c,
+          0 calc(var(--u, 14px) * 0.85) calc(var(--u, 14px) * 2) rgba(20, 70, 140, 0.35);
+        transform: translateY(0);
+        transition:
+          transform 0.15s ease,
+          box-shadow 0.15s ease,
+          filter 0.15s ease;
+      }
+
+      .cta:hover {
+        filter: brightness(1.05);
+        transform: translateY(calc(var(--u, 14px) * -0.15));
+        box-shadow:
+          0 1px 0 rgba(255, 255, 255, 0.5) inset,
+          0 calc(var(--u, 14px) * -0.22) 0 rgba(12, 60, 120, 0.35) inset,
+          0 calc(var(--u, 14px) * 0.55) 0 #154a8c,
+          0 calc(var(--u, 14px) * 1.1) calc(var(--u, 14px) * 2.3) rgba(20, 70, 140, 0.4);
+      }
+
+      .cta:active {
+        filter: brightness(0.98);
+        transform: translateY(calc(var(--u, 14px) * 0.28));
+        box-shadow:
+          0 1px 0 rgba(255, 255, 255, 0.35) inset,
+          0 calc(var(--u, 14px) * -0.15) 0 rgba(12, 60, 120, 0.4) inset,
+          0 calc(var(--u, 14px) * 0.15) 0 #154a8c,
+          0 calc(var(--u, 14px) * 0.45) calc(var(--u, 14px) * 1.15) rgba(20, 70, 140, 0.28);
+      }
+
+      .platforms {
+        display: grid;
+        grid-template-columns: repeat(7, max-content);
+        justify-content: center;
+        align-items: center;
+        column-gap: calc(var(--u) * 1.55);
+        row-gap: calc(var(--u) * 1.35);
+        width: max-content;
+        max-width: calc(100% - 8px);
+        margin: 0 auto;
+        padding: calc(var(--u) * 1.25) calc(var(--u) * 1.7);
+        background: rgba(255, 255, 255, 0.45);
+        border: 1px solid rgba(255, 255, 255, 0.7);
+        border-radius: calc(var(--u) * 2);
+        box-shadow:
+          0 calc(var(--u) * 1.15) calc(var(--u) * 2.85) rgba(30, 80, 140, 0.14),
+          inset 0 1px 0 rgba(255, 255, 255, 0.85);
+        backdrop-filter: blur(18px) saturate(1.2);
+        -webkit-backdrop-filter: blur(18px) saturate(1.2);
+        flex-shrink: 0;
+        position: relative;
+        z-index: 2;
+      }
+
+      .platforms img {
+        width: calc(var(--u) * 3.9);
+        height: calc(var(--u) * 3.9);
+        display: block;
+        object-fit: contain;
+        image-rendering: pixelated;
+        image-rendering: crisp-edges;
+        filter: drop-shadow(0 calc(var(--u) * 0.28) calc(var(--u) * 0.7) rgba(20, 60, 120, 0.14));
+        transition: transform 0.22s ease;
+      }
+
+      .platforms img:hover {
+        transform: translateY(calc(var(--u) * -0.4)) scale(1.05);
+      }
+
+      .hero-bottom {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: calc(var(--u) * 1.7);
+        width: 100%;
+        flex-shrink: 0;
+        padding-bottom: 0;
+      }
+
+      .models-label {
+        margin: 0;
+        font-size: calc(var(--u) * 0.95);
+        font-weight: 500;
+        color: rgba(17, 17, 20, 0.48);
+        letter-spacing: -0.015em;
+      }
+
+      .models-marquee {
+        --models-gap: calc(var(--u) * 9.5);
+        width: 100vw;
+        max-width: 100vw;
+        margin-left: calc(50% - 50vw);
+        overflow: hidden;
+        mask-image: linear-gradient(
+          to right,
+          transparent,
+          #000 6%,
+          #000 94%,
+          transparent
+        );
+        -webkit-mask-image: linear-gradient(
+          to right,
+          transparent,
+          #000 6%,
+          #000 94%,
+          transparent
+        );
+      }
+
+      .models-row {
+        display: flex;
+        flex-wrap: nowrap;
+        align-items: center;
+        width: max-content;
+        padding: calc(var(--u) * 0.3) 0;
+        will-change: transform;
+        backface-visibility: hidden;
+        transform: translate3d(-50%, 0, 0);
+        animation: models-scroll-right 60s linear infinite;
+      }
+
+      .models-group {
+        display: flex;
+        flex-wrap: nowrap;
+        align-items: center;
+        gap: var(--models-gap);
+        padding-right: var(--models-gap);
+        flex-shrink: 0;
+      }
+
+      .models-group img {
+        height: calc(var(--u) * 3.6);
+        width: auto;
+        max-width: none;
+        flex-shrink: 0;
+        object-fit: contain;
+        opacity: 0.55;
+        filter: none;
+      }
+
+      @keyframes models-scroll-right {
+        from {
+          transform: translate3d(-50%, 0, 0);
+        }
+        to {
+          transform: translate3d(0, 0, 0);
+        }
+      }
+
+      @media (max-width: 720px) {
+        .platforms {
+          grid-template-columns: repeat(4, max-content);
+          max-width: calc(100vw - 32px);
+        }
+      }
+
+      @keyframes drift {
+        from {
+          transform: translate3d(-1.5%, -1%, 0) scale(1.02);
+        }
+        to {
+          transform: translate3d(1.5%, 1.2%, 0) scale(1.06);
+        }
+      }
+
+      @media (prefers-reduced-motion: reduce) {
+        .wallpaper::before {
+          animation: none;
+        }
+
+        .models-row {
+          animation: none;
+          transform: none;
+          justify-content: center;
+          width: 100%;
+        }
+
+        .models-group[aria-hidden="true"] {
+          display: none;
+        }
+
+        .models-group {
+          flex-wrap: wrap;
+          justify-content: center;
+          padding-right: 0;
+          gap: calc(var(--u) * 4);
+          width: 100%;
+        }
+
+        .platforms img:hover,
+        .cta:hover,
+        .cta:active {
+          transform: none;
+          filter: none;
+        }
+      }
+
+      .how {
+        position: relative;
+        z-index: 1;
+        padding: clamp(4.5rem, 10vh, 7rem) 24px 80px;
+        text-align: center;
+        background: transparent;
+      }
+
+      .how h2 {
+        font-family:
+          "SF Pro Rounded",
+          ui-rounded,
+          "SF Pro Display",
+          -apple-system,
+          BlinkMacSystemFont,
+          "Helvetica Neue",
+          Helvetica,
+          Arial,
+          sans-serif;
+        font-size: clamp(2rem, 2.2vw + 1.5vh, 3.25rem);
+        font-weight: 500;
+        color: #000;
+        letter-spacing: -0.035em;
+        line-height: 1.15;
+        max-width: 18ch;
+        margin: 0 auto 96px;
+        opacity: 0;
+        transform: translateY(28px);
+        transition:
+          opacity 1.1s cubic-bezier(0.22, 1, 0.36, 1),
+          transform 1.1s cubic-bezier(0.22, 1, 0.36, 1);
+      }
+
+      .how h2.is-inview {
+        opacity: 1;
+        transform: translateY(0);
+      }
+
+      .how-panel {
+        --panel-pad: 32px;
+        max-width: 920px;
+        margin: 0 auto 140px;
+        padding: var(--panel-pad);
+        background: #ffffff;
+        border: 1px solid rgba(15, 23, 42, 0.06);
+        border-radius: 24px;
+        box-shadow:
+          0 1px 0 rgba(255, 255, 255, 0.8) inset,
+          0 14px 40px rgba(30, 70, 120, 0.08);
+        text-align: center;
+        opacity: 0;
+        transform: translateY(36px);
+        transition:
+          opacity 1.15s cubic-bezier(0.22, 1, 0.36, 1),
+          transform 1.15s cubic-bezier(0.22, 1, 0.36, 1);
+      }
+
+      .how-panel.is-inview {
+        opacity: 1;
+        transform: translateY(0);
+      }
+
+      .how-panel:last-child {
+        margin-bottom: 48px;
+      }
+
+      .how-panel .step-num {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-width: 2rem;
+        height: 1.6rem;
+        margin-bottom: 12px;
+        padding: 0 10px;
+        border-radius: 999px;
+        background: #eef3fb;
+        color: #5b7fb8;
+        font-size: 0.75rem;
+        font-weight: 700;
+        letter-spacing: 0.06em;
+      }
+
+      .how-panel > h3 {
+        font-family:
+          -apple-system,
+          BlinkMacSystemFont,
+          "SF Pro Display",
+          "SF Pro Text",
+          "Helvetica Neue",
+          Helvetica,
+          Arial,
+          sans-serif;
+        font-size: clamp(1.35rem, 2.4vw, 1.7rem);
+        font-weight: 700;
+        color: #111114;
+        letter-spacing: -0.03em;
+        line-height: 1.2;
+        margin: 0 0 8px;
+      }
+
+      .how-panel > .panel-sub {
+        margin: 0 auto 22px;
+        max-width: 34ch;
+        font-family: "Newsreader", "Times New Roman", Times, serif;
+        font-size: clamp(1rem, 1.5vw, 1.12rem);
+        font-style: italic;
+        font-weight: 300;
+        color: rgba(0, 0, 0, 0.5);
+        letter-spacing: -0.01em;
+        line-height: 1.4;
+      }
+
+      .how-panel .panel-body {
+        max-width: 760px;
+        margin: 0 auto;
+      }
+
+      /* Matched from untitled folder 2 cal-composer (light + typing) */
+      .cal-composer {
+        position: relative;
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+        margin: 0 auto;
+        padding: 16px;
+        min-height: 168px;
+        width: 100%;
+        max-width: 680px;
+        background: #fafafa;
+        border: 3px solid transparent;
+        border-radius: 22px;
+        box-shadow: 0 0 0 1px #e8e8ee;
+        text-align: left;
+      }
+
+      .cal-composer.is-typing {
+        background:
+          linear-gradient(#ffffff, #ffffff) padding-box,
+          linear-gradient(135deg, #4d8dff, #8b5cff, #d946ef, #ff6aad) border-box;
+        box-shadow: none;
+      }
+
+      .cal-composer-text {
+        width: 100%;
+        min-height: 72px;
+        flex: 1;
+        border: none;
+        background: transparent;
+        color: #111114;
+        font-family:
+          -apple-system,
+          BlinkMacSystemFont,
+          "SF Pro Display",
+          "SF Pro Text",
+          "Helvetica Neue",
+          Helvetica,
+          Arial,
+          sans-serif;
+        font-size: 15px;
+        font-weight: 400;
+        line-height: 1.45;
+        outline: none;
+        resize: none;
+        overflow: hidden;
+        padding: 0;
+        caret-color: #4d8dff;
+      }
+
+      .cal-composer-text.is-empty::before {
+        content: attr(data-placeholder);
+        color: #9a9aa2;
+      }
+
+      .cal-composer-toolbar {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 10px;
+        margin-top: auto;
+      }
+
+      .cal-composer-plus {
+        width: 32px;
+        height: 32px;
+        border: none;
+        border-radius: 8px;
+        background: #f0f0f3;
+        color: #4a4a52;
+        font-size: 22px;
+        line-height: 1;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        padding: 0;
+      }
+
+      .cal-composer-plus:hover {
+        background: #e6e6ea;
+        color: #111114;
+      }
+
+      .cal-composer-actions {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+      }
+
+      .cal-composer-send {
+        width: 34px;
+        height: 34px;
+        border: none;
+        border-radius: 50%;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        flex-shrink: 0;
+        background: #f0f0f3;
+        color: #4a4a52;
+        transition: background 0.15s, color 0.15s, opacity 0.15s;
+      }
+
+      .cal-composer-send:hover {
+        background: #e6e6ea;
+        color: #111114;
+      }
+
+      .cal-composer-send svg {
+        width: 15px;
+        height: 15px;
+      }
+
+      .cal-composer-caret {
+        display: inline-block;
+        width: 2px;
+        height: 1.05em;
+        margin-left: 1px;
+        background: #4d8dff;
+        vertical-align: -2px;
+        animation: caret-blink 1s steps(1, end) infinite;
+      }
+
+      @keyframes caret-blink {
+        0%,
+        49% {
+          opacity: 1;
+        }
+        50%,
+        100% {
+          opacity: 0;
+        }
+      }
+
+      /* Calendar week demo — light theme from untitled folder 2 */
+      .cal-demo {
+        max-width: 100%;
+        margin: 0 auto;
+        border: 1px solid #e8e8ee;
+        border-radius: 16px;
+        background: #fafafa;
+        overflow: hidden;
+        text-align: left;
+        font-family:
+          -apple-system,
+          BlinkMacSystemFont,
+          "SF Pro Display",
+          "SF Pro Text",
+          "Helvetica Neue",
+          Helvetica,
+          Arial,
+          sans-serif;
+      }
+
+      .cal-demo .cal-topbar {
+        display: flex;
+        align-items: center;
+        justify-content: flex-start;
+        gap: 14px;
+        padding: 12px 14px;
+        border-bottom: 1px solid #ececf0;
+        background: #ffffff;
+      }
+
+      .cal-demo .cal-topbar-title {
+        margin: 0;
+        font-size: 18px;
+        font-weight: 700;
+        color: #111114;
+        letter-spacing: -0.02em;
+        flex-shrink: 0;
+      }
+
+      .cal-demo .cal-month-nav {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+      }
+
+      .cal-demo .cal-icon-btn,
+      .cal-demo .cal-month-label {
+        border: 1px solid #e0e0e6;
+        background: #f4f4f6;
+        color: #222228;
+        border-radius: 8px;
+        font-family: inherit;
+        cursor: default;
+      }
+
+      .cal-demo .cal-icon-btn {
+        width: 32px;
+        height: 32px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        padding: 0;
+        color: #6a6a72;
+      }
+
+      .cal-demo .cal-icon-btn svg {
+        width: 14px;
+        height: 14px;
+      }
+
+      .cal-demo .cal-month-label {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        height: 34px;
+        padding: 0 12px;
+        font-size: 15px;
+        font-weight: 600;
+        color: #111114;
+      }
+
+      .cal-demo .cal-month-label svg {
+        width: 11px;
+        height: 11px;
+        opacity: 0.7;
+      }
+
+      .cal-demo .cal-weekdays {
+        display: grid;
+        grid-template-columns: repeat(7, minmax(0, 1fr));
+        border-bottom: 1px solid #e2e2e8;
+        background: #f4f4f6;
+      }
+
+      .cal-demo .cal-weekdays span {
+        text-align: center;
+        color: #6a6a72;
+        font-size: 11px;
+        font-weight: 600;
+        letter-spacing: 0.06em;
+        padding: 8px 6px;
+      }
+
+      .cal-demo .cal-grid {
+        display: grid;
+        grid-template-columns: repeat(7, minmax(0, 1fr));
+        grid-template-rows: 148px;
+        background: #ffffff;
+      }
+
+      .cal-demo .cal-cell {
+        position: relative;
+        border: none;
+        border-right: 1px solid #ececf0;
+        background: #eef4ff;
+        box-shadow: inset 0 0 0 1.5px #5b8cff;
+        color: #222228;
+        text-align: left;
+        padding: 6px 5px 4px;
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 3px;
+        min-width: 0;
+        min-height: 0;
+        overflow: hidden;
+        z-index: 1;
+      }
+
+      .cal-demo .cal-cell:nth-child(7n) {
+        border-right: none;
+      }
+
+      .cal-demo .cal-cell-num {
+        font-size: 13px;
+        font-weight: 550;
+        line-height: 1;
+      }
+
+      .cal-demo .cal-cell-events {
+        display: flex;
+        flex-direction: column;
+        align-items: stretch;
+        gap: 4px;
+        width: 100%;
+        min-width: 0;
+        flex: 1;
+        min-height: 0;
+        overflow: hidden;
+      }
+
+      .cal-demo .cal-event-row {
+        display: grid;
+        grid-template-columns: 3px minmax(0, 1fr);
+        grid-template-rows: auto auto;
+        grid-template-areas:
+          "bar title"
+          "bar platform";
+        column-gap: 6px;
+        row-gap: 1px;
+        width: 100%;
+        min-width: 0;
+        padding: 5px 6px;
+        border-radius: 8px;
+        background: #ffffff;
+        color: #222228;
+        opacity: 0;
+        transform: scale(0.72) translateY(10px);
+        transform-origin: top left;
+        pointer-events: none;
+        box-shadow: 0 1px 2px rgba(20, 40, 80, 0.06);
+      }
+
+      .cal-demo .cal-event-row.is-visible {
+        opacity: 1;
+        transform: scale(1) translateY(0);
+        animation: post-pop 0.45s cubic-bezier(0.22, 1, 0.36, 1) both;
+      }
+
+      .cal-demo .cal-event-bar {
+        grid-area: bar;
+        width: 3px;
+        min-height: 22px;
+        border-radius: 999px;
+        background: currentColor;
+        align-self: stretch;
+      }
+
+      .cal-demo .cal-event-title {
+        grid-area: title;
+        color: #111114;
+        font-size: 11px;
+        font-weight: 600;
+        line-height: 1.2;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        min-width: 0;
+      }
+
+      .cal-demo .cal-event-platform {
+        grid-area: platform;
+        font-size: 10px;
+        font-weight: 650;
+        line-height: 1.2;
+        color: currentColor;
+        opacity: 0.9;
+      }
+
+      .cal-demo .cal-event-row.is-instagram {
+        color: #c026d3;
+      }
+
+      .cal-demo .cal-event-row.is-instagram .cal-event-bar {
+        background: linear-gradient(180deg, #f58529 0%, #dd2a7b 45%, #8134af 100%);
+      }
+
+      .cal-demo .cal-event-row.is-tiktok {
+        color: #0891b2;
+      }
+
+      .cal-demo .cal-event-row.is-youtube {
+        color: #e11d48;
+      }
+
+      .cal-demo .cal-event-row.is-linkedin {
+        color: #2563eb;
+      }
+
+      .cal-demo .cal-event-row.is-twitter {
+        color: #111114;
+      }
+
+      .cal-demo .cal-event-row.is-facebook {
+        color: #1d4ed8;
+      }
+
+      @keyframes post-pop {
+        0% {
+          opacity: 0;
+          transform: scale(0.72) translateY(10px);
+        }
+        70% {
+          opacity: 1;
+          transform: scale(1.04) translateY(0);
+        }
+        100% {
+          opacity: 1;
+          transform: scale(1) translateY(0);
+        }
+      }
+
+      @media (max-width: 720px) {
+        .cal-demo .cal-grid {
+          grid-template-rows: 128px;
+        }
+
+        .cal-demo .cal-event-title {
+          font-size: 9.5px;
+        }
+      }
+
+      .publish-demo {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 14px;
+        max-width: 480px;
+        margin: 0 auto;
+        min-width: 0;
+        text-align: left;
+      }
+
+      .publish-row {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 14px 14px;
+        border-radius: 14px;
+        background: #f6f7fa;
+        border: 1px solid #ececf0;
+        opacity: 0;
+        transform: translateY(16px);
+        transition:
+          opacity 0.7s cubic-bezier(0.22, 1, 0.36, 1),
+          transform 0.7s cubic-bezier(0.22, 1, 0.36, 1);
+      }
+
+      .publish-row.is-visible {
+        opacity: 1;
+        transform: translateY(0);
+      }
+
+      .publish-row img {
+        width: 28px;
+        height: 28px;
+        object-fit: contain;
+        image-rendering: pixelated;
+        image-rendering: crisp-edges;
+        flex-shrink: 0;
+      }
+
+      .publish-row .publish-meta {
+        flex: 1;
+        min-width: 0;
+      }
+
+      .publish-row .publish-title {
+        display: block;
+        font-size: 13px;
+        font-weight: 600;
+        color: #111114;
+        letter-spacing: -0.015em;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+
+      .publish-row .publish-status {
+        display: block;
+        margin-top: 2px;
+        font-size: 11px;
+        font-weight: 500;
+        color: #6a6a72;
+      }
+
+      .publish-row .publish-check {
+        width: 22px;
+        height: 22px;
+        border-radius: 50%;
+        background: #e8f8ef;
+        color: #16a34a;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+        opacity: 0;
+        transform: scale(0);
+      }
+
+      .publish-row.is-visible .publish-check {
+        opacity: 1;
+        transform: scale(1);
+        animation: check-pop 0.35s cubic-bezier(0.22, 1, 0.36, 1) 0.18s both;
+      }
+
+      .publish-row .publish-check svg {
+        width: 12px;
+        height: 12px;
+      }
+
+      @keyframes check-pop {
+        0% {
+          transform: scale(0);
+        }
+        70% {
+          transform: scale(1.15);
+        }
+        100% {
+          transform: scale(1);
+        }
+      }
+
+      @media (max-width: 800px) {
+        .how-panel {
+          --panel-pad: 22px 16px 18px;
+          margin-bottom: 96px;
+        }
+      }
+
+      @media (prefers-reduced-motion: reduce) {
+        .how h2,
+        .how-panel,
+        .pixel-stats-section,
+        .why,
+        .final-cta {
+          opacity: 1;
+          transform: none;
+          transition: none;
+        }
+
+        .cal-composer-caret {
+          animation: none;
+          opacity: 1;
+        }
+
+        .publish-row,
+        .publish-row.is-visible .publish-check {
+          animation: none;
+          opacity: 1;
+          transform: none;
+          transition: none;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="wallpaper" aria-hidden="true"></div>
+
+    <div class="stage">
+    <header class="topbar">
+      <a class="topbar-brand" href="#" aria-label="Postfin">
+        <img src="assets/logo-white.png?v=2" alt="Postfin" />
+      </a>
+      <nav class="topbar-nav" aria-label="Primary">
+        <a href="#how">Product</a>
+        <a href="#">Models</a>
+        <a href="onboard.html?v=7">Pricing</a>
+        <a href="#results">Resources</a>
+        <a href="#">Docs</a>
+      </nav>
+      <div class="topbar-actions">
+        <a class="topbar-login" href="/login">Log in</a>
+        <a class="topbar-cta" href="onboard.html?v=7">Get Started</a>
       </div>
-    </div>
-    <div class="divider"></div>
-    <nav class="sidebar-nav" aria-label="Main">
-      <a class="nav-btn active" href="index.html" aria-label="Dash" aria-current="page">
-        <span class="nav-box">
-          <span class="home-icon" aria-hidden="true">
-            <span></span><span></span><span></span><span></span>
-          </span>
-          <span class="nav-label">Dash</span>
-        </span>
-      </a>
-      <a class="nav-btn" href="calendar.html" aria-label="Calendar">
-        <span class="nav-box">
-          <svg class="ads-icon" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-            <rect x="3.5" y="5" width="17" height="15.5" rx="2.5" stroke="currentColor" stroke-width="1.75"/>
-            <path d="M3.5 10h17M8 3.5v3M16 3.5v3" stroke="currentColor" stroke-width="1.75" stroke-linecap="round"/>
-          </svg>
-          <span class="nav-label">Calendar</span>
-        </span>
-      </a>
-      <a class="nav-btn" href="products.html" aria-label="Products">
-        <span class="nav-box">
-          <svg class="ads-icon" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-            <path d="M4 8.5L12 4l8 4.5v7L12 20l-8-4.5v-7z" stroke="currentColor" stroke-width="1.75" stroke-linejoin="round"/>
-            <path d="M12 12v8M4 8.5l8 3.5 8-3.5" stroke="currentColor" stroke-width="1.75" stroke-linejoin="round"/>
-          </svg>
-          <span class="nav-label">Products</span>
-        </span>
-      </a>
-      <a class="nav-btn" href="analytics.html" aria-label="Analytics">
-        <span class="nav-box">
-          <svg class="ads-icon" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-            <path d="M4.5 19.5v-5.5M10 19.5V8M15.5 19.5v-9M21 19.5V4.5" stroke="currentColor" stroke-width="1.75" stroke-linecap="round"/>
-          </svg>
-          <span class="nav-label">Analytics</span>
-        </span>
-      </a>
-      <a class="nav-btn" href="recent.html" aria-label="Recent">
-        <span class="nav-box">
-          <svg class="ads-icon" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-            <circle cx="12" cy="12" r="8.25" stroke="currentColor" stroke-width="1.75"/>
-            <path d="M12 8v4.5l3 1.5" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"/>
-          </svg>
-          <span class="nav-label">Recent</span>
-        </span>
-      </a>
-      <a class="nav-btn" href="connectors.html" aria-label="Connectors">
-        <span class="nav-box">
-          <svg class="ads-icon" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-            <path d="M8.5 15.5l7-7" stroke="currentColor" stroke-width="1.75" stroke-linecap="round"/>
-            <path d="M10.2 6.8l1.3-1.3a3.2 3.2 0 1 1 4.5 4.5l-1.3 1.3M13.8 17.2l-1.3 1.3a3.2 3.2 0 1 1-4.5-4.5l1.3-1.3" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"/>
-          </svg>
-          <span class="nav-label">Connectors</span>
-        </span>
-      </a>
-    </nav>
-    <div class="sidebar-foot">
-      <div class="divider"></div>
-      <a class="profile" href="profile.html" aria-label="cole perrilliat">
-        <span class="profile-avatar">C</span>
-        <span class="profile-name">cole perrilliat</span>
-        <svg class="profile-chevron" viewBox="0 0 12 12" fill="none" aria-hidden="true">
-          <path d="M3 4.5L6 7.5L9 4.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-        </svg>
-      </a>
-    </div>
-  </aside>
+    </header>
 
-  <main class="page">
-    <div class="dash-header">
-      <div class="dash-greeting">
-        <h1>Dashboard</h1>
+    <main class="hero">
+      <div class="hero-copy">
+        <h1>
+          <span class="hero-line">Your brand’s social</span>
+          <span class="hero-line">media, on <span class="autopilot">autopilot</span>.</span>
+        </h1>
       </div>
-      <button class="date-range" type="button" id="dash-range-btn">
-        <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
-          <rect x="3.5" y="5" width="17" height="15.5" rx="2.5" stroke="currentColor" stroke-width="1.75"/>
-          <path d="M3.5 10h17M8 3.5v3M16 3.5v3" stroke="currentColor" stroke-width="1.75" stroke-linecap="round"/>
-        </svg>
-        <span>Last 30 Days</span>
-        <svg viewBox="0 0 12 12" fill="none" aria-hidden="true">
-          <path d="M3 4.5L6 7.5L9 4.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-        </svg>
-      </button>
-    </div>
-
-    <div class="stat-grid">
-      <article class="stat-card" data-stat="views">
-        <div class="stat-card-copy">
-          <a class="stat-label" href="analytics.html">Total views</a>
-          <span class="stat-value" data-live>—</span>
-          <span class="stat-up"></span>
+      <div class="hero-mid">
+        <a class="cta" href="onboard.html?v=7">Get Started</a>
+      </div>
+      <div class="hero-bottom">
+        <div class="platforms" aria-label="Supported platforms">
+          <img src="assets/icons/instagram.png?v=2" alt="Instagram" />
+          <img src="assets/icons/tiktok.png?v=2" alt="TikTok" />
+          <img src="assets/icons/facebook.png?v=2" alt="Facebook" />
+          <img src="assets/icons/linkedin.png?v=2" alt="LinkedIn" />
+          <img src="assets/icons/x.png?v=2" alt="Twitter" />
+          <img src="assets/icons/reddit.png?v=1" alt="Reddit" />
+          <img src="assets/icons/youtube.png?v=2" alt="YouTube" />
         </div>
-      </article>
-      <article class="stat-card" data-stat="cpm">
-        <div class="stat-card-copy">
-          <a class="stat-label" href="analytics.html">Average CPM</a>
-          <span class="stat-value" data-live>—</span>
-          <span class="stat-up"></span>
-        </div>
-      </article>
-      <article class="stat-card" data-stat="followers">
-        <div class="stat-card-copy">
-          <a class="stat-label" href="analytics.html">New followers</a>
-          <span class="stat-value" data-live>—</span>
-          <span class="stat-up"></span>
-        </div>
-      </article>
-      <article class="stat-card" data-stat="videosPosted">
-        <div class="stat-card-copy">
-          <a class="stat-label" href="analytics.html">Videos posted</a>
-          <span class="stat-value" data-live>—</span>
-          <span class="stat-meta">Last 30 days</span>
-        </div>
-      </article>
-    </div>
-
-    <div class="dash-panels">
-      <section class="content-calendar">
-        <div class="calendar-toolbar">
-          <h2>Content Calendar</h2>
-          <div class="calendar-toolbar-right">
-            <a class="automated-plan-btn" id="automated-plan-btn" href="calendar.html">
-              <svg class="automated-plan-icon" viewBox="0 0 16 16" fill="none" aria-hidden="true">
-                <path d="M8 1.5l.9 2.7c.2.6.7 1.1 1.3 1.3L13.5 6.5l-2.7.9c-.6.2-1.1.7-1.3 1.3L8 11.5l-.9-2.7c-.2-.6-.7-1.1-1.3-1.3L2.5 6.5l2.7-.9c.6-.2 1.1-.7 1.3-1.3L8 1.5z" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/>
-                <path d="M12.5 10.5l.45 1.35c.1.3.35.55.65.65L15 13l-1.4.45c-.3.1-.55.35-.65.65L12.5 15.5l-.45-1.4c-.1-.3-.35-.55-.65-.65L10 13l1.4-.45c.3-.1.55-.35.65-.65l.45-1.4z" fill="currentColor"/>
-              </svg>
-              <span class="automated-plan-label">Edit my automated plan</span>
-            </a>
-            <div class="view-toggle" role="tablist" aria-label="Calendar view">
-              <button type="button" data-cal-view="day" aria-selected="false">Day</button>
-              <button type="button" class="active" data-cal-view="week" aria-selected="true">Week</button>
-              <button type="button" data-cal-view="month" aria-selected="false">Month</button>
+        <p class="models-label">Powered by the best models</p>
+        <div class="models-marquee" aria-label="AI models">
+          <div class="models-row">
+            <div class="models-group">
+              <img src="assets/models/anthropic.png" alt="Anthropic" />
+              <img src="assets/models/cohere.png" alt="Cohere" />
+              <img src="assets/models/runway.png" alt="Runway" />
+              <img src="assets/models/openai.png" alt="OpenAI" />
+              <img src="assets/models/elevenlabs.png" alt="ElevenLabs" />
+              <img src="assets/models/midjourney.png" alt="Midjourney" />
+              <img src="assets/models/mistral.png" alt="Mistral" />
+              <img src="assets/models/luma.png" alt="Luma" />
+              <img src="assets/models/adobe.png" alt="Adobe" />
+              <img src="assets/models/rabbit.png" alt="Rabbit" />
+              <img src="assets/models/gemini.png" alt="Gemini" />
             </div>
-            <button class="schedule-btn" type="button" id="dash-schedule-btn">+ Schedule</button>
-          </div>
-        </div>
-
-        <div class="calendar-view" data-view="day" hidden>
-          <div class="day-view">
-            <div class="day-view-header" id="dash-day-header"></div>
-            <div class="day-view-list" id="dash-day-list"></div>
-          </div>
-        </div>
-
-        <div class="calendar-view" data-view="week">
-          <div class="calendar-grid" id="dash-week-grid" aria-label="Weekly content schedule"></div>
-        </div>
-
-        <div class="calendar-view" data-view="month" hidden>
-          <div class="month-view">
-            <div class="month-weekdays">
-              <span>Mon</span><span>Tue</span><span>Wed</span><span>Thu</span><span>Fri</span><span>Sat</span><span>Sun</span>
+            <div class="models-group" aria-hidden="true">
+              <img src="assets/models/anthropic.png" alt="" />
+              <img src="assets/models/cohere.png" alt="" />
+              <img src="assets/models/runway.png" alt="" />
+              <img src="assets/models/openai.png" alt="" />
+              <img src="assets/models/elevenlabs.png" alt="" />
+              <img src="assets/models/midjourney.png" alt="" />
+              <img src="assets/models/mistral.png" alt="" />
+              <img src="assets/models/luma.png" alt="" />
+              <img src="assets/models/adobe.png" alt="" />
+              <img src="assets/models/rabbit.png" alt="" />
+              <img src="assets/models/gemini.png" alt="" />
             </div>
-            <div class="month-grid" id="dash-month-grid"></div>
           </div>
         </div>
-
-        <a class="calendar-footer" href="calendar.html">View full calendar →</a>
-      </section>
-
-      <section class="top-accounts">
-        <div class="top-accounts-header">
-          <h2>Top Performing Accounts</h2>
-          <a href="#">View all</a>
-        </div>
-        <ul class="account-list" id="dash-accounts"></ul>
-        <a class="accounts-footer" href="#">View all accounts →</a>
-      </section>
-    </div>
-
-    <div class="bottom-panels">
-      <section class="top-videos">
-        <div class="top-videos-header">
-          <h2>Top Videos</h2>
-          <a href="analytics.html">View all</a>
-        </div>
-        <div class="top-videos-grid" id="dash-videos"></div>
-      </section>
-
-      <section class="ai-suggestions">
-        <h2>AI Suggestions</h2>
-        <div class="suggestion-list" id="dash-suggestions"></div>
-        <a class="suggestions-footer" href="calendar.html">View all insights →</a>
-      </section>
-    </div>
-  </main>
-
-  <div class="day-modal" id="day-modal" hidden>
-    <div class="day-modal-backdrop" data-close-modal></div>
-    <div class="day-modal-panel" role="dialog" aria-modal="true" aria-labelledby="day-modal-title">
-      <div class="day-modal-header">
-        <button type="button" class="day-modal-back" id="day-modal-back" hidden aria-label="Back">←</button>
-        <h3 id="day-modal-title">Posts</h3>
-        <button type="button" class="day-modal-close" data-close-modal aria-label="Close">×</button>
       </div>
-      <div class="day-modal-body" id="day-modal-body"></div>
+    </main>
     </div>
-  </div>
 
-  <script src="api.js"></script>
-  <script src="app.js?v=42"></script>
-  <script src="countup.js"></script>
-  <script src="dashboard.js"></script>
-</body>
+    <section class="how" id="how">
+      <h2>From idea to posted. Automatically.</h2>
+
+      <div class="how-panel" data-step="1">
+        <span class="step-num">01</span>
+        <h3>Tell postfin what you want</h3>
+        <p class="panel-sub">“Create a week of content for my brand.”</p>
+        <div class="panel-body">
+          <form class="cal-composer is-typing" id="prompt-demo" action="#" onsubmit="return false;">
+            <div
+              class="cal-composer-text"
+              id="typed-prompt"
+              aria-live="polite"
+            ><span class="cal-composer-caret" aria-hidden="true"></span></div>
+            <div class="cal-composer-toolbar">
+              <button type="button" class="cal-composer-plus" aria-label="Add attachment">+</button>
+              <div class="cal-composer-actions">
+                <button type="submit" class="cal-composer-send" aria-label="Send">
+                  <svg viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M8 12.5V3.5M8 3.5L4.5 7M8 3.5L11.5 7" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                </button>
+              </div>
+            </div>
+          </form>
+        </div>
+      </div>
+
+      <div class="how-panel" data-step="2">
+        <span class="step-num">02</span>
+        <h3>It creates and schedules everything</h3>
+        <p class="panel-sub">“Posts, captions, and a calendar — ready.”</p>
+        <div class="panel-body">
+          <div class="cal-demo" id="cal-demo" aria-hidden="true">
+            <div class="cal-topbar">
+              <h4 class="cal-topbar-title">Calendar</h4>
+              <div class="cal-month-nav">
+                <button type="button" class="cal-icon-btn" tabindex="-1" aria-hidden="true">
+                  <svg viewBox="0 0 16 16" fill="none"><path d="M10 3.5L5.5 8 10 12.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                </button>
+                <button type="button" class="cal-month-label" tabindex="-1">
+                  December 2026
+                  <svg viewBox="0 0 12 12" fill="none" aria-hidden="true"><path d="M3 4.5L6 7.5L9 4.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                </button>
+                <button type="button" class="cal-icon-btn" tabindex="-1" aria-hidden="true">
+                  <svg viewBox="0 0 16 16" fill="none"><path d="M6 3.5L10.5 8 6 12.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                </button>
+              </div>
+            </div>
+            <div class="cal-weekdays" aria-hidden="true">
+              <span>SUN</span><span>MON</span><span>TUE</span><span>WED</span><span>THU</span><span>FRI</span><span>SAT</span>
+            </div>
+            <div class="cal-grid" id="cal-demo-grid"></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="how-panel" data-step="3">
+        <span class="step-num">03</span>
+        <h3>It publishes for you</h3>
+        <p class="panel-sub">“Your accounts stay active on autopilot.”</p>
+        <div class="panel-body">
+          <div class="publish-demo" id="publish-demo" aria-hidden="true">
+            <div class="publish-row" data-delay="0">
+              <img src="assets/icons/instagram.png?v=2" alt="" />
+              <span class="publish-meta">
+                <span class="publish-title">Brand story reel</span>
+                <span class="publish-status">Posted to Instagram</span>
+              </span>
+              <span class="publish-check" aria-hidden="true">
+                <svg viewBox="0 0 12 12" fill="none"><path d="M2.5 6.2L4.8 8.5L9.5 3.5" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              </span>
+            </div>
+            <div class="publish-row" data-delay="1">
+              <img src="assets/icons/tiktok.png?v=2" alt="" />
+              <span class="publish-meta">
+                <span class="publish-title">Product tip clip</span>
+                <span class="publish-status">Posted to TikTok</span>
+              </span>
+              <span class="publish-check" aria-hidden="true">
+                <svg viewBox="0 0 12 12" fill="none"><path d="M2.5 6.2L4.8 8.5L9.5 3.5" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              </span>
+            </div>
+            <div class="publish-row" data-delay="2">
+              <img src="assets/icons/linkedin.png?v=2" alt="" />
+              <span class="publish-meta">
+                <span class="publish-title">Founder post</span>
+                <span class="publish-status">Posted to LinkedIn</span>
+              </span>
+              <span class="publish-check" aria-hidden="true">
+                <svg viewBox="0 0 12 12" fill="none"><path d="M2.5 6.2L4.8 8.5L9.5 3.5" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              </span>
+            </div>
+            <div class="publish-row" data-delay="3">
+              <img src="assets/icons/youtube.png?v=2" alt="" />
+              <span class="publish-meta">
+                <span class="publish-title">Short promo</span>
+                <span class="publish-status">Posted to YouTube</span>
+              </span>
+              <span class="publish-check" aria-hidden="true">
+                <svg viewBox="0 0 12 12" fill="none"><path d="M2.5 6.2L4.8 8.5L9.5 3.5" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              </span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="pixel-stats-section" id="results" aria-label="Real results">
+      <h2>Real results.</h2>
+      <p class="section-sub">The same dashboard brands use after Postfin takes over posting.</p>
+      <div class="results-shell">
+        <div class="results-shell-top">
+          <h3>Last 30 days</h3>
+          <span class="results-range">All platforms</span>
+        </div>
+        <div class="stat-grid">
+          <article class="stat-card">
+            <span class="stat-label">Total views</span>
+            <span class="stat-value">1.7M</span>
+            <span class="stat-up">↗ 18.4%</span>
+          </article>
+          <article class="stat-card">
+            <span class="stat-label">Average CPM</span>
+            <span class="stat-value">$0.07</span>
+            <span class="stat-meta">Last 30 days</span>
+          </article>
+          <article class="stat-card">
+            <span class="stat-label">New followers</span>
+            <span class="stat-value">+1,254</span>
+            <span class="stat-up">↗ 12.5%</span>
+          </article>
+          <article class="stat-card">
+            <span class="stat-label">Videos posted</span>
+            <span class="stat-value">47</span>
+            <span class="stat-meta">Across 7 platforms</span>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section class="why" aria-label="Why Postfin">
+      <h2>Built to replace your content grind.</h2>
+      <ul class="why-list">
+        <li>
+          <span class="why-mark" aria-hidden="true">1</span>
+          <div>
+            <strong>Hours back every week</strong>
+            <span>Stop writing captions, resizing clips, and chasing post times. Postfin handles the full loop.</span>
+          </div>
+        </li>
+        <li>
+          <span class="why-mark" aria-hidden="true">2</span>
+          <div>
+            <strong>One voice, every platform</strong>
+            <span>Instagram, TikTok, LinkedIn, YouTube, and more — scheduled and published without tab-hopping.</span>
+          </div>
+        </li>
+        <li>
+          <span class="why-mark" aria-hidden="true">3</span>
+          <div>
+            <strong>Performance you can see</strong>
+            <span>Views, CPM, and growth in one place, so you know what’s working without opening seven apps.</span>
+          </div>
+        </li>
+      </ul>
+    </section>
+
+    <section class="final-cta">
+      <h2>Put your brand on <em>autopilot</em>.</h2>
+      <p>Create, schedule, publish, and track — without living in your social apps.</p>
+      <a class="cta" href="onboard.html?v=7">Get Started</a>
+    </section>
+
+    <footer class="site-footer">
+      <div class="site-footer-inner">
+        <div class="site-footer-brand">
+          <a href="#" aria-label="Postfin">
+            <img src="assets/logo-white.png?v=2" alt="Postfin" />
+          </a>
+          <p>Your brand’s social media, on autopilot.</p>
+        </div>
+        <div class="site-footer-col">
+          <h3>Product</h3>
+          <a href="#how">How it works</a>
+          <a href="#results">Results</a>
+          <a href="#">Models</a>
+          <a href="onboard.html?v=7">Pricing</a>
+        </div>
+        <div class="site-footer-col">
+          <h3>Company</h3>
+          <a href="#">About</a>
+          <a href="#">Careers</a>
+          <a href="#">Contact</a>
+        </div>
+        <div class="site-footer-col">
+          <h3>Account</h3>
+          <a href="/login">Log in</a>
+          <a href="onboard.html?v=7">Get Started</a>
+          <a href="#">Docs</a>
+        </div>
+      </div>
+      <div class="site-footer-bottom">
+        <p>© 2026 Postfin</p>
+        <div class="site-footer-legal">
+          <a href="#">Privacy</a>
+          <a href="#">Terms</a>
+        </div>
+      </div>
+    </footer>
+
+    <script>
+      (function () {
+        const phrase = "Create a week of content for my brand";
+        const el = document.getElementById("typed-prompt");
+        const grid = document.getElementById("cal-demo-grid");
+        const how = document.querySelector(".how");
+        const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+        if (!el || !grid || !how) return;
+
+        const days = [
+          { n: 13 },
+          { n: 14 },
+          { n: 15 },
+          { n: 16 },
+          { n: 17 },
+          { n: 18 },
+          { n: 19 },
+        ];
+
+        const posts = [
+          { day: 13, title: "Brand story reel", platform: "Instagram", cls: "is-instagram" },
+          { day: 14, title: "Product tip clip", platform: "TikTok", cls: "is-tiktok" },
+          { day: 15, title: "Founder post", platform: "LinkedIn", cls: "is-linkedin" },
+          { day: 16, title: "Behind the scenes", platform: "Instagram", cls: "is-instagram" },
+          { day: 17, title: "Short promo", platform: "YouTube", cls: "is-youtube" },
+          { day: 18, title: "Community poll", platform: "Twitter", cls: "is-twitter" },
+          { day: 19, title: "Weekend wrap", platform: "Facebook", cls: "is-facebook" },
+        ];
+
+        const cellsByDay = {};
+
+        days.forEach((d) => {
+          const cell = document.createElement("div");
+          cell.className = "cal-cell";
+          cell.innerHTML =
+            '<span class="cal-cell-num">' +
+            d.n +
+            '</span><div class="cal-cell-events"></div>';
+          grid.appendChild(cell);
+          cellsByDay[d.n] = cell.querySelector(".cal-cell-events");
+        });
+
+        const eventNodes = posts.map((post) => {
+          const row = document.createElement("div");
+          row.className = "cal-event-row " + post.cls;
+          row.innerHTML =
+            '<span class="cal-event-bar"></span>' +
+            '<span class="cal-event-title">' +
+            post.title +
+            "</span>" +
+            '<span class="cal-event-platform">' +
+            post.platform +
+            "</span>";
+          cellsByDay[post.day].appendChild(row);
+          return row;
+        });
+
+        const publishRows = [...document.querySelectorAll("#publish-demo .publish-row")];
+        const panels = [...document.querySelectorAll(".how-panel[data-step]")];
+        const fadeTargets = [
+          how.querySelector("h2"),
+          ...panels,
+          document.querySelector(".pixel-stats-section"),
+          document.querySelector(".why"),
+          document.querySelector(".final-cta"),
+        ].filter(Boolean);
+
+        let typingStarted = false;
+        let scheduleStarted = false;
+        let publishStarted = false;
+
+        function finishTyping() {
+          el.textContent = phrase;
+        }
+
+        function playTyping() {
+          if (typingStarted) return;
+          typingStarted = true;
+          let i = 0;
+
+          function render(text) {
+            el.innerHTML =
+              text.replace(/</g, "&lt;") +
+              '<span class="cal-composer-caret" aria-hidden="true"></span>';
+          }
+
+          function tick() {
+            i += 1;
+            render(phrase.slice(0, i));
+            if (i >= phrase.length) {
+              finishTyping();
+              return;
+            }
+            setTimeout(tick, 42 + Math.random() * 48);
+          }
+
+          tick();
+        }
+
+        function playSchedule() {
+          if (scheduleStarted) return;
+          scheduleStarted = true;
+          eventNodes.forEach((node, i) => {
+            setTimeout(() => node.classList.add("is-visible"), 180 + i * 260);
+          });
+        }
+
+        function playPublish() {
+          if (publishStarted) {
+            publishRows.forEach((row) => row.classList.add("is-visible"));
+            return;
+          }
+          publishStarted = true;
+          publishRows.forEach((row, i) => {
+            setTimeout(() => row.classList.add("is-visible"), 120 + i * 320);
+          });
+        }
+
+        function showFinal() {
+          finishTyping();
+          eventNodes.forEach((node) => node.classList.add("is-visible"));
+          publishStarted = true;
+          publishRows.forEach((row) => row.classList.add("is-visible"));
+          fadeTargets.forEach((node) => node.classList.add("is-inview"));
+        }
+
+        if (reduceMotion) {
+          showFinal();
+          return;
+        }
+
+        const fadeObserver = new IntersectionObserver(
+          (entries) => {
+            entries.forEach((entry) => {
+              if (!entry.isIntersecting) return;
+              entry.target.classList.add("is-inview");
+              fadeObserver.unobserve(entry.target);
+
+              const step = entry.target.getAttribute("data-step");
+              if (step === "1") playTyping();
+              if (step === "2") playSchedule();
+              if (step === "3") playPublish();
+            });
+          },
+          { threshold: 0.28, rootMargin: "0px 0px -8% 0px" }
+        );
+
+        fadeTargets.forEach((node) => fadeObserver.observe(node));
+      })();
+    </script>
+  </body>
 </html>

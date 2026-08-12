@@ -9,7 +9,6 @@
   const modalTitle = document.getElementById("recent-modal-title");
 
   const ACTIVE = ["queued", "scraping", "scripting", "rendering", "posting"];
-  let pollTimer = null;
   let jobsById = new Map();
 
   function caption(job) {
@@ -237,13 +236,8 @@
       jobsById = new Map(jobs.map((j) => [String(j.id), j]));
       feed.innerHTML = jobs.length
         ? `<div class="recent-grid">${jobs.map(jobTile).join("")}</div>`
-        : emptyBlock("No videos yet. Schedule one from the dashboard or the calendar.");
+        : emptyBlock("Nothing posted yet. Once a video goes live, it shows up here.");
       bind();
-
-      clearTimeout(pollTimer);
-      if (jobs.some((j) => ACTIVE.includes(j.status))) {
-        pollTimer = setTimeout(load, 5000);
-      }
     } catch (err) {
       feed.innerHTML = errorBlock(`Couldn't load recent activity: ${err.message}`);
     }

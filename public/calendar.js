@@ -1510,46 +1510,13 @@
     }, 2200);
   }
 
-  // What the assistant can do, said in the words you would use to ask for it.
-  // An empty chat box does not tell you it can delete a video or move one to
-  // another day, so people ask for a fraction of what is there.
-  const STARTERS = [
-    { label: "Plan a week of videos", text: "Plan a video for each day next week" },
-    { label: "See what's scheduled", text: "What's scheduled this week?" },
-    { label: "Rewrite a caption", text: "Change the caption on Friday's video" },
-    { label: "Move one to another day", text: "Move Friday's video to Sunday" },
-    { label: "Re-render one", text: "Regenerate Friday's video, make it funnier" },
-    { label: "Delete one", text: "Delete Friday's video" },
-  ];
-
   function renderAgentEmpty() {
     if (!dayPanel) return;
     stopLoadingShuffle();
     dayPanel.innerHTML = `
       <div class="cal-agent-empty">
         <img class="cal-agent-mark" src="agent-mark.png" alt="" aria-hidden="true">
-        <p class="cal-agent-empty-lead">Ask for videos, or change the ones you have.</p>
-        <div class="cal-agent-starters">
-          ${STARTERS.map((s, i) => `
-            <button type="button" class="cal-starter" data-starter="${i}">${escapeHtml(s.label)}</button>
-          `).join("")}
-        </div>
       </div>`;
-
-    // Fills the composer rather than sending: a suggestion is a starting
-    // point, and one of them deletes something.
-    dayPanel.querySelectorAll("[data-starter]").forEach((btn) => {
-      btn.addEventListener("click", () => {
-        const starter = STARTERS[Number(btn.getAttribute("data-starter"))];
-        if (!starter || !field) return;
-        field.value = starter.text;
-        field.focus();
-        field.setSelectionRange(field.value.length, field.value.length);
-        resizeField();
-        syncSendState();
-        setComposerActive(true);
-      });
-    });
   }
 
   function renderThread(pending) {

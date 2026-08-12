@@ -1,0 +1,1394 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Get Started — Postfin</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@1,6..72,200;1,6..72,300&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      *,
+      *::before,
+      *::after {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+
+      html,
+      body {
+        min-height: 100%;
+      }
+
+      body {
+        font-family:
+          -apple-system,
+          BlinkMacSystemFont,
+          "SF Pro Display",
+          "SF Pro Text",
+          "Helvetica Neue",
+          Helvetica,
+          Arial,
+          sans-serif;
+        background: #ffffff;
+        color: #111114;
+        overflow-x: hidden;
+      }
+
+      .wallpaper {
+        position: fixed;
+        inset: 0;
+        z-index: 0;
+        pointer-events: none;
+        background: linear-gradient(
+          to bottom,
+          #5a9fe0 0%,
+          #8ec0ef 28%,
+          #c5dff7 55%,
+          #eaf4fc 78%,
+          #ffffff 100%
+        );
+      }
+
+      .shell {
+        position: relative;
+        z-index: 1;
+        width: min(760px, calc(100% - 32px));
+        margin: 0 auto;
+        padding: 28px 0 80px;
+        min-height: 100dvh;
+        display: flex;
+        flex-direction: column;
+        transition: width 0.2s ease;
+      }
+
+      .shell.is-plans {
+        width: min(1120px, calc(100% - 32px));
+      }
+
+      .top {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 48px;
+      }
+
+      .top a {
+        display: inline-flex;
+        align-items: center;
+        text-decoration: none;
+      }
+
+      .top img {
+        width: 40px;
+        height: 40px;
+        object-fit: contain;
+      }
+
+      .panel {
+        background: #ffffff;
+        border: 1px solid rgba(15, 23, 42, 0.06);
+        border-radius: 24px;
+        padding: clamp(28px, 4vw, 40px);
+        box-shadow:
+          0 1px 0 rgba(255, 255, 255, 0.8) inset,
+          0 18px 48px rgba(30, 70, 120, 0.1);
+      }
+
+      h1 {
+        font-family:
+          "SF Pro Rounded",
+          ui-rounded,
+          "SF Pro Display",
+          -apple-system,
+          BlinkMacSystemFont,
+          "Helvetica Neue",
+          Helvetica,
+          Arial,
+          sans-serif;
+        font-size: clamp(1.85rem, 4vw, 2.5rem);
+        font-weight: 500;
+        letter-spacing: -0.035em;
+        line-height: 1.15;
+        margin: 0 0 10px;
+      }
+
+      .lead {
+        margin: 0 0 28px;
+        font-size: 1.05rem;
+        color: rgba(17, 17, 20, 0.55);
+        letter-spacing: -0.015em;
+        line-height: 1.45;
+        max-width: 40ch;
+      }
+
+      .niche-grid {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 12px;
+      }
+
+      .niche-option {
+        appearance: none;
+        border: 2px solid #e8e8ec;
+        background: #ffffff;
+        border-radius: 16px;
+        padding: 18px 16px;
+        text-align: left;
+        cursor: pointer;
+        box-shadow: 0 1px 3px rgba(15, 23, 42, 0.05);
+        transition:
+          border-color 0.15s ease,
+          background 0.15s ease,
+          box-shadow 0.15s ease,
+          transform 0.15s ease;
+      }
+
+      .niche-option:hover {
+        background: #ffffff;
+        border-color: #c9d7ea;
+        box-shadow: 0 3px 10px rgba(15, 23, 42, 0.08);
+        transform: translateY(-1px);
+      }
+
+      .niche-option.is-selected {
+        background: #ffffff;
+        border-color: #2f6fe4;
+        box-shadow: 0 6px 18px rgba(15, 23, 42, 0.14);
+      }
+
+      .niche-option .cat {
+        display: block;
+        font-size: 0.72rem;
+        font-weight: 600;
+        letter-spacing: 0.04em;
+        text-transform: uppercase;
+        color: #5b7fb8;
+        margin-bottom: 6px;
+      }
+
+      .niche-option .title {
+        display: block;
+        font-size: 1.05rem;
+        font-weight: 700;
+        color: #111114;
+        letter-spacing: -0.025em;
+        margin-bottom: 4px;
+      }
+
+      .niche-option .desc {
+        display: block;
+        font-size: 0.9rem;
+        color: rgba(17, 17, 20, 0.52);
+        line-height: 1.35;
+        letter-spacing: -0.01em;
+      }
+
+      .btn-back {
+        appearance: none;
+        border: none;
+        background: transparent;
+        color: rgba(17, 17, 20, 0.55);
+        font: inherit;
+        font-size: 0.95rem;
+        font-weight: 500;
+        cursor: pointer;
+        padding: 10px 12px;
+        border-radius: 12px;
+        letter-spacing: -0.015em;
+      }
+
+      .btn-back:hover {
+        color: #111114;
+        background: rgba(255, 255, 255, 0.45);
+      }
+
+      .actions {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 10px;
+        margin-top: 28px;
+      }
+
+      .actions-end {
+        display: flex;
+        gap: 10px;
+        margin-left: auto;
+      }
+
+      .onboard-step {
+        display: none;
+      }
+
+      .onboard-step.is-active {
+        display: block;
+      }
+
+      .btn-next {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        padding: 12px 22px;
+        border: none;
+        border-radius: 14px;
+        background: linear-gradient(180deg, #6eb0f5 0%, #2f7fd6 48%, #1f6ec4 100%);
+        color: #fff;
+        font-size: 0.98rem;
+        font-weight: 600;
+        letter-spacing: -0.02em;
+        cursor: pointer;
+        box-shadow:
+          0 1px 0 rgba(255, 255, 255, 0.45) inset,
+          0 -2px 0 rgba(12, 60, 120, 0.35) inset,
+          0 4px 0 #154a8c,
+          0 10px 22px rgba(20, 70, 140, 0.28);
+        transition:
+          transform 0.15s ease,
+          filter 0.15s ease,
+          opacity 0.15s ease;
+      }
+
+      .btn-next:disabled {
+        opacity: 0.45;
+        cursor: not-allowed;
+        filter: grayscale(0.2);
+        transform: none;
+        box-shadow:
+          0 1px 0 rgba(255, 255, 255, 0.35) inset,
+          0 -2px 0 rgba(12, 60, 120, 0.25) inset,
+          0 3px 0 #154a8c;
+      }
+
+      .btn-next:not(:disabled):hover {
+        filter: brightness(1.05);
+        transform: translateY(-1px);
+      }
+
+      .other-field {
+        display: none;
+        margin-top: 16px;
+      }
+
+      .other-field.is-open {
+        display: block;
+      }
+
+      .other-field label {
+        display: block;
+        font-size: 0.85rem;
+        font-weight: 600;
+        color: #5a5a62;
+        margin-bottom: 8px;
+      }
+
+      .other-field input {
+        width: 100%;
+        padding: 14px 16px;
+        border-radius: 14px;
+        border: 1px solid #e6e6ea;
+        background: #f6f7fa;
+        font: inherit;
+        font-size: 1rem;
+        color: #111114;
+        outline: none;
+        transition: border-color 0.15s ease, box-shadow 0.15s ease;
+      }
+
+      .other-field input:focus {
+        border-color: #2f7fd6;
+        box-shadow: 0 0 0 3px rgba(47, 127, 214, 0.16);
+        background: #fff;
+      }
+
+      .link-field {
+        margin-top: 4px;
+      }
+
+      .link-field label {
+        display: block;
+        font-size: 0.85rem;
+        font-weight: 600;
+        color: #5a5a62;
+        margin-bottom: 8px;
+      }
+
+      .link-field input {
+        width: 100%;
+        padding: 14px 16px;
+        border-radius: 14px;
+        border: 1px solid #e6e6ea;
+        background: #f6f7fa;
+        font: inherit;
+        font-size: 1rem;
+        color: #111114;
+        outline: none;
+        transition: border-color 0.15s ease, box-shadow 0.15s ease;
+      }
+
+      .link-field input:focus {
+        border-color: #2f7fd6;
+        box-shadow: 0 0 0 3px rgba(47, 127, 214, 0.16);
+        background: #fff;
+      }
+
+      .onboard-step[data-step="8"] {
+        background: transparent;
+        border: none;
+        box-shadow: none;
+        padding: 0;
+        text-align: center;
+      }
+
+      .onboard-step[data-step="8"] .lead {
+        margin-left: auto;
+        margin-right: auto;
+        margin-bottom: 36px;
+        max-width: 38ch;
+      }
+
+      .plans {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 18px;
+        align-items: stretch;
+        width: 100%;
+        max-width: 1040px;
+        margin: 0 auto;
+        padding-top: 10px;
+      }
+
+      .plan-card {
+        appearance: none;
+        position: relative;
+        width: 100%;
+        border: 1px solid rgba(255, 255, 255, 0.85);
+        background: #ffffff;
+        border-radius: 28px;
+        padding: 28px 26px 26px;
+        text-align: left;
+        cursor: pointer;
+        display: flex;
+        flex-direction: column;
+        align-items: stretch;
+        font: inherit;
+        color: inherit;
+        box-shadow:
+          0 1px 0 rgba(255, 255, 255, 1) inset,
+          0 0 0 1px rgba(15, 23, 42, 0.03),
+          0 8px 18px rgba(30, 70, 120, 0.05),
+          0 20px 40px rgba(30, 70, 120, 0.07),
+          0 36px 64px rgba(30, 70, 120, 0.08);
+        transition:
+          transform 0.18s ease,
+          box-shadow 0.18s ease,
+          border-color 0.18s ease;
+      }
+
+      .plan-card:hover {
+        transform: translateY(-6px);
+        box-shadow:
+          0 1px 0 rgba(255, 255, 255, 1) inset,
+          0 0 0 1px rgba(15, 23, 42, 0.04),
+          0 12px 24px rgba(30, 70, 120, 0.06),
+          0 28px 52px rgba(30, 70, 120, 0.08),
+          0 48px 80px rgba(30, 70, 120, 0.1);
+      }
+
+      .plan-card.is-suggested {
+        z-index: 1;
+        transform: translateY(-10px);
+        border-color: rgba(47, 127, 214, 0.55);
+        box-shadow:
+          0 1px 0 rgba(255, 255, 255, 1) inset,
+          0 0 0 3px #2f7fd6,
+          0 0 0 6px rgba(47, 127, 214, 0.18),
+          0 12px 26px rgba(30, 70, 120, 0.07),
+          0 28px 56px rgba(30, 70, 120, 0.09),
+          0 52px 90px rgba(30, 70, 120, 0.11);
+      }
+
+      .plan-card.is-suggested:hover {
+        transform: translateY(-14px);
+        box-shadow:
+          0 1px 0 rgba(255, 255, 255, 1) inset,
+          0 0 0 3px #2f7fd6,
+          0 0 0 7px rgba(47, 127, 214, 0.22),
+          0 16px 32px rgba(30, 70, 120, 0.08),
+          0 36px 64px rgba(30, 70, 120, 0.1),
+          0 60px 100px rgba(30, 70, 120, 0.12);
+      }
+
+      .plan-suggested {
+        position: absolute;
+        top: -13px;
+        left: 50%;
+        transform: translateX(-50%);
+        display: inline-flex;
+        align-items: center;
+        padding: 6px 12px;
+        border-radius: 999px;
+        background: linear-gradient(180deg, #5aa8f0 0%, #2f7fd6 100%);
+        color: #fff;
+        font-size: 0.75rem;
+        font-weight: 700;
+        letter-spacing: -0.01em;
+        white-space: nowrap;
+        box-shadow: 0 6px 14px rgba(47, 127, 214, 0.28);
+      }
+
+      .plan-name {
+        display: block;
+        font-size: 1.05rem;
+        font-weight: 700;
+        letter-spacing: -0.03em;
+        color: #111114;
+        margin-bottom: 10px;
+      }
+
+      .plan-price {
+        display: flex;
+        align-items: baseline;
+        flex-wrap: wrap;
+        gap: 6px;
+        margin-bottom: 18px;
+        color: #111114;
+      }
+
+      .plan-price strong {
+        font-size: clamp(2.2rem, 3.4vw, 2.75rem);
+        font-weight: 750;
+        letter-spacing: -0.05em;
+        line-height: 1;
+      }
+
+      .plan-price span {
+        font-size: 1rem;
+        font-weight: 500;
+        color: rgba(17, 17, 20, 0.45);
+        letter-spacing: -0.02em;
+      }
+
+      .plan-cta {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 100%;
+        min-height: 48px;
+        margin-bottom: 14px;
+        padding: 0 18px;
+        border: none;
+        border-radius: 14px;
+        background: linear-gradient(180deg, #6eb0f5 0%, #2f7fd6 48%, #1f6ec4 100%);
+        color: #fff;
+        font-size: 0.98rem;
+        font-weight: 700;
+        letter-spacing: -0.02em;
+        box-shadow:
+          0 1px 0 rgba(255, 255, 255, 0.45) inset,
+          0 -2px 0 rgba(12, 60, 120, 0.35) inset,
+          0 3px 0 #154a8c,
+          0 8px 18px rgba(20, 70, 140, 0.28);
+      }
+
+      .plan-card:hover .plan-cta {
+        filter: brightness(1.05);
+      }
+
+      .plan-desc {
+        display: block;
+        margin-bottom: 18px;
+        font-size: 0.92rem;
+        font-weight: 500;
+        color: rgba(17, 17, 20, 0.5);
+        letter-spacing: -0.015em;
+        line-height: 1.4;
+      }
+
+      .plan-card hr {
+        width: 100%;
+        border: none;
+        border-top: 1px solid #ececf1;
+        margin: 0 0 16px;
+      }
+
+      .plan-includes {
+        display: block;
+        margin-bottom: 12px;
+        font-size: 0.92rem;
+        font-weight: 700;
+        letter-spacing: -0.02em;
+        color: #111114;
+      }
+
+      .plan-card ul {
+        list-style: none;
+        display: flex;
+        flex-direction: column;
+        gap: 11px;
+        margin: 0;
+      }
+
+      .plan-card li {
+        display: grid;
+        grid-template-columns: 18px minmax(0, 1fr);
+        gap: 10px;
+        align-items: start;
+        font-size: 0.92rem;
+        font-weight: 500;
+        color: #3a3a42;
+        letter-spacing: -0.015em;
+        line-height: 1.4;
+      }
+
+      .plan-card li svg {
+        width: 16px;
+        height: 16px;
+        margin-top: 2px;
+        color: #7eb6f0;
+        flex-shrink: 0;
+      }
+
+      .plan-back {
+        display: inline-flex;
+        margin: 28px auto 0;
+        padding: 10px 14px;
+        border: none;
+        background: none;
+        color: rgba(17, 17, 20, 0.48);
+        font: inherit;
+        font-size: 0.95rem;
+        font-weight: 500;
+        cursor: pointer;
+      }
+
+      .plan-back:hover {
+        color: #111114;
+      }
+
+      @media (max-width: 900px) {
+        .shell.is-plans {
+          width: min(440px, calc(100% - 24px));
+        }
+
+        .plans {
+          grid-template-columns: 1fr;
+          max-width: 400px;
+        }
+
+        .plan-card.is-suggested {
+          order: -1;
+          transform: none;
+        }
+
+        .plan-card.is-suggested:hover {
+          transform: translateY(-4px);
+        }
+      }
+
+      .setup-screen {
+        display: none;
+        flex: 1;
+        align-items: center;
+        justify-content: center;
+        padding: 40px 0 80px;
+      }
+
+      .setup-screen.is-active {
+        display: flex;
+      }
+
+      .shell.is-setup .top,
+      .shell.is-setup .panel {
+        display: none;
+      }
+
+      .setup-card {
+        width: min(420px, 100%);
+        background: #ffffff;
+        border: 1px solid rgba(15, 23, 42, 0.06);
+        border-radius: 24px;
+        padding: 36px 28px 32px;
+        text-align: center;
+        box-shadow:
+          0 1px 0 rgba(255, 255, 255, 0.8) inset,
+          0 18px 48px rgba(30, 70, 120, 0.1);
+      }
+
+      .setup-spinner {
+        width: 48px;
+        height: 48px;
+        margin: 0 auto 22px;
+        border-radius: 50%;
+        border: 3px solid #e3eaf4;
+        border-top-color: #2f7fd6;
+        animation: setup-spin 0.85s linear infinite;
+      }
+
+      .setup-card h1 {
+        font-size: clamp(1.45rem, 3.5vw, 1.85rem);
+        margin-bottom: 8px;
+      }
+
+      .setup-status {
+        min-height: 1.5em;
+        margin: 0 0 22px;
+        font-size: 1rem;
+        color: rgba(17, 17, 20, 0.55);
+        letter-spacing: -0.015em;
+        transition: opacity 0.25s ease;
+      }
+
+      .setup-status.is-fading {
+        opacity: 0;
+      }
+
+      .setup-steps {
+        list-style: none;
+        text-align: left;
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+      }
+
+      .setup-steps li {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        font-size: 0.92rem;
+        color: rgba(17, 17, 20, 0.35);
+        letter-spacing: -0.01em;
+        transition: color 0.25s ease;
+      }
+
+      .setup-steps li.is-active {
+        color: #111114;
+        font-weight: 600;
+      }
+
+      .setup-steps li.is-done {
+        color: #16a34a;
+      }
+
+      .setup-dot {
+        width: 10px;
+        height: 10px;
+        border-radius: 50%;
+        background: #d7dde8;
+        flex-shrink: 0;
+        transition: background 0.25s ease, box-shadow 0.25s ease;
+      }
+
+      .setup-steps li.is-active .setup-dot {
+        background: #2f7fd6;
+        box-shadow: 0 0 0 4px rgba(47, 127, 214, 0.16);
+        animation: setup-pulse 1s ease-in-out infinite;
+      }
+
+      .setup-steps li.is-done .setup-dot {
+        background: #16a34a;
+        box-shadow: none;
+        animation: none;
+      }
+
+      @keyframes setup-spin {
+        to {
+          transform: rotate(360deg);
+        }
+      }
+
+      @keyframes setup-pulse {
+        0%,
+        100% {
+          box-shadow: 0 0 0 4px rgba(47, 127, 214, 0.12);
+        }
+        50% {
+          box-shadow: 0 0 0 7px rgba(47, 127, 214, 0.2);
+        }
+      }
+
+      @media (prefers-reduced-motion: reduce) {
+        .setup-spinner,
+        .setup-steps li.is-active .setup-dot {
+          animation: none;
+        }
+      }
+
+      @media (max-width: 640px) {
+        .shell {
+          padding-top: 18px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="wallpaper" aria-hidden="true"></div>
+    <div class="shell">
+      <div class="top">
+        <a href="index.html" aria-label="Back to Postfin">
+          <img src="assets/logo-white.png?v=2" alt="Postfin" />
+        </a>
+      </div>
+
+      <section class="panel onboard-step is-active" data-step="1">
+        <h1>What’s your niche?</h1>
+        <p class="lead">
+          Pick the closest fit so Postfin can create content that sounds like your
+          brand.
+        </p>
+
+        <div class="niche-grid" role="radiogroup" aria-label="Product niche">
+          <button type="button" class="niche-option" role="radio" aria-checked="false" data-niche="software" data-category="software">
+            <span class="cat">Software</span>
+            <span class="title">Software</span>
+            <span class="desc">SaaS, mobile apps, platforms, and tools</span>
+          </button>
+
+          <button type="button" class="niche-option" role="radio" aria-checked="false" data-niche="ecom" data-category="ecom">
+            <span class="cat">Ecom</span>
+            <span class="title">Ecommerce</span>
+            <span class="desc">Shopify, clothing brands, beauty, online stores</span>
+          </button>
+
+          <button type="button" class="niche-option" role="radio" aria-checked="false" data-niche="product" data-category="product">
+            <span class="cat">Product</span>
+            <span class="title">Physical product</span>
+            <span class="desc">Hardware, CPG, food &amp; beverage, packaged goods</span>
+          </button>
+
+          <button type="button" class="niche-option" role="radio" aria-checked="false" data-niche="other" data-category="other">
+            <span class="cat">Other</span>
+            <span class="title">Something else</span>
+            <span class="desc">Agency, creator, local business, etc.</span>
+          </button>
+        </div>
+
+        <div class="other-field" id="other-field">
+          <label for="other-niche">Tell us what you sell</label>
+          <input id="other-niche" type="text" placeholder="e.g. fitness coaching, real estate, podcast…" autocomplete="off" />
+        </div>
+
+        <div class="actions">
+          <div class="actions-end">
+            <button type="button" class="btn-next" id="continue-niche" disabled>Continue</button>
+          </div>
+        </div>
+      </section>
+
+      <section class="panel onboard-step" data-step="2">
+        <h1>What’s your main goal?</h1>
+        <p class="lead">
+          We’ll prioritize content and scheduling around what matters most right
+          now.
+        </p>
+
+        <div class="niche-grid" role="radiogroup" aria-label="Main goal">
+          <button type="button" class="goal-option niche-option" role="radio" aria-checked="false" data-goal="grow-followers">
+            <span class="cat">Growth</span>
+            <span class="title">Grow followers</span>
+            <span class="desc">Build audience across your platforms</span>
+          </button>
+
+          <button type="button" class="goal-option niche-option" role="radio" aria-checked="false" data-goal="drive-sales">
+            <span class="cat">Revenue</span>
+            <span class="title">Drive sales</span>
+            <span class="desc">Turn content into traffic and purchases</span>
+          </button>
+
+          <button type="button" class="goal-option niche-option" role="radio" aria-checked="false" data-goal="stay-consistent">
+            <span class="cat">Consistency</span>
+            <span class="title">Stay consistent</span>
+            <span class="desc">Post regularly without the scramble</span>
+          </button>
+
+          <button type="button" class="goal-option niche-option" role="radio" aria-checked="false" data-goal="save-time">
+            <span class="cat">Ops</span>
+            <span class="title">Save time</span>
+            <span class="desc">Automate drafting, scheduling, and posting</span>
+          </button>
+        </div>
+
+        <div class="actions">
+          <button type="button" class="btn-back" id="back-goal">Back</button>
+          <div class="actions-end">
+            <button type="button" class="btn-next" id="continue-goal" disabled>Continue</button>
+          </div>
+        </div>
+      </section>
+
+      <section class="panel onboard-step" data-step="3">
+        <h1>How old is your target audience?</h1>
+        <p class="lead">
+          This helps Postfin match tone, references, and formats to the people
+          you’re trying to reach.
+        </p>
+
+        <div class="niche-grid" role="radiogroup" aria-label="Target audience age">
+          <button type="button" class="age-option niche-option" role="radio" aria-checked="false" data-age="13-17">
+            <span class="cat">Gen Z</span>
+            <span class="title">13–17</span>
+            <span class="desc">Teens discovering trends and creators</span>
+          </button>
+
+          <button type="button" class="age-option niche-option" role="radio" aria-checked="false" data-age="18-24">
+            <span class="cat">Young adult</span>
+            <span class="title">18–24</span>
+            <span class="desc">College, early career, culture-first</span>
+          </button>
+
+          <button type="button" class="age-option niche-option" role="radio" aria-checked="false" data-age="25-34">
+            <span class="cat">Millennial</span>
+            <span class="title">25–34</span>
+            <span class="desc">Career, lifestyle, and purchase power</span>
+          </button>
+
+          <button type="button" class="age-option niche-option" role="radio" aria-checked="false" data-age="35-plus">
+            <span class="cat">Adult</span>
+            <span class="title">35+</span>
+            <span class="desc">Established buyers and decision-makers</span>
+          </button>
+        </div>
+
+        <div class="actions">
+          <button type="button" class="btn-back" id="back-age">Back</button>
+          <div class="actions-end">
+            <button type="button" class="btn-next" id="continue-age" disabled>Continue</button>
+          </div>
+        </div>
+      </section>
+
+      <section class="panel onboard-step" data-step="4">
+        <h1>How much does your business make a month?</h1>
+        <p class="lead">
+          Rough range is fine — it helps Postfin tailor strategy and content volume.
+        </p>
+
+        <div class="niche-grid" role="radiogroup" aria-label="Monthly revenue">
+          <button type="button" class="revenue-option niche-option" role="radio" aria-checked="false" data-revenue="0-10k">
+            <span class="cat">Early</span>
+            <span class="title">$0–$10k</span>
+            <span class="desc">Just starting or building traction</span>
+          </button>
+
+          <button type="button" class="revenue-option niche-option" role="radio" aria-checked="false" data-revenue="10k-50k">
+            <span class="cat">Growing</span>
+            <span class="title">$10k–$50k</span>
+            <span class="desc">Consistent sales, ready to scale content</span>
+          </button>
+
+          <button type="button" class="revenue-option niche-option" role="radio" aria-checked="false" data-revenue="50k-250k">
+            <span class="cat">Scaling</span>
+            <span class="title">$50k–$250k</span>
+            <span class="desc">Established brand with room to grow</span>
+          </button>
+
+          <button type="button" class="revenue-option niche-option" role="radio" aria-checked="false" data-revenue="250k-plus">
+            <span class="cat">Enterprise</span>
+            <span class="title">$250k+</span>
+            <span class="desc">High-volume brand or larger operation</span>
+          </button>
+        </div>
+
+        <div class="actions">
+          <button type="button" class="btn-back" id="back-revenue">Back</button>
+          <div class="actions-end">
+            <button type="button" class="btn-next" id="continue-revenue" disabled>Continue</button>
+          </div>
+        </div>
+      </section>
+
+      <section class="panel onboard-step" data-step="5">
+        <h1>How often do you post?</h1>
+        <p class="lead">
+          Be honest — Postfin can match your current cadence or help you level up.
+        </p>
+
+        <div class="niche-grid" role="radiogroup" aria-label="Posting frequency">
+          <button type="button" class="frequency-option niche-option" role="radio" aria-checked="false" data-frequency="rarely">
+            <span class="cat">Rare</span>
+            <span class="title">Rarely</span>
+            <span class="desc">A few times a month or less</span>
+          </button>
+
+          <button type="button" class="frequency-option niche-option" role="radio" aria-checked="false" data-frequency="1-2-week">
+            <span class="cat">Light</span>
+            <span class="title">1–2 times a week</span>
+            <span class="desc">Some consistency, but easy to fall off</span>
+          </button>
+
+          <button type="button" class="frequency-option niche-option" role="radio" aria-checked="false" data-frequency="3-5-week">
+            <span class="cat">Steady</span>
+            <span class="title">3–5 times a week</span>
+            <span class="desc">Regular presence across platforms</span>
+          </button>
+
+          <button type="button" class="frequency-option niche-option" role="radio" aria-checked="false" data-frequency="daily">
+            <span class="cat">Daily</span>
+            <span class="title">Every day</span>
+            <span class="desc">High volume — need help staying ahead</span>
+          </button>
+        </div>
+
+        <div class="actions">
+          <button type="button" class="btn-back" id="back-frequency">Back</button>
+          <div class="actions-end">
+            <button type="button" class="btn-next" id="continue-frequency" disabled>Continue</button>
+          </div>
+        </div>
+      </section>
+
+      <section class="panel onboard-step" data-step="6">
+        <h1>What do you want the mood of posts to be?</h1>
+        <p class="lead">
+          Pick the vibe Postfin should write and create in for your brand.
+        </p>
+
+        <div class="niche-grid" role="radiogroup" aria-label="Post mood">
+          <button type="button" class="mood-option niche-option" role="radio" aria-checked="false" data-mood="professional">
+            <span class="cat">Tone</span>
+            <span class="title">Professional</span>
+            <span class="desc">Clear, credible, and polished</span>
+          </button>
+
+          <button type="button" class="mood-option niche-option" role="radio" aria-checked="false" data-mood="casual">
+            <span class="cat">Tone</span>
+            <span class="title">Casual &amp; friendly</span>
+            <span class="desc">Warm, conversational, easygoing</span>
+          </button>
+
+          <button type="button" class="mood-option niche-option" role="radio" aria-checked="false" data-mood="bold">
+            <span class="cat">Tone</span>
+            <span class="title">Bold &amp; hype</span>
+            <span class="desc">High energy, punchy, attention-grabbing</span>
+          </button>
+
+          <button type="button" class="mood-option niche-option" role="radio" aria-checked="false" data-mood="minimal">
+            <span class="cat">Tone</span>
+            <span class="title">Minimal &amp; clean</span>
+            <span class="desc">Quiet confidence, simple, refined</span>
+          </button>
+        </div>
+
+        <div class="actions">
+          <button type="button" class="btn-back" id="back-mood">Back</button>
+          <div class="actions-end">
+            <button type="button" class="btn-next" id="continue-mood" disabled>Continue</button>
+          </div>
+        </div>
+      </section>
+
+      <section class="panel onboard-step" data-step="7">
+        <h1>Paste the link to your product</h1>
+        <p class="lead">
+          We’ll use your site or store page to understand what you sell and create
+          better slideshows.
+        </p>
+
+        <div class="link-field">
+          <label for="product-link">Product URL</label>
+          <input
+            id="product-link"
+            type="url"
+            inputmode="url"
+            placeholder="https://yourproduct.com"
+            autocomplete="url"
+          />
+        </div>
+
+        <div class="actions">
+          <button type="button" class="btn-back" id="back-link">Back</button>
+          <div class="actions-end">
+            <button type="button" class="btn-next" id="continue-link" disabled>Continue</button>
+          </div>
+        </div>
+      </section>
+
+      <section class="panel onboard-step" data-step="8">
+        <h1>Choose your plan</h1>
+        <p class="lead">Pick the plan that fits your brand — cancel anytime.</p>
+
+        <div class="plans" role="radiogroup" aria-label="Plans">
+          <button type="button" class="plan-card" role="radio" aria-checked="false" data-plan="starter" data-price="19">
+            <span class="plan-name">Starter</span>
+            <span class="plan-price"><strong>$19</strong><span>/ month</span></span>
+            <span class="plan-cta">Subscribe</span>
+            <span class="plan-desc">Great for getting started with slideshows.</span>
+            <hr />
+            <span class="plan-includes">Includes</span>
+            <ul>
+              <li><svg viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M3 8.2L6.2 11.2L13 4.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>AI slideshow generation</li>
+              <li><svg viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M3 8.2L6.2 11.2L13 4.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>Core brand templates</li>
+              <li><svg viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M3 8.2L6.2 11.2L13 4.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>Schedule to your platforms</li>
+              <li><svg viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M3 8.2L6.2 11.2L13 4.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>Caption rewriting</li>
+              <li><svg viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M3 8.2L6.2 11.2L13 4.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>Basic analytics</li>
+            </ul>
+          </button>
+
+          <button type="button" class="plan-card is-suggested" role="radio" aria-checked="false" data-plan="growth" data-price="49">
+            <span class="plan-suggested">Suggested</span>
+            <span class="plan-name">Growth</span>
+            <span class="plan-price"><strong>$49</strong><span>/ month</span></span>
+            <span class="plan-cta">Subscribe</span>
+            <span class="plan-desc">For brands posting consistently.</span>
+            <hr />
+            <span class="plan-includes">Everything in Starter, plus...</span>
+            <ul>
+              <li><svg viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M3 8.2L6.2 11.2L13 4.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>Higher slideshow volume</li>
+              <li><svg viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M3 8.2L6.2 11.2L13 4.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>More connected accounts</li>
+              <li><svg viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M3 8.2L6.2 11.2L13 4.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>Priority generation</li>
+              <li><svg viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M3 8.2L6.2 11.2L13 4.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>Advanced brand templates</li>
+              <li><svg viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M3 8.2L6.2 11.2L13 4.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>Deeper performance insights</li>
+            </ul>
+          </button>
+
+          <button type="button" class="plan-card" role="radio" aria-checked="false" data-plan="scale" data-price="199">
+            <span class="plan-name">Scale</span>
+            <span class="plan-price"><strong>$199</strong><span>/ month</span></span>
+            <span class="plan-cta">Subscribe</span>
+            <span class="plan-desc">Full autopilot with video included.</span>
+            <hr />
+            <span class="plan-includes">Everything in Growth, plus...</span>
+            <ul>
+              <li><svg viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M3 8.2L6.2 11.2L13 4.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>AI video generation</li>
+              <li><svg viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M3 8.2L6.2 11.2L13 4.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>HeyGen avatar videos</li>
+              <li><svg viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M3 8.2L6.2 11.2L13 4.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>Multi-brand workspaces</li>
+              <li><svg viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M3 8.2L6.2 11.2L13 4.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>Priority support</li>
+              <li><svg viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M3 8.2L6.2 11.2L13 4.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>Custom brand voice</li>
+              <li><svg viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M3 8.2L6.2 11.2L13 4.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>Dedicated generation capacity</li>
+            </ul>
+          </button>
+        </div>
+
+        <button type="button" class="plan-back" id="back-plan">Back</button>
+      </section>
+
+      <div class="setup-screen" id="setup-screen" aria-live="polite">
+        <div class="setup-card">
+          <div class="setup-spinner" aria-hidden="true"></div>
+          <h1>Setting things up</h1>
+          <p class="setup-status" id="setup-status">Analyzing your product link…</p>
+          <ul class="setup-steps" id="setup-steps">
+              <li data-setup="0"><span class="setup-dot" aria-hidden="true"></span>Analyzing your product link</li>
+              <li data-setup="1"><span class="setup-dot" aria-hidden="true"></span>Setting up your profile</li>
+              <li data-setup="2"><span class="setup-dot" aria-hidden="true"></span>Organizing your details</li>
+              <li data-setup="3"><span class="setup-dot" aria-hidden="true"></span>Tuning slideshow style</li>
+              <li data-setup="4"><span class="setup-dot" aria-hidden="true"></span>Preparing your plans</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      (function () {
+        const steps = [...document.querySelectorAll(".onboard-step")];
+        const nicheOptions = [...document.querySelectorAll("[data-niche]")];
+        const goalOptions = [...document.querySelectorAll("[data-goal]")];
+        const ageOptions = [...document.querySelectorAll("[data-age]")];
+        const revenueOptions = [...document.querySelectorAll("[data-revenue]")];
+        const frequencyOptions = [...document.querySelectorAll("[data-frequency]")];
+        const moodOptions = [...document.querySelectorAll("[data-mood]")];
+        const planOptions = [...document.querySelectorAll("[data-plan]")];
+        const otherField = document.getElementById("other-field");
+        const otherInput = document.getElementById("other-niche");
+        const productLink = document.getElementById("product-link");
+        const continueNiche = document.getElementById("continue-niche");
+        const continueGoal = document.getElementById("continue-goal");
+        const continueAge = document.getElementById("continue-age");
+        const continueRevenue = document.getElementById("continue-revenue");
+        const continueFrequency = document.getElementById("continue-frequency");
+        const continueMood = document.getElementById("continue-mood");
+        const continueLink = document.getElementById("continue-link");
+        const backGoal = document.getElementById("back-goal");
+        const backAge = document.getElementById("back-age");
+        const backRevenue = document.getElementById("back-revenue");
+        const backFrequency = document.getElementById("back-frequency");
+        const backMood = document.getElementById("back-mood");
+        const backLink = document.getElementById("back-link");
+        const backPlan = document.getElementById("back-plan");
+        const shell = document.querySelector(".shell");
+        const setupScreen = document.getElementById("setup-screen");
+        const setupStatus = document.getElementById("setup-status");
+        const setupItems = [...document.querySelectorAll("#setup-steps li")];
+
+        const state = {
+          niche: null,
+          category: null,
+          nicheOther: null,
+          goal: null,
+          age: null,
+          revenue: null,
+          frequency: null,
+          mood: null,
+          productLink: null,
+          plan: null,
+          planPrice: null,
+        };
+
+        const setupMessages = [
+          "Analyzing your product link…",
+          "Setting up your profile…",
+          "Organizing your details…",
+          "Tuning slideshow style…",
+          "Preparing your plans…",
+        ];
+
+        function showStep(n) {
+          shell.classList.remove("is-setup");
+          shell.classList.toggle("is-plans", n === 8);
+          setupScreen.classList.remove("is-active");
+          steps.forEach((step) => {
+            step.classList.toggle("is-active", step.dataset.step === String(n));
+          });
+          window.scrollTo({ top: 0, behavior: "smooth" });
+        }
+
+        function finishOnboard() {
+          if (!state.plan) return;
+          const payload = {
+            niche: state.niche,
+            category: state.category,
+            nicheOther: state.niche === "other" ? state.nicheOther : null,
+            goal: state.goal,
+            age: state.age,
+            revenue: state.revenue,
+            frequency: state.frequency,
+            mood: state.mood,
+            productLink: state.productLink,
+            plan: state.plan,
+            planPrice: state.planPrice,
+            at: new Date().toISOString(),
+          };
+          try {
+            localStorage.setItem("postfin_onboard", JSON.stringify(payload));
+            localStorage.removeItem("postfin_onboard_draft");
+          } catch (_) {}
+          window.location.href = "dashboard.html";
+        }
+
+        function runSetupSequence(onDone) {
+          steps.forEach((step) => step.classList.remove("is-active"));
+          shell.classList.add("is-setup");
+          shell.classList.remove("is-plans");
+          setupScreen.classList.add("is-active");
+          window.scrollTo({ top: 0, behavior: "smooth" });
+
+          setupItems.forEach((item) => {
+            item.classList.remove("is-done", "is-active");
+          });
+          setupStatus.classList.remove("is-fading");
+          setupStatus.textContent = setupMessages[0];
+
+          let index = 0;
+          const stepMs = 1000;
+          const totalMs = 5000;
+
+          function paint(i) {
+            setupItems.forEach((item, idx) => {
+              item.classList.toggle("is-done", idx < i);
+              item.classList.toggle("is-active", idx === i);
+            });
+            setupStatus.classList.add("is-fading");
+            setTimeout(() => {
+              setupStatus.textContent = setupMessages[i] || setupMessages[setupMessages.length - 1];
+              setupStatus.classList.remove("is-fading");
+            }, 160);
+          }
+
+          paint(0);
+
+          const ticker = setInterval(() => {
+            index += 1;
+            if (index >= setupMessages.length) {
+              clearInterval(ticker);
+              return;
+            }
+            paint(index);
+          }, stepMs);
+
+          setTimeout(() => {
+            clearInterval(ticker);
+            setupItems.forEach((item) => {
+              item.classList.remove("is-active");
+              item.classList.add("is-done");
+            });
+            setupStatus.textContent = "Ready for your plan…";
+            setTimeout(() => {
+              if (typeof onDone === "function") onDone();
+            }, 350);
+          }, totalMs);
+        }
+
+        function isValidUrl(value) {
+          const raw = value.trim();
+          if (!raw) return false;
+          try {
+            const withProtocol = /^https?:\/\//i.test(raw) ? raw : "https://" + raw;
+            const url = new URL(withProtocol);
+            return Boolean(url.hostname && url.hostname.includes("."));
+          } catch (_) {
+            return false;
+          }
+        }
+
+        function normalizeUrl(value) {
+          const raw = value.trim();
+          return /^https?:\/\//i.test(raw) ? raw : "https://" + raw;
+        }
+
+        function syncNicheContinue() {
+          if (!state.niche) {
+            continueNiche.disabled = true;
+            return;
+          }
+          if (state.niche === "other") {
+            continueNiche.disabled = otherInput.value.trim().length < 2;
+            return;
+          }
+          continueNiche.disabled = false;
+        }
+
+        function syncGoalContinue() {
+          continueGoal.disabled = !state.goal;
+        }
+
+        function syncAgeContinue() {
+          continueAge.disabled = !state.age;
+        }
+
+        function syncRevenueContinue() {
+          continueRevenue.disabled = !state.revenue;
+        }
+
+        function syncFrequencyContinue() {
+          continueFrequency.disabled = !state.frequency;
+        }
+
+        function syncMoodContinue() {
+          continueMood.disabled = !state.mood;
+        }
+
+        function syncLinkContinue() {
+          continueLink.disabled = !isValidUrl(productLink.value);
+        }
+
+        function bindSelect(buttons, onSelect) {
+          buttons.forEach((btn) => {
+            btn.addEventListener("click", () => {
+              buttons.forEach((b) => {
+                b.classList.remove("is-selected");
+                b.setAttribute("aria-checked", "false");
+              });
+              btn.classList.add("is-selected");
+              btn.setAttribute("aria-checked", "true");
+              onSelect(btn);
+            });
+          });
+        }
+
+        bindSelect(nicheOptions, (btn) => {
+          state.niche = btn.dataset.niche;
+          state.category = btn.dataset.category;
+          otherField.classList.toggle("is-open", state.niche === "other");
+          if (state.niche !== "other") {
+            otherInput.value = "";
+            state.nicheOther = null;
+          }
+          syncNicheContinue();
+        });
+
+        bindSelect(goalOptions, (btn) => {
+          state.goal = btn.dataset.goal;
+          syncGoalContinue();
+        });
+
+        bindSelect(ageOptions, (btn) => {
+          state.age = btn.dataset.age;
+          syncAgeContinue();
+        });
+
+        bindSelect(revenueOptions, (btn) => {
+          state.revenue = btn.dataset.revenue;
+          syncRevenueContinue();
+        });
+
+        bindSelect(frequencyOptions, (btn) => {
+          state.frequency = btn.dataset.frequency;
+          syncFrequencyContinue();
+        });
+
+        bindSelect(moodOptions, (btn) => {
+          state.mood = btn.dataset.mood;
+          syncMoodContinue();
+        });
+
+        bindSelect(planOptions, (btn) => {
+          state.plan = btn.dataset.plan;
+          state.planPrice = btn.dataset.price;
+          finishOnboard();
+        });
+
+        otherInput.addEventListener("input", () => {
+          state.nicheOther = otherInput.value.trim();
+          syncNicheContinue();
+        });
+
+        productLink.addEventListener("input", syncLinkContinue);
+
+        continueNiche.addEventListener("click", () => {
+          if (continueNiche.disabled || !state.niche) return;
+          if (state.niche === "other") state.nicheOther = otherInput.value.trim();
+          showStep(2);
+        });
+
+        backGoal.addEventListener("click", () => showStep(1));
+
+        continueGoal.addEventListener("click", () => {
+          if (continueGoal.disabled || !state.goal) return;
+          showStep(3);
+        });
+
+        backAge.addEventListener("click", () => showStep(2));
+
+        continueAge.addEventListener("click", () => {
+          if (continueAge.disabled || !state.age) return;
+          showStep(4);
+        });
+
+        backRevenue.addEventListener("click", () => showStep(3));
+
+        continueRevenue.addEventListener("click", () => {
+          if (continueRevenue.disabled || !state.revenue) return;
+          showStep(5);
+        });
+
+        backFrequency.addEventListener("click", () => showStep(4));
+
+        continueFrequency.addEventListener("click", () => {
+          if (continueFrequency.disabled || !state.frequency) return;
+          showStep(6);
+        });
+
+        backMood.addEventListener("click", () => showStep(5));
+
+        continueMood.addEventListener("click", () => {
+          if (continueMood.disabled || !state.mood) return;
+          showStep(7);
+        });
+
+        backLink.addEventListener("click", () => showStep(6));
+
+        continueLink.addEventListener("click", () => {
+          if (continueLink.disabled || !isValidUrl(productLink.value)) return;
+          state.productLink = normalizeUrl(productLink.value);
+          runSetupSequence(() => showStep(8));
+        });
+
+        backPlan.addEventListener("click", () => showStep(7));
+      })();
+    </script>
+  </body>
+</html>

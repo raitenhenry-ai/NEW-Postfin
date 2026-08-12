@@ -20,7 +20,7 @@ const DAY_MS = 86400000;
 
 /* ---------------------------------------------------------------- Dashboard */
 
-// Everything index.html draws: the four stat tiles, the embedded calendar,
+// Everything dashboard.html draws: the four stat tiles, the embedded calendar,
 // the account leaderboard, top videos and the suggestion list.
 router.get("/dashboard", wrap(async (req, res) => {
   const range = resolveRange(req.query.range || "30d", req.query.days, req.query.tz);
@@ -70,7 +70,7 @@ router.get("/dashboard", wrap(async (req, res) => {
   });
 }));
 
-// Best-performing finished videos by view count. Views are broken down per
+// Best-performing posted videos by view count. Views are broken down per
 // platform so each video's CPM uses that video's own rates rather than a
 // workspace-wide average.
 async function topVideos(limit) {
@@ -78,11 +78,11 @@ async function topVideos(limit) {
     `SELECT j.id, j.title, j.product_json, j.script_json, j.video_filename,
             p.platform, COALESCE(SUM(m.views), 0) AS views
      FROM ugc_jobs j
-     LEFT JOIN ugc_posts p ON p.job_id = j.id
+     LEFT JOIN ugc_posts p ON p.job_id = j.id AND p.status = 'done'
      LEFT JOIN post_metrics m ON m.post_id = p.id AND m.collected_at = (
        SELECT MAX(m2.collected_at) FROM post_metrics m2 WHERE m2.post_id = p.id
      )
-     WHERE j.video_filename IS NOT NULL
+     WHERE j.status = 'posted' AND j.video_filename IS NOT NULL
      GROUP BY j.id, j.title, j.product_json, j.script_json, j.video_filename, p.platform`
   );
 
@@ -647,18 +647,12 @@ const PLATFORM_DESCRIPTIONS = {
 
 /* ------------------------------------------------------------------- Recent */
 
-// recent.html: every video this workspace has made, in the order it was
-// made - rendered, scheduled, published, still working or failed.
+// recent.html: videos that actually went out, newest first.
 router.get("/recent", wrap(async (req, res) => {
   const limit = Math.min(100, Math.max(1, Number(req.query.limit) || 50));
 
-  // Everything that has been made, newest first - not only what has been
-  // published. A video that has rendered and is waiting for its slot is the
-  // one you most want to watch, and it used to be visible nowhere but the
-  // calendar. Jobs that are still working or that failed show too, so this
-  // is the page that answers "what happened to my video".
   const jobs = await q(
-    `SELECT * FROM ugc_jobs ORDER BY created_at DESC LIMIT ?`,
+    `SELECT * FROM ugc_jobs WHERE status = 'posted' ORDER BY created_at DESC LIMIT ?`,
     [limit]
   );
   const postsByJob = await postsForJobs(jobs.map((j) => j.id));
