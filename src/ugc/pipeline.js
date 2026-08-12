@@ -292,10 +292,24 @@ async function processJob(jobId) {
 export async function postJob(jobId, { onlyFailed = false } = {}) {
   const job = await q1("SELECT * FROM ugc_jobs WHERE id = ?", [jobId]);
   if (!job) throw new Error("Job not found");
-  if (!job.video_filename) throw new Error("Video is not rendered yet");
+
+  // Two states used to throw here, which meant a scheduled job whose slot had
+  // arrived threw every thirty seconds forever, with the reason only in the
+  // server log. Neither is fatal: the fix for both is to render it again.
+  //
+  // A missing file is the ordinary outcome of a host with no persistent disk -
+  // the mp4 goes away on the next deploy while the row still names it.
+  if (!job.video_filename || !fs.existsSync(path.join(config.ugcDir, job.video_filename))) {
+    const why = job.video_filename
+      ? "The video file was missing - re-rendering it, then posting."
+      : "This video had not rendered yet - rendering it now, then posting.";
+    await setJob(job.id, { status: "queued", video_filename: null, error: why });
+    enqueueUgcJob(job.id);
+    console.warn(`[ugc] job ${job.id}: ${why}`);
+    return { posted: 0, failed: 0, skipped: 0, rerendering: true, note: why };
+  }
 
   const filePath = path.join(config.ugcDir, job.video_filename);
-  if (!fs.existsSync(filePath)) throw new Error("Video file is missing from disk");
 
   const settings = JSON.parse(job.settings_json || "{}");
   const script = JSON.parse(job.script_json || "{}");
@@ -356,16 +370,24 @@ export async function postJob(jobId, { onlyFailed = false } = {}) {
       if (!account) throw new Error("account disconnected");
       const target = platforms[account.platform];
       const asPhotos = postAsPhotos(target, ctx);
-      const platformVideoId = asPhotos
+      const uploaded = asPhotos
         ? await target.uploadPhotos(account, ctx)
         : await target.uploadClip(account, ctx);
+      // A platform may report something worth knowing about a post that did
+      // go through - YouTube forcing it private, say - so an uploader can
+      // answer with { id, warning } instead of a bare id.
+      const platformVideoId = typeof uploaded === "object" && uploaded !== null
+        ? uploaded.id
+        : uploaded;
+      const warning = typeof uploaded === "object" && uploaded !== null ? uploaded.warning : null;
       if (asPhotos) {
         console.log(`[ugc] job ${job.id} -> ${account.platform} as ${slideUrls.length} photos`);
       }
+      if (warning) console.warn(`[ugc] job ${job.id} -> ${account.platform}: ${warning}`);
       await run(
-        `UPDATE ugc_posts SET status = 'done', platform_video_id = ?, error = NULL, posted_at = ?
+        `UPDATE ugc_posts SET status = 'done', platform_video_id = ?, error = ?, posted_at = ?
          WHERE job_id = ? AND account_id = ?`,
-        [String(platformVideoId ?? ""), Date.now(), job.id, account.id]
+        [String(platformVideoId ?? ""), warning || null, Date.now(), job.id, account.id]
       );
       posted++;
       console.log(`[ugc] job ${job.id} -> ${account.platform}/${account.display_name} OK`);

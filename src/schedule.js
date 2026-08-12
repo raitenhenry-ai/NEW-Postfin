@@ -16,6 +16,16 @@ import { postJob } from "./ugc/pipeline.js";
 let timer = null;
 let running = false;
 
+// How many times a due job may fail to post before it is called failed. A
+// network blip deserves another go; the same error four times running is a
+// broken video, and leaving it 'ready' means retrying it every thirty
+// seconds forever while the calendar still says it is scheduled.
+const MAX_POST_ATTEMPTS = 3;
+
+// Attempts this process has seen, by job. In memory on purpose: a restart is
+// a fair reason to try again, and it keeps the schema alone.
+const attempts = new Map();
+
 export async function dueJobs(now = Date.now()) {
   return q(
     `SELECT id FROM ugc_jobs
@@ -33,9 +43,33 @@ export async function runDueJobs() {
     const due = await dueJobs();
     for (const job of due) {
       console.log(`[schedule] job ${job.id} is due - posting`);
-      await postJob(job.id).catch((err) =>
-        console.error(`[schedule] job ${job.id} failed to post:`, err.message || err)
-      );
+      try {
+        await postJob(job.id);
+        attempts.delete(job.id);
+      } catch (err) {
+        // The reason has to reach the user. A scheduled video that quietly
+        // never posts, with the explanation in a log they cannot see, is the
+        // worst way for this to fail.
+        const message = String(err.message || err);
+        const count = (attempts.get(job.id) || 0) + 1;
+        attempts.set(job.id, count);
+        const giveUp = count >= MAX_POST_ATTEMPTS;
+
+        await run(
+          `UPDATE ugc_jobs SET error = ?, status = ?, updated_at = ? WHERE id = ?`,
+          [
+            giveUp ? `Could not post: ${message}` : `Retrying - ${message} (attempt ${count})`,
+            giveUp ? "failed" : "ready",
+            Date.now(),
+            job.id,
+          ]
+        ).catch(() => {});
+
+        console.error(
+          `[schedule] job ${job.id} failed to post (attempt ${count}${giveUp ? ", giving up" : ""}):`,
+          message
+        );
+      }
     }
     return due.length;
   } finally {

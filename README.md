@@ -23,7 +23,12 @@ all driven by this app's own API. There is no mock data anywhere in the UI.
    1080×1920. See [The two formats](#the-two-formats).
 4. **Schedule** — a job with a `scheduledAt` renders immediately and then
    waits at `ready`, so the finished video is previewable on the calendar
-   before its slot. Without one it posts as soon as it has rendered.
+   before its slot. Without one it posts as soon as it has rendered. If the
+   slot arrives and the video file has gone — the usual outcome of a host
+   with no persistent disk — the job re-renders itself and then posts, rather
+   than failing. A post that keeps failing is retried three times and then
+   marked failed **with the reason on the video**, so it never sits on the
+   calendar looking scheduled while nothing happens.
 5. **Post** — to every connected account of the selected platforms, with
    per-account status, links to the live posts, and retries for failures.
 6. **Measure** — a background collector polls each platform for view, like,
@@ -195,6 +200,22 @@ uploaded talking photos — with a preview image, and the pair you choose is
 stored on the video. Re-rendering it later reuses the same avatar even if
 the workspace default has changed since. `HEYGEN_AVATAR_ID` and
 `HEYGEN_VOICE_ID` are only the fallback for videos that don't specify one.
+
+### YouTube: uploaded is not the same as published
+
+A 200 from YouTube's upload does not mean the video is live, so every upload
+is read back afterwards:
+
+- **Rejected videos fail loudly** with YouTube's own reason (duplicate,
+  claimed, too long) instead of being recorded as posted.
+- **An unaudited API project has every upload forced to private**, whatever
+  `YOUTUBE_PRIVACY_STATUS` asks for. This is the one that catches everyone:
+  the post looks successful and the video is invisible. Postfin now says so
+  on the post — check the OAuth consent screen in Google Cloud, or flip the
+  video public by hand.
+
+Titles are stripped of angle brackets and clamped to 100 characters, which
+YouTube rejects outright.
 
 **Check the key works** from the Profile page → Generation → *Test HeyGen
 connection*, which lists the avatar count. Worth doing before scheduling a

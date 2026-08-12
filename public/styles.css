@@ -4669,6 +4669,8 @@ body.theme-light .cal-post-fields {
 .recent-post {
   display: flex;
   align-items: center;
+  /* A note about the post wraps onto its own line underneath. */
+  flex-wrap: wrap;
   gap: 10px;
   font-size: 13px;
   color: #d8d8de;
@@ -5324,6 +5326,19 @@ body.theme-light .cal-post-error { color: #b42318 !important; }
 }
 
 body.theme-light .cal-post-warning { color: #8a6100 !important; }
+
+/* Why a post failed, or what a platform did differently from what was asked. */
+.recent-post-note {
+  flex-basis: 100%;
+  color: #ff8f8f;
+  font-size: 12px;
+  line-height: 1.45;
+}
+
+.recent-post-note.is-warning { color: #e0b341; }
+
+body.theme-light .recent-post-note { color: #b42318 !important; }
+body.theme-light .recent-post-note.is-warning { color: #8a6100 !important; }
 
 /* What the assistant can do, offered in an empty chat. */
 .cal-agent-empty-lead {

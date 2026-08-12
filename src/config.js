@@ -198,6 +198,9 @@ const config = {
     clientId: env("YOUTUBE_CLIENT_ID"),
     clientSecret: env("YOUTUBE_CLIENT_SECRET"),
     privacyStatus: process.env.YOUTUBE_PRIVACY_STATUS || "public",
+    // Overridable so the upload path can be pointed at a stub, the same way
+    // the HeyGen base is.
+    apiBase: env("YOUTUBE_API_BASE", "https://www.googleapis.com").replace(/\/+$/, ""),
   },
   instagram: {
     clientId: env("INSTAGRAM_CLIENT_ID"),

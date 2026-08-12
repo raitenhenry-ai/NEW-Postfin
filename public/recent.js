@@ -85,6 +85,9 @@
         <span class="recent-post-account">${escapeHtml(post.accountName || PLATFORM_LABELS[post.platform] || post.platform)}</span>
         ${statusChip(post.status)}
         ${link}
+        ${post.error
+          ? `<span class="recent-post-note${post.status === "done" ? " is-warning" : ""}">${escapeHtml(post.error)}</span>`
+          : ""}
       </li>`;
   }
 
