@@ -651,8 +651,13 @@ const PLATFORM_DESCRIPTIONS = {
 router.get("/recent", wrap(async (req, res) => {
   const limit = Math.min(100, Math.max(1, Number(req.query.limit) || 50));
 
+  // Everything that has been made, newest first - not only what has been
+  // published. A video that has rendered and is waiting for its slot is the
+  // one you most want to watch, and it used to be visible nowhere but the
+  // calendar. Jobs that are still working or that failed show too, so this
+  // is the page that answers "what happened to my video".
   const jobs = await q(
-    `SELECT * FROM ugc_jobs WHERE status = 'posted' ORDER BY created_at DESC LIMIT ?`,
+    `SELECT * FROM ugc_jobs ORDER BY created_at DESC LIMIT ?`,
     [limit]
   );
   const postsByJob = await postsForJobs(jobs.map((j) => j.id));
