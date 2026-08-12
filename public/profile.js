@@ -66,6 +66,16 @@
         <div class="profile-stats">${totals}</div>
       </section>
 
+      ${data.storage && !data.storage.persistent ? `
+        <section class="profile-section">
+          <h2>Storage</h2>
+          <p class="recent-card-error">Finished videos are not surviving restarts.
+            ${escapeHtml(String(data.storage.filesMissing))} of
+            ${escapeHtml(String(data.storage.videosOnRecord))} have lost their file, so they have to
+            be generated again - which costs money and can miss a posting slot.</p>
+          <p class="pf-hint">${escapeHtml(data.storage.hint)}</p>
+        </section>` : ""}
+
       <section class="profile-section">
         <h2>Generation</h2>
         <div class="profile-flags">

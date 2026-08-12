@@ -358,6 +358,29 @@ holds the job and metric rows, but the rendered `.mp4` files live on disk,
 and Instagram, Facebook and Threads publish by downloading them from your
 `BASE_URL`.
 
+### Give it a disk
+
+Generated videos live on the filesystem; the rows that name them live in the
+database. On a managed host those have very different lifetimes — with
+Postgres and **no mounted volume**, every deploy keeps the whole schedule and
+throws away every video it points at, so a scheduled post arrives at its slot
+with nothing to upload.
+
+Postfin recovers by re-rendering, but each of those costs real money and a
+slot can pass while it runs. Mount persistent storage at **`/app/data`**:
+
+| host | how |
+|---|---|
+| Railway | Service → Settings → Volumes → add one mounted at `/app/data` |
+| Render | already declared in `render.yaml` as a 10GB disk |
+| Fly | `fly volumes create postfin_data --size 10` (see `fly.toml`) |
+| Docker | `-v postfin-data:/app/data` |
+
+It checks at startup by leaving a marker in the media directory and looking
+for it next boot: a database with history and no marker means the disk was
+replaced underneath it. When that happens it says so in the logs and on the
+Profile page instead of quietly re-rendering.
+
 ### Run exactly one instance
 
 The job queue, the scheduler and the metrics collector all run inside the web

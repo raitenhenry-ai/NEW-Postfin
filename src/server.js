@@ -9,6 +9,7 @@ import { registerAuthRoutes, authMiddleware, authEnabled } from "./auth.js";
 import { recoverStuckUgcJobs, ugcQueueLength } from "./ugc/pipeline.js";
 import { startMetricsCollector, stopMetricsCollector } from "./metrics.js";
 import { startScheduler, stopScheduler } from "./schedule.js";
+import { reportStorage } from "./storage.js";
 
 // Timestamped logs.
 for (const level of ["log", "warn", "error"]) {
@@ -73,6 +74,10 @@ const server = app.listen(config.port, async () => {
         "Set it in .env before exposing this server to the internet."
     );
   }
+  // Says so loudly when the media directory does not survive restarts, which
+  // otherwise shows up much later as a scheduled post with nothing to upload.
+  await reportStorage().catch((e) => console.error("[storage] check failed:", e.message || e));
+
   const recovered = await recoverStuckUgcJobs().catch((e) => {
     console.error("[startup] recovery failed:", e);
     return 0;

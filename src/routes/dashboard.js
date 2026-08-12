@@ -7,6 +7,7 @@ import {
   estimateRevenue, accountLeaderboard, metricsStatus,
 } from "../metrics.js";
 import { ugcQueueLength, pickProvider, jobFormat } from "../ugc/pipeline.js";
+import { checkStorage } from "../storage.js";
 import { heygenConfigured } from "../ugc/heygen.js";
 import { scrapeProduct } from "../ugc/scrape.js";
 import { postUrl } from "../postUrl.js";
@@ -699,6 +700,9 @@ router.get("/profile", wrap(async (req, res) => {
       scheduled: await count("SELECT COUNT(*) AS n FROM ugc_jobs WHERE scheduled_at > ?", [Date.now()]),
     },
     metrics: metricsStatus(),
+    // Whether finished videos survive a restart. The single most expensive
+    // misconfiguration this app has, and invisible until a post is due.
+    storage: await checkStorage({ write: false }),
   });
 }));
 

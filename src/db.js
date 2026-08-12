@@ -141,8 +141,14 @@ if (config.databaseUrl) {
   // our values all fit safely in JS numbers.
   pg.types.setTypeParser(20, (v) => Number(v));
   const needsSsl = !/localhost|127\.0\.0\.1/.test(config.databaseUrl);
+  // sslmode in the URL and an explicit ssl option are two answers to the same
+  // question, and pg warns that its reading of sslmode is about to change.
+  // The explicit option is the one this app means, so the parameter goes.
+  const connectionString = config.databaseUrl.replace(/([?&])sslmode=[^&]*(&|$)/i, (m, before, after) =>
+    after === "&" ? before : before === "?" ? "" : ""
+  );
   const pool = new pg.Pool({
-    connectionString: config.databaseUrl,
+    connectionString,
     ssl: needsSsl ? { rejectUnauthorized: false } : undefined,
     max: 5,
   });
