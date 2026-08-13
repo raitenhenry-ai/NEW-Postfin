@@ -82,15 +82,15 @@ router.get("/dashboard", wrap(async (req, res) => {
 // workspace-wide average.
 async function topVideos(limit) {
   const rows = await q(
-    `SELECT j.id, j.title, j.product_json, j.script_json, j.video_filename,
-            p.platform, COALESCE(SUM(m.views), 0) AS views
+    `SELECT j.id, j.title, j.product_json, j.script_json, j.video_filename, j.created_at,
+            p.platform, COALESCE(SUM(m.views), 0) AS views, MAX(p.posted_at) AS posted_at
      FROM ugc_jobs j
      LEFT JOIN ugc_posts p ON p.job_id = j.id AND p.status = 'done'
      LEFT JOIN post_metrics m ON m.post_id = p.id AND m.collected_at = (
        SELECT MAX(m2.collected_at) FROM post_metrics m2 WHERE m2.post_id = p.id
      )
      WHERE j.status = 'posted' AND j.video_filename IS NOT NULL
-     GROUP BY j.id, j.title, j.product_json, j.script_json, j.video_filename, p.platform`
+     GROUP BY j.id, j.title, j.product_json, j.script_json, j.video_filename, j.created_at, p.platform`
   );
 
   // Collapse the per-platform rows back into one entry per job.
@@ -103,11 +103,15 @@ async function topVideos(limit) {
         product: row.product_json ? JSON.parse(row.product_json) : null,
         script: row.script_json ? JSON.parse(row.script_json) : null,
         videoFilename: row.video_filename,
+        createdAt: Number(row.created_at) || 0,
+        postedAt: 0,
         byPlatform: {},
       });
     }
+    const entry = jobs.get(row.id);
+    const posted = Number(row.posted_at) || 0;
+    if (posted > entry.postedAt) entry.postedAt = posted;
     if (row.platform) {
-      const entry = jobs.get(row.id);
       entry.byPlatform[row.platform] = (entry.byPlatform[row.platform] || 0) + Number(row.views || 0);
     }
   }
@@ -127,6 +131,7 @@ async function topVideos(limit) {
         videoUrl: `/ugc-media/${encodeURIComponent(job.videoFilename)}`,
         cpm: revenue !== null && views ? Number(((revenue / views) * 1000).toFixed(2)) : null,
         durationSeconds: config.ugc.videoSeconds,
+        postedAt: job.postedAt || job.createdAt || null,
       };
     })
     .sort((a, b) => b.views - a.views || b.id - a.id)
