@@ -471,14 +471,19 @@
   /* ---------- load ---------- */
 
   async function load() {
+    const token = ++requestId;
     try {
       const start = startOfWeek(new Date()).getTime() - 40 * DAY_MS;
       const end = start + 120 * DAY_MS;
       const tz = timeZone();
+      const dashParams = new URLSearchParams({ range: rangeKey });
+      if (tz) dashParams.set("tz", tz);
+
       const [dashboard, calendar] = await Promise.all([
-        api(`/api/dashboard${tz ? `?tz=${encodeURIComponent(tz)}` : ""}`),
+        api(`/api/dashboard?${dashParams}`),
         api(`/api/calendar?start=${start}&end=${end}`),
       ]);
+      if (token !== requestId) return;
 
       calendarDays = calendar.days;
       // "Start" vs "Edit my automated plan" depends on whether anything is
@@ -494,6 +499,7 @@
       renderDay();
       renderMonth();
     } catch (err) {
+      if (token !== requestId) return;
       console.error(err);
       const grid = document.getElementById("dash-week-grid");
       if (grid) grid.innerHTML = errorBlock(`Couldn't load the dashboard: ${err.message}`);
