@@ -58,6 +58,10 @@
           <dt>Video length</dt><dd>${data.workspace.videoSeconds}s</dd>
           <dt>Accounts per platform</dt><dd>${data.workspace.maxAccountsPerPlatform} max</dd>
           <dt>Metrics collection</dt><dd>${collection}</dd>
+          <dt>Running build</dt><dd>${escapeHtml(
+            `${data.build?.version || "unknown"}${data.build?.commit ? ` · ${data.build.commit}` : ""}` +
+            `${data.build?.startedAt ? ` · started ${fmtRelative(data.build.startedAt)}` : ""}`
+          )}</dd>
         </dl>
       </section>
 

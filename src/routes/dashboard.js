@@ -703,6 +703,8 @@ router.get("/profile", wrap(async (req, res) => {
     // Whether finished videos survive a restart. The single most expensive
     // misconfiguration this app has, and invisible until a post is due.
     storage: await checkStorage({ write: false }),
+    // Which build is serving this page, so a stale deploy is visible.
+    build: config.build,
   });
 }));
 

@@ -29,6 +29,13 @@ app.get("/healthz", async (req, res) => {
     const accounts = Number((await q1("SELECT COUNT(*) AS n FROM accounts")).n);
     res.json({
       ok: true,
+      // Unauthenticated on purpose: when the UI says something is 404ing,
+      // this is the one request that says whether the app is up at all and
+      // which build answered.
+      version: config.build.version,
+      commit: config.build.commit,
+      startedAt: config.build.startedAt,
+      routes: ["/api/dashboard", "/api/calendar", "/api/recent", "/api/profile", "/api/chat"],
       database: dbKind,
       uptimeSeconds: Math.round(process.uptime()),
       ugcQueue: ugcQueueLength(),

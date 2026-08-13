@@ -59,21 +59,45 @@
     try {
       data = text ? JSON.parse(text) : null;
     } catch {
-      // A non-JSON body means the request never reached the API. The usual
-      // cause is that only the contents of public/ got deployed, so a static
-      // host answers /api/* with its own 404 page: the pages render but
-      // nothing loads. Say that outright rather than "unexpected response".
-      if (/^\s*<(!doctype|html)/i.test(text)) {
-        throw new Error(
-          "The Postfin API isn't running - the pages are being served without their backend. " +
-            "This app needs the Node server (npm start, or the included Dockerfile); " +
-            "a static-only host serves public/ but not /api."
-        );
-      }
-      throw new Error(`Unexpected response from ${path} (HTTP ${res.status})`);
+      // A non-JSON body means the request never reached this app: every
+      // endpoint it serves answers with JSON, including its own 404s. So
+      // whatever replied is in front of it - a static host, a platform edge
+      // page, a proxy - and saying which is the difference between a
+      // five-minute fix and an afternoon.
+      throw new Error(describeNonJson(path, res.status, text));
     }
     if (!res.ok) throw new Error(data?.error || `Request failed (${res.status})`);
     return data;
+  }
+
+  // Whatever answered instead of the API, named as precisely as the response
+  // allows, with a snippet so the responder can be identified on sight.
+  function describeNonJson(path, status, text) {
+    const body = String(text || "").trim();
+    const snippet = body.replace(/\s+/g, " ").slice(0, 90);
+
+    if (/^<(!doctype|html)/i.test(body) && /id="app"|postfin/i.test(body)) {
+      return (
+        "The Postfin API isn't running - the pages are being served without their backend. " +
+        "This app needs the Node server (npm start, or the included Dockerfile); " +
+        "a static-only host serves public/ but not /api."
+      );
+    }
+    if (status === 404) {
+      return (
+        `Nothing is serving ${path} (404, and the reply wasn't JSON). This app answers its ` +
+        "own unknown endpoints with JSON, so the 404 came from something in front of it - " +
+        "the deploy is down, still starting, or an older build without this endpoint. " +
+        `Check /healthz for what is actually running.${snippet ? ` Got: ${snippet}` : ""}`
+      );
+    }
+    if (status === 502 || status === 503 || status === 504) {
+      return (
+        `The server isn't answering (${status}) - it is restarting, crashed on boot, or failed ` +
+        `its health check. Check /healthz and the deploy logs.${snippet ? ` Got: ${snippet}` : ""}`
+      );
+    }
+    return `Unexpected response from ${path} (HTTP ${status})${snippet ? `: ${snippet}` : ""}`;
   }
 
   /* ---------- formatting ---------- */

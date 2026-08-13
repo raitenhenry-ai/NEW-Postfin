@@ -73,8 +73,27 @@ export const ENABLED_PLATFORMS = (() => {
   return valid.length ? valid : ["tiktok", "instagram", "youtube"];
 })();
 
+// Which build is actually running. A 404 from an endpoint that exists in the
+// source is nearly always a stale or dead deploy, and that is unanswerable
+// without the running build saying what it is.
+function buildInfo() {
+  let version = "unknown";
+  try {
+    version = JSON.parse(fs.readFileSync(path.join(rootDir, "package.json"), "utf8")).version || version;
+  } catch { /* keep unknown */ }
+  const commit =
+    env("RAILWAY_GIT_COMMIT_SHA") || env("RENDER_GIT_COMMIT") || env("GIT_COMMIT") ||
+    env("SOURCE_VERSION") || env("FLY_MACHINE_VERSION") || "";
+  return {
+    version,
+    commit: commit ? commit.slice(0, 12) : null,
+    startedAt: Date.now(),
+  };
+}
+
 const config = {
   rootDir,
+  build: buildInfo(),
   port: Number(process.env.PORT || 3000),
   // Every OAuth redirect URI and the public video URLs are built off this, so
   // getting it wrong breaks connecting accounts and publishing. An explicit
