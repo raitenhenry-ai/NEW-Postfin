@@ -76,9 +76,12 @@ CREATE TABLE IF NOT EXISTS post_metrics (
   likes BIGINT NOT NULL DEFAULT 0,
   comments BIGINT NOT NULL DEFAULT 0,
   shares BIGINT NOT NULL DEFAULT 0,
-  saves BIGINT NOT NULL DEFAULT 0
+  saves BIGINT NOT NULL DEFAULT 0,
+  impressions BIGINT,
+  reach BIGINT
 );
 CREATE INDEX IF NOT EXISTS post_metrics_post_idx ON post_metrics (post_id, collected_at);
+CREATE INDEX IF NOT EXISTS post_metrics_collected_idx ON post_metrics (collected_at);
 -- Follower counts per connected account, same snapshot model.
 CREATE TABLE IF NOT EXISTS account_metrics (
   id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
