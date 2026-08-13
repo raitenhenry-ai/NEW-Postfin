@@ -511,7 +511,6 @@
     try {
       const params = new URLSearchParams({ range: rangeKey });
       if (platform !== "all") params.set("platform", platform);
-      if (rangeKey === "custom") params.set("days", String(customDays));
       const tz = timeZone();
       if (tz) params.set("tz", tz);
 
