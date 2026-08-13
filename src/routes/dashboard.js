@@ -715,7 +715,7 @@ router.get("/profile", wrap(async (req, res) => {
       connectedAccounts: await count("SELECT COUNT(*) AS n FROM accounts"),
       scheduled: await count("SELECT COUNT(*) AS n FROM ugc_jobs WHERE scheduled_at > ?", [Date.now()]),
     },
-    metrics: metricsStatus(),
+    metrics: await metricsStatus(),
     // Whether finished videos survive a restart. The single most expensive
     // misconfiguration this app has, and invisible until a post is due.
     storage: await checkStorage({ write: false }),
