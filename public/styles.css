@@ -6065,7 +6065,13 @@ body.theme-light .cal-composer textarea::placeholder {
   color: #9a9aa2;
 }
 
-body.theme-light .cal-composer-plus,
+body.theme-light .cal-composer-plus {
+  color: #4a4a52;
+  background: transparent;
+  border: none;
+  box-shadow: none;
+}
+
 body.theme-light .cal-composer-send {
   color: #4a4a52;
   background: #f0f0f3;
