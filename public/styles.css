@@ -952,7 +952,7 @@ body.theme-light .video-thumb {
 .suggestion-list {
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 0;
   flex: 1;
 }
 
@@ -960,59 +960,47 @@ body.theme-light .video-thumb {
   display: flex;
   align-items: center;
   gap: 12px;
-  padding: 10px 8px;
-  border-radius: 10px;
+  padding: 11px 4px;
+  border-radius: 0;
   text-decoration: none;
   color: #fff;
-  transition: background 0.15s;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  transition: color 0.15s;
+}
+
+.suggestion-row:last-child {
+  border-bottom: none;
 }
 
 .suggestion-row:hover {
-  background: #1c1c1c;
-}
-
-.suggestion-icon {
-  width: 34px;
-  height: 34px;
-  border-radius: 10px;
-  background: #222;
-  color: #fff;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-  overflow: hidden;
-}
-
-.suggestion-icon:has(img) {
   background: transparent;
+  color: #fff;
 }
 
-.suggestion-icon svg {
-  width: 16px;
-  height: 16px;
-}
-
-.suggestion-icon img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  display: block;
+.suggestion-row:hover .suggestion-text {
+  color: #fff;
 }
 
 .suggestion-text {
   flex: 1;
   min-width: 0;
-  font-size: 13px;
+  font-size: 13.5px;
   font-weight: 500;
-  line-height: 1.3;
+  letter-spacing: -0.015em;
+  line-height: 1.35;
 }
 
 .suggestion-chevron {
   color: #6f6f6f;
-  font-size: 20px;
+  font-size: 14px;
   line-height: 1;
   flex-shrink: 0;
+  transition: color 0.15s, transform 0.15s;
+}
+
+.suggestion-row:hover .suggestion-chevron {
+  color: #9a9a9a;
+  transform: translateX(2px);
 }
 
 .suggestions-footer {
@@ -6310,18 +6298,28 @@ body.theme-light .suggestions-footer:hover {
 }
 
 body.theme-light .suggestion-row {
-  background: #ffffff;
+  background: transparent;
   color: #111114;
-  border: 1px solid #ececf0;
+  border: none;
+  border-bottom: 1px solid #ececf0;
+  border-radius: 0;
+  box-shadow: none;
+}
+
+body.theme-light .suggestion-row:last-child {
+  border-bottom: none;
 }
 
 body.theme-light .suggestion-row:hover {
-  background: #f0f0f3;
+  background: transparent;
 }
 
-body.theme-light .suggestion-icon {
-  background: #ececef;
-  color: #33333a;
+body.theme-light .suggestion-row:hover .suggestion-text {
+  color: #111114;
+}
+
+body.theme-light .suggestion-chevron {
+  color: #b0b0b8;
 }
 
 body.theme-light .account-row {

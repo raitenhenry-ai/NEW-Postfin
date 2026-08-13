@@ -475,16 +475,14 @@
   function renderSuggestions(suggestions) {
     const list = document.getElementById("dash-suggestions");
     if (!list) return;
-    const sparkle = `
-      <svg viewBox="0 0 24 24" fill="none">
-        <path d="M12 3.5l1.55 4.75L18.5 9.8l-4.95 1.55L12 16.1l-1.55-4.75L5.5 9.8l4.95-1.55L12 3.5z" stroke="currentColor" stroke-width="1.75" stroke-linejoin="round"/>
-        <path d="M18.2 14.8l.85 2.55 2.55.85-2.55.85-.85 2.55-.85-2.55-2.55-.85 2.55-.85.85-2.55z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/>
-      </svg>`;
+    if (!suggestions.length) {
+      list.innerHTML = emptyBlock("No suggestions right now.");
+      return;
+    }
     list.innerHTML = suggestions.map((s) => `
       <a class="suggestion-row" href="${escapeHtml(s.href)}">
-        <span class="suggestion-icon" aria-hidden="true">${sparkle}</span>
         <span class="suggestion-text">${escapeHtml(s.text)}</span>
-        <span class="suggestion-chevron" aria-hidden="true">›</span>
+        <span class="suggestion-chevron" aria-hidden="true">→</span>
       </a>`).join("");
   }
 
