@@ -3,7 +3,7 @@
 (() => {
   const {
     api, escapeHtml, platformIcon, PLATFORM_LABELS, fmtCompact, fmtInt, fmtSigned,
-    fmtMoney, fmtDelta, deltaClass, fmtDuration, dateKey, timeZone, toast, errorBlock,
+    fmtDelta, deltaClass, fmtDuration, dateKey, timeZone, toast, errorBlock,
     emptyBlock,
   } = window.Postfin;
 
