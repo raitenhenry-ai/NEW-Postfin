@@ -546,56 +546,16 @@
 
   /* ---------- range menu ---------- */
 
-  function showCustomInput() {
-    const customBtn = document.getElementById("analytics-custom-btn");
-    const customRow = document.getElementById("analytics-custom-row");
-    const input = document.getElementById("analytics-custom-days");
-    if (customBtn) customBtn.hidden = true;
-    if (customRow) customRow.hidden = false;
-    if (input) {
-      input.value = String(customDays);
-      requestAnimationFrame(() => {
-        input.focus();
-        input.select();
-      });
-    }
-  }
-
-  function hideCustomInput() {
-    const customBtn = document.getElementById("analytics-custom-btn");
-    const customRow = document.getElementById("analytics-custom-row");
-    if (rangeKey === "custom") return;
-    if (customBtn) customBtn.hidden = false;
-    if (customRow) customRow.hidden = true;
-  }
-
-  function applyCustomDays(raw) {
-    customDays = Math.max(1, Math.min(365, Number.parseInt(raw, 10) || customDays));
-    setRange("custom");
-  }
-
   function setRange(next) {
     if (!RANGE_OPTIONS[next]) return;
     rangeKey = next;
 
     const labelEl = document.getElementById("analytics-range-label");
-    if (labelEl) {
-      labelEl.textContent = next === "custom" ? `Last ${customDays} days` : RANGE_OPTIONS[next].label;
-    }
+    if (labelEl) labelEl.textContent = RANGE_OPTIONS[next].label;
 
     document.querySelectorAll("#analytics-range-menu [data-range]").forEach((btn) => {
       btn.setAttribute("aria-selected", btn.dataset.range === rangeKey ? "true" : "false");
     });
-
-    const customBtn = document.getElementById("analytics-custom-btn");
-    const customRow = document.getElementById("analytics-custom-row");
-    if (next === "custom") {
-      if (customBtn) customBtn.hidden = true;
-      if (customRow) customRow.hidden = false;
-    } else {
-      if (customBtn) customBtn.hidden = false;
-      if (customRow) customRow.hidden = true;
-    }
 
     closeRangeMenu();
     load();
@@ -607,8 +567,6 @@
     if (!menu || !btn) return;
     menu.hidden = false;
     btn.setAttribute("aria-expanded", "true");
-    if (rangeKey === "custom") showCustomInput();
-    else hideCustomInput();
   }
 
   function closeRangeMenu() {
@@ -633,37 +591,8 @@
   document.querySelectorAll("#analytics-range-menu [data-range]").forEach((btn) => {
     btn.addEventListener("click", (e) => {
       e.stopPropagation();
-      const key = btn.dataset.range;
-      if (key === "custom") {
-        showCustomInput();
-        return;
-      }
-      setRange(key);
+      setRange(btn.dataset.range);
     });
-  });
-
-  document.getElementById("analytics-custom-row")?.addEventListener("click", (e) => e.stopPropagation());
-
-  const customInput = document.getElementById("analytics-custom-days");
-  customInput?.addEventListener("click", (e) => e.stopPropagation());
-  customInput?.addEventListener("pointerdown", (e) => e.stopPropagation());
-  customInput?.addEventListener("keydown", (e) => {
-    e.stopPropagation();
-    if (e.key === "Enter") {
-      e.preventDefault();
-      applyCustomDays(customInput.value);
-    }
-    if (e.key === "Escape" && rangeKey !== "custom") {
-      hideCustomInput();
-    }
-  });
-  customInput?.addEventListener("blur", () => {
-    if (document.getElementById("analytics-custom-row")?.hidden) return;
-    setTimeout(() => {
-      if (document.getElementById("analytics-custom-row")?.hidden) return;
-      if (document.activeElement === customInput) return;
-      applyCustomDays(customInput.value);
-    }, 120);
   });
 
   document.addEventListener("click", (e) => {
@@ -673,15 +602,21 @@
 
   // Pull fresh numbers from the platform APIs, then redraw.
   document.getElementById("analytics-refresh")?.addEventListener("click", async (e) => {
-    e.target.disabled = true;
+    const btn = e.currentTarget;
+    btn.disabled = true;
+    btn.classList.add("is-loading");
+    btn.textContent = "Refreshing…";
     try {
-      const result = await api("/api/metrics/refresh", { method: "POST", body: {} });
-      toast(`Collected ${result.posts} post + ${result.accounts} account snapshot(s)`);
+      const result = await api("/api/analytics/refresh", { method: "POST", body: {} });
+      const n = (result.posts || 0) + (result.accounts || 0);
+      toast(n ? `Synced ${result.posts} post + ${result.accounts} account snapshot(s)` : "Analytics up to date");
       await load();
     } catch (err) {
       toast(err.message, "error");
     } finally {
-      e.target.disabled = false;
+      btn.disabled = false;
+      btn.classList.remove("is-loading");
+      btn.textContent = "Refresh";
     }
   });
 

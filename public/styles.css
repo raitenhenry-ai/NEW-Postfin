@@ -3641,6 +3641,44 @@ body.theme-light .cal-post-fields {
   margin-bottom: 18px;
 }
 
+.analytics-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+
+.analytics-updated {
+  font-size: 12.5px;
+  font-weight: 500;
+  color: #8a8a92;
+  letter-spacing: -0.01em;
+  white-space: nowrap;
+}
+
+.analytics-stale {
+  margin: 0 0 12px;
+  padding: 10px 14px;
+  border-radius: 10px;
+  background: #2a1c14;
+  color: #f0b27a;
+  font-size: 13px;
+  line-height: 1.4;
+}
+
+.analytics-note {
+  margin: 0 0 14px;
+  font-size: 12.5px;
+  color: #8a8a92;
+  line-height: 1.4;
+}
+
+#analytics-refresh.is-loading {
+  opacity: 0.7;
+  cursor: wait;
+}
+
 .analytics-title-row {
   display: flex;
   align-items: center;
