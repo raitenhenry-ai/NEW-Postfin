@@ -112,6 +112,25 @@
     if (wrap && !wrap.contains(e.target)) closeRangeMenu();
   });
 
+  document.getElementById("dash-refresh")?.addEventListener("click", async (e) => {
+    const btn = e.currentTarget;
+    btn.disabled = true;
+    btn.classList.add("is-loading");
+    btn.textContent = "Refreshing…";
+    try {
+      const result = await api("/api/analytics/refresh", { method: "POST", body: {} });
+      const n = (result.posts || 0) + (result.accounts || 0);
+      toast(n ? `Synced ${result.posts} post + ${result.accounts} account snapshot(s)` : "Analytics up to date");
+      await load();
+    } catch (err) {
+      toast(err.message, "error");
+    } finally {
+      btn.disabled = false;
+      btn.classList.remove("is-loading");
+      btn.textContent = "Refresh";
+    }
+  });
+
   /* ---------- calendar ---------- */
 
   // Every job that falls on a given day, flattened one entry per platform so
