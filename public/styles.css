@@ -3667,6 +3667,16 @@ body.theme-light .cal-post-fields {
   line-height: 1.4;
 }
 
+body.theme-light .analytics-stale {
+  background: #fff4e8;
+  color: #9a5b16;
+}
+
+body.theme-light .analytics-updated,
+body.theme-light .analytics-note {
+  color: #6a6a72;
+}
+
 .analytics-note {
   margin: 0 0 14px;
   font-size: 12.5px;
