@@ -448,22 +448,28 @@
       grid.innerHTML = emptyBlock("Nothing posted yet. Top videos show up once something goes live.");
       return;
     }
-    grid.innerHTML = videos.slice(0, 3).map((v) => `
+    grid.innerHTML = videos.slice(0, 3).map((v) => {
+      const views = Number(v.views) || 0;
+      const viewsLabel = `${fmtCompact(views, 1)} ${views === 1 ? "view" : "views"}`;
+      const duration = v.durationSeconds ? fmtDuration(v.durationSeconds) : "";
+      return `
       <article class="video-card">
+        <span class="video-rank-col" aria-label="Rank ${v.rank}">${v.rank}</span>
         <div class="video-thumb">
           ${v.thumb
             ? `<img src="${escapeHtml(v.thumb)}" alt="" loading="lazy">`
             : `<div class="video-thumb-fallback" aria-hidden="true"></div>`}
-          <span class="video-rank">${v.rank}</span>
-          <span class="video-duration">${fmtDuration(v.durationSeconds)}</span>
         </div>
         <div class="video-meta">
           <h3>${escapeHtml(v.title)}</h3>
-          <p class="video-subtitle">${escapeHtml(v.subtitle || "")}</p>
-          <p class="video-views">${fmtCompact(v.views, 1)} views</p>
-          <p class="video-cpm">${v.cpm !== null ? `CPM ${fmtMoney(v.cpm)}` : ""}</p>
+          ${v.subtitle ? `<p class="video-subtitle">${escapeHtml(v.subtitle)}</p>` : ""}
+          <p class="video-stats">
+            <span>${escapeHtml(viewsLabel)}</span>
+            ${duration ? `<span class="video-dot" aria-hidden="true"></span><span>${escapeHtml(duration)}</span>` : ""}
+          </p>
         </div>
-      </article>`).join("");
+      </article>`;
+    }).join("");
   }
 
   function renderSuggestions(suggestions) {

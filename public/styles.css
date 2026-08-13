@@ -918,27 +918,6 @@ body.theme-light .video-rank-col {
 body.theme-light .video-thumb {
   background: #ececef;
 }
-  line-height: 1.25;
-}
-
-.video-subtitle {
-  color: #fff;
-  font-size: 13px;
-  font-weight: 500;
-  line-height: 1.25;
-}
-
-.video-views {
-  color: #8f8f8f;
-  font-size: 12px;
-  margin-top: 4px;
-}
-
-.video-cpm {
-  color: #5b8cff;
-  font-size: 13px;
-  font-weight: 650;
-}
 
 @media (max-width: 900px) {
   .top-videos-grid {
