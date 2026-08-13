@@ -8,11 +8,10 @@
           errorBlock, emptyBlock } = window.Postfin;
 
   const RANGE_OPTIONS = {
-    "1h": { label: "Last hour" },
     "24h": { label: "Last 24 hours" },
     "7d": { label: "Last 7 days" },
     "30d": { label: "Last 30 days" },
-    custom: { label: "Custom" },
+    all: { label: "All time" },
   };
 
   // Per-chart colours. Purely presentational - the values are all live.
