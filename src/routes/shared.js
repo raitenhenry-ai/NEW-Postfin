@@ -17,7 +17,7 @@ const DAY = 86400000;
 
 // Most points a chart plots. Multi-day ranges pick the smallest whole number
 // of days per bucket that keeps them at or under this.
-const MAX_POINTS = 12;
+const MAX_POINTS = 24;
 
 /* ------------------------------------------------------------- time zones */
 
