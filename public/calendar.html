@@ -304,9 +304,11 @@
           </div>
           <form class="cal-composer" id="cal-chat-form">
             <div class="cal-composer-chips" id="cal-date-chips" hidden></div>
+            <div class="cal-composer-chips cal-attach-chips" id="cal-attach-chips" hidden></div>
             <textarea id="cal-chat-field" rows="3" placeholder="Ask for videos, or anything about your posts" autocomplete="off"></textarea>
             <div class="cal-composer-toolbar">
-              <button type="button" class="cal-composer-plus" aria-label="Add attachment">+</button>
+              <button type="button" class="cal-composer-plus" id="cal-composer-plus" aria-label="Attach an image">+</button>
+              <input type="file" id="cal-attach-input" accept="image/jpeg,image/png,image/webp,image/gif" hidden>
               <div class="cal-composer-actions">
                 <button type="submit" class="cal-composer-send" id="cal-chat-send" aria-label="Send" disabled>
                   <svg viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M8 12.5V3.5M8 3.5L4.5 7M8 3.5L11.5 7" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
