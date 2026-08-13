@@ -2064,6 +2064,16 @@
   const ACCEPT_TYPES = new Set(["image/jpeg", "image/png", "image/webp", "image/gif"]);
   const MAX_ATTACH_BYTES = 6 * 1024 * 1024;
 
+  function mimeFor(file) {
+    if (ACCEPT_TYPES.has(file.type)) return file.type;
+    const name = String(file.name || "").toLowerCase();
+    if (name.endsWith(".jpg") || name.endsWith(".jpeg")) return "image/jpeg";
+    if (name.endsWith(".png")) return "image/png";
+    if (name.endsWith(".webp")) return "image/webp";
+    if (name.endsWith(".gif")) return "image/gif";
+    return file.type || "";
+  }
+
   function readFileAsPayload(file) {
     return new Promise((resolve, reject) => {
       const reader = new FileReader();
@@ -2079,7 +2089,8 @@
 
   async function attachFile(file) {
     if (!file) return;
-    if (!ACCEPT_TYPES.has(file.type)) {
+    const mime = mimeFor(file);
+    if (!ACCEPT_TYPES.has(mime)) {
       toast("Upload a JPEG, PNG, WebP, or GIF image.", "error");
       return;
     }
@@ -2091,6 +2102,7 @@
     plusBtn?.setAttribute("aria-busy", "true");
     try {
       const payload = await readFileAsPayload(file);
+      payload.mime = mime;
       const result = await api("/api/uploads", { method: "POST", body: payload });
       attachedUpload = {
         url: result.url,

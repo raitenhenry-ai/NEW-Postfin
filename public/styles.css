@@ -3195,6 +3195,11 @@ body.theme-light .cal-post-fields {
   pointer-events: none;
 }
 
+.cal-composer.is-drop {
+  outline: 2px dashed #5b8cff;
+  outline-offset: 2px;
+}
+
 .cal-composer textarea {
   width: 100%;
   min-height: 56px;
