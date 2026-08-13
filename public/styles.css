@@ -6612,9 +6612,11 @@ body.theme-light .nav-btn.active .nav-label {
   color: #111114 !important;
 }
 
-body.theme-light .cal-composer-send,
-body.theme-light .cal-composer-plus,
-body.theme-light .pf-btn,
+body.theme-light .cal-composer-plus {
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+}
 body.theme-light .date-range,
 body.theme-light .cal-chat-cancel,
 body.theme-light .cal-tool-btn,
