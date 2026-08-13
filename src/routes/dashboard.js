@@ -184,48 +184,45 @@ async function suggestions() {
 
 /* ---------------------------------------------------------------- Analytics */
 
-// analytics.html: three chart series, engagement totals and the recent grid,
-// all filtered by platform and range.
+// analytics.html: chart series, engagement totals and the recent grid,
+// all filtered by platform and range. Gains use snapshot differences.
 router.get("/analytics", wrap(async (req, res) => {
   const platform = ENABLED_PLATFORMS.includes(req.query.platform) ? req.query.platform : null;
-  const range = resolveRange(req.query.range || "30d", req.query.days, req.query.tz);
+  const range = await resolveAnalyticsRange(req);
   const opts = { ...range, platform };
 
-  const [views, followers, comments, likes, shares, saves, totals] = await Promise.all([
+  const [views, followers, comments, likes, shares, saves, gains, metrics] = await Promise.all([
     postSeries({ metric: "views", ...opts }),
     followerSeries(opts),
     postSeries({ metric: "comments", ...opts }),
     postSeries({ metric: "likes", ...opts }),
     postSeries({ metric: "shares", ...opts }),
     postSeries({ metric: "saves", ...opts }),
-    totalsSince(range.sinceMs, platform),
+    gainsForRange(range, platform),
+    metricsStatus(),
   ]);
 
-  // A point covers [t, end) and holds the running total as of `end`. The
-  // final bucket is still filling, so its end is clamped to now rather than
-  // advertising a reading from the future.
-  //
-  // `total` is the lifetime running total the platforms report; `gain` is
-  // what actually moved inside the selected window. The card leads with the
-  // gain, because a number sitting under "Last 24 hours" is read as a
-  // 24-hour figure - a lifetime follower count there claims growth that
-  // never happened.
   const now = Date.now();
-  const chart = (series) => ({
+  const chart = (series, gainOverride = null) => ({
     series: series.map((p) => ({
       t: p.start, end: Math.min(p.end, now), v: p.value, observed: p.observed,
     })),
     total: series.at(-1)?.value ?? 0,
-    gain: seriesGain(series),
+    gain: gainOverride != null ? gainOverride : seriesGain(series),
     delta: seriesDelta(series),
   });
 
-  // Same split for the engagement tiles.
-  const tile = (series) => ({
-    value: seriesGain(series),
+  const tile = (series, gainOverride = null) => ({
+    value: gainOverride != null ? gainOverride : seriesGain(series),
     total: series.at(-1)?.value ?? 0,
     delta: seriesDelta(series),
   });
+
+  // Chart points for the client in a simple [{timestamp, views}] form too.
+  const chartPoints = views.map((p) => ({
+    timestamp: new Date(Math.min(p.end, now)).toISOString(),
+    views: p.value,
+  }));
 
   res.json({
     range: {
@@ -234,28 +231,37 @@ router.get("/analytics", wrap(async (req, res) => {
       points: range.points,
       bucketMs: range.bucketMs,
       bucketDays: range.bucketDays ?? null,
-      // How the client should name a point: "date" buckets are whole
-      // calendar days and are named after the day they cover, the others
-      // are named for the instant their reading was taken.
       labelStyle: range.labelStyle,
       startMs: range.sinceMs,
       endMs: Math.min(range.endMs, now),
     },
     platform: platform || "all",
     charts: {
-      views: chart(views),
+      views: chart(views, gains.views),
       followers: chart(followers),
-      comments: chart(comments),
+      comments: chart(comments, gains.comments),
     },
+    chartPoints,
     totals: {
-      likes: tile(likes),
-      comments: tile(comments),
-      saves: tile(saves),
-      shares: tile(shares),
+      likes: tile(likes, gains.likes),
+      comments: tile(comments, gains.comments),
+      saves: tile(saves, gains.saves),
+      shares: tile(shares, gains.shares),
     },
-    engagement: totals,
+    engagement: {
+      views: gains.views,
+      likes: gains.likes,
+      comments: gains.comments,
+      shares: gains.shares,
+      saves: gains.saves,
+      posts: gains.published,
+    },
+    published: gains.published,
     recentVideos: await recentVideos(platform, 8),
     hasData: views.some((p) => p.value > 0) || followers.some((p) => p.value > 0),
+    lastSyncedAt: metrics.lastSyncedAt || null,
+    stalePlatforms: (metrics.stalePlatforms || []).filter((s) => s.stale),
+    note: "Platform APIs can delay updates — figures are Postfin-tracked snapshots, not live counts.",
   });
 }));
 
