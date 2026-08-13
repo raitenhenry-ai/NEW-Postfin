@@ -3,7 +3,7 @@
 (() => {
   const {
     api, escapeHtml, platformIcon, PLATFORM_LABELS, fmtCompact, fmtInt, fmtSigned,
-    fmtDelta, deltaClass, fmtDuration, dateKey, timeZone, toast, errorBlock,
+    fmtDelta, deltaClass, fmtDuration, fmtRelative, dateKey, timeZone, toast, errorBlock,
     emptyBlock,
   } = window.Postfin;
 
@@ -448,24 +448,27 @@
       grid.innerHTML = emptyBlock("Nothing posted yet. Top videos show up once something goes live.");
       return;
     }
-    grid.innerHTML = videos.slice(0, 3).map((v) => {
+    grid.innerHTML = videos.slice(0, 6).map((v, i) => {
+      const rank = Number(v.rank) || i + 1;
       const views = Number(v.views) || 0;
       const viewsLabel = `${fmtCompact(views, 1)} ${views === 1 ? "view" : "views"}`;
       const duration = v.durationSeconds ? fmtDuration(v.durationSeconds) : "";
+      const posted = v.postedAt ? fmtRelative(v.postedAt) : "";
       return `
       <article class="video-card">
-        <span class="video-rank-col" aria-label="Rank ${v.rank}">${v.rank}</span>
+        <span class="video-rank-col" aria-label="Rank ${rank}">#${rank}</span>
         <div class="video-thumb">
           ${v.thumb
             ? `<img src="${escapeHtml(v.thumb)}" alt="" loading="lazy">`
             : `<div class="video-thumb-fallback" aria-hidden="true"></div>`}
+          ${duration ? `<span class="video-duration">${escapeHtml(duration)}</span>` : ""}
         </div>
         <div class="video-meta">
           <h3>${escapeHtml(v.title)}</h3>
           ${v.subtitle ? `<p class="video-subtitle">${escapeHtml(v.subtitle)}</p>` : ""}
           <p class="video-stats">
             <span>${escapeHtml(viewsLabel)}</span>
-            ${duration ? `<span class="video-dot" aria-hidden="true"></span><span>${escapeHtml(duration)}</span>` : ""}
+            ${posted ? `<span class="video-dot" aria-hidden="true"></span><span>${escapeHtml(posted)}</span>` : ""}
           </p>
         </div>
       </article>`;
