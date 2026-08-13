@@ -6427,8 +6427,8 @@ body.theme-light .stat-card {
   background: #f7f7f9;
 }
 
-body.theme-light .stat-up {
-  color: #2f9d62;
+body.theme-light .stat-up.up {
+  color: #1a9e5c;
 }
 
 body.theme-light .top-videos-header a,
@@ -6628,6 +6628,21 @@ body.theme-light .cal-msg.is-assistant .cal-msg-body {
 /* Keep accents after text catch-all */
 body.theme-light .video-duration {
   color: #fff !important;
+}
+body.theme-light .stat-up.up,
+body.theme-light .analytics-chart-delta.up,
+body.theme-light .analytics-total-delta.up {
+  color: #1a9e5c !important;
+}
+body.theme-light .stat-up.muted,
+body.theme-light .analytics-chart-delta.muted,
+body.theme-light .analytics-total-delta.muted {
+  color: #8a8a92 !important;
+}
+body.theme-light .stat-up.down,
+body.theme-light .analytics-chart-delta.down,
+body.theme-light .analytics-total-delta.down {
+  color: #e24b4b !important;
 }
 body.theme-light .video-rank-col {
   color: #111114 !important;
