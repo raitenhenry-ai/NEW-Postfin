@@ -6616,7 +6616,10 @@ body.theme-light .cal-composer-plus {
   background: transparent !important;
   border: none !important;
   box-shadow: none !important;
+  color: #222228 !important;
 }
+body.theme-light .cal-composer-send,
+body.theme-light .pf-btn,
 body.theme-light .date-range,
 body.theme-light .cal-chat-cancel,
 body.theme-light .cal-tool-btn,
