@@ -38,16 +38,19 @@ router.get("/dashboard", wrap(async (req, res) => {
   const postedInRange = Number(
     (await q1("SELECT COUNT(*) AS n FROM ugc_posts WHERE status = 'done' AND posted_at > ?", [since]))?.n || 0
   );
+  // Lead with what moved inside the window - same split as /api/analytics.
+  // A lifetime total under "Last 7 days" reads as growth that never happened.
+  const viewGain = seriesGain(viewSeries);
   const followerGain = seriesGain(followers);
 
   const revenue = estimateRevenue(perPlatformViews);
-  const totalViews = totals.views;
-  const cpm = revenue !== null && totalViews ? (revenue / totalViews) * 1000 : null;
+  const lifetimeViews = totals.views;
+  const cpm = revenue !== null && lifetimeViews ? (lifetimeViews && (revenue / lifetimeViews) * 1000) : null;
 
   res.json({
     range: { key: range.key, days: range.days ?? null },
     stats: {
-      views: { value: totalViews, delta: seriesDelta(viewSeries) },
+      views: { value: viewGain, total: viewSeries.at(-1)?.value ?? 0, delta: seriesDelta(viewSeries) },
       // No publishing API reports ad revenue, so this stays null unless the
       // operator supplied CPM rates in the environment.
       cpm: { value: cpm, configured: cpm !== null },
