@@ -2032,7 +2032,113 @@
     setProductMenuOpen(false);
   });
 
-  formatBtn?.addEventListener("click", (e) => {
+  function renderAttachChip() {
+    if (!attachChips) return;
+    if (!attachedUpload) {
+      attachChips.hidden = true;
+      attachChips.innerHTML = "";
+      return;
+    }
+    attachChips.hidden = false;
+    attachChips.innerHTML = `
+      <div class="cal-date-chip cal-attach-chip">
+        <img src="${escapeHtml(attachedUpload.path || attachedUpload.url)}" alt="">
+        <span class="cal-date-chip-label">${escapeHtml(attachedUpload.name)}</span>
+        <button type="button" class="cal-date-chip-remove" aria-label="Remove attachment">
+          <svg viewBox="0 0 12 12" fill="none" aria-hidden="true"><path d="M3 3l6 6M9 3L3 9" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+        </button>
+      </div>`;
+    attachChips.querySelector(".cal-date-chip-remove")?.addEventListener("click", (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      const was = attachedUpload?.url;
+      attachedUpload = null;
+      if (selectedProductUrl === was) setSelectedProduct("");
+      else {
+        renderAttachChip();
+        syncSendState();
+      }
+    });
+  }
+
+  const ACCEPT_TYPES = new Set(["image/jpeg", "image/png", "image/webp", "image/gif"]);
+  const MAX_ATTACH_BYTES = 6 * 1024 * 1024;
+
+  function readFileAsPayload(file) {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => resolve({
+        filename: file.name,
+        mime: file.type,
+        data: String(reader.result || ""),
+      });
+      reader.onerror = () => reject(new Error("Could not read that file"));
+      reader.readAsDataURL(file);
+    });
+  }
+
+  async function attachFile(file) {
+    if (!file) return;
+    if (!ACCEPT_TYPES.has(file.type)) {
+      toast("Upload a JPEG, PNG, WebP, or GIF image.", "error");
+      return;
+    }
+    if (file.size > MAX_ATTACH_BYTES) {
+      toast("Keep uploads under 6 MB.", "error");
+      return;
+    }
+    plusBtn?.classList.add("is-busy");
+    plusBtn?.setAttribute("aria-busy", "true");
+    try {
+      const payload = await readFileAsPayload(file);
+      const result = await api("/api/uploads", { method: "POST", body: payload });
+      attachedUpload = {
+        url: result.url,
+        path: result.path,
+        name: result.name || file.name,
+      };
+      if (result.product) {
+        productCatalog = [
+          result.product,
+          ...productCatalog.filter((p) => p.url !== result.product.url),
+        ];
+      }
+      setSelectedProduct(result.url);
+      toast(`Attached ${attachedUpload.name}`);
+    } catch (err) {
+      toast(err.message || "Could not upload that file", "error");
+    } finally {
+      plusBtn?.classList.remove("is-busy");
+      plusBtn?.removeAttribute("aria-busy");
+      if (attachInput) attachInput.value = "";
+    }
+  }
+
+  plusBtn?.addEventListener("click", (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (assistantBusy) return;
+    attachInput?.click();
+  });
+
+  attachInput?.addEventListener("change", () => {
+    const file = attachInput.files?.[0];
+    if (file) attachFile(file);
+  });
+
+  form?.addEventListener("dragover", (e) => {
+    if (![...e.dataTransfer.types].includes("Files")) return;
+    e.preventDefault();
+    form.classList.add("is-drop");
+  });
+  form?.addEventListener("dragleave", () => form.classList.remove("is-drop"));
+  form?.addEventListener("drop", (e) => {
+    form.classList.remove("is-drop");
+    const file = e.dataTransfer?.files?.[0];
+    if (!file) return;
+    e.preventDefault();
+    attachFile(file);
+  });
     e.stopPropagation();
     setProductMenuOpen(false);
     setPlatformMenuOpen(false);
