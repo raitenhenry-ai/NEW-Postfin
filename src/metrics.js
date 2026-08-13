@@ -1,125 +1,36 @@
 import config from "./config.js";
-import { q, q1, run } from "./db.js";
-import { platforms, freshAccount } from "./accounts.js";
+import { q, q1 } from "./db.js";
+import {
+  syncAnalytics,
+  latestSyncAt,
+  stalePlatformStatus,
+} from "./analytics/syncAnalytics.js";
 
-// Analytics collection.
+// Analytics collection façade.
 //
-// Every platform module exposes fetchStats(account, ids) -> { id: {views,
-// likes, comments, shares, saves} } and, where the API allows it,
-// fetchAudience(account) -> { followers }. This module polls both on an
-// interval and writes one snapshot row per post/account per run, so the
-// charts read from our own database instead of hitting eight APIs on every
-// page load.
-//
-// Failures are per-account and never fatal: a platform whose token expired
-// or whose app lacks an insights scope simply stops contributing new points.
+// Age-tiered sync + adapters live in src/analytics/. This module keeps the
+// historical read helpers (series, leaderboard, CPM) and the in-process
+// scheduler that ticks the sync job.
 
 let timer = null;
 let running = false;
-let lastRun = { at: null, posts: 0, accounts: 0, errors: [] };
+let lastRun = { at: null, posts: 0, accounts: 0, errors: [], stalePlatforms: [] };
 
-// Posts stop being polled once they're older than the retention window -
-// view counts on a three-month-old clip barely move and each one costs a
-// request.
-function pollWindowStart() {
-  return Date.now() - config.metrics.maxAgeDays * 86400000;
-}
-
-// The id a platform recognises: TikTok hands back an internal publish_id at
-// upload time and only later exposes the public video id, so prefer the
-// public one where we resolved it.
-function statsId(post) {
-  if (post.platform === "tiktok") return post.public_post_id || null;
-  return post.platform_video_id || null;
-}
-
-async function collectPostMetrics() {
-  const posts = await q(
-    `SELECT ugc_posts.*, accounts.platform AS account_platform
-     FROM ugc_posts JOIN accounts ON accounts.id = ugc_posts.account_id
-     WHERE ugc_posts.status = 'done' AND ugc_posts.posted_at > ?`,
-    [pollWindowStart()]
-  );
-
-  // One fetchStats call per account, batching all of that account's posts.
-  const byAccount = new Map();
-  for (const post of posts) {
-    const id = statsId(post);
-    if (!id) continue;
-    if (!byAccount.has(post.account_id)) byAccount.set(post.account_id, []);
-    byAccount.get(post.account_id).push({ post, id });
-  }
-
-  const now = Date.now();
-  const errors = [];
-  let written = 0;
-
-  for (const [accountId, entries] of byAccount) {
-    const platform = platforms[entries[0].post.platform];
-    if (!platform?.fetchStats) continue;
-    try {
-      const account = await freshAccount(accountId);
-      if (!account) continue;
-      const stats = await platform.fetchStats(account, entries.map((e) => e.id));
-      for (const { post, id } of entries) {
-        const s = stats[id];
-        if (!s) continue;
-        await run(
-          `INSERT INTO post_metrics (post_id, collected_at, views, likes, comments, shares, saves)
-           VALUES (?, ?, ?, ?, ?, ?, ?)`,
-          [post.id, now, s.views || 0, s.likes || 0, s.comments || 0, s.shares || 0, s.saves || 0]
-        );
-        written++;
-      }
-    } catch (err) {
-      errors.push(`${entries[0].post.platform}: ${String(err.message || err)}`);
-    }
-  }
-  return { written, errors };
-}
-
-async function collectAudience() {
-  const accounts = await q("SELECT id, platform FROM accounts");
-  const now = Date.now();
-  const errors = [];
-  let written = 0;
-
-  for (const row of accounts) {
-    const platform = platforms[row.platform];
-    // Not every API exposes follower counts to a publishing app (LinkedIn,
-    // for one); those accounts just have no followers series.
-    if (!platform?.fetchAudience) continue;
-    try {
-      const account = await freshAccount(row.id);
-      if (!account) continue;
-      const { followers } = await platform.fetchAudience(account);
-      await run(
-        "INSERT INTO account_metrics (account_id, collected_at, followers) VALUES (?, ?, ?)",
-        [row.id, now, Number(followers) || 0]
-      );
-      written++;
-    } catch (err) {
-      errors.push(`${row.platform}: ${String(err.message || err)}`);
-    }
-  }
-  return { written, errors };
-}
-
-export async function collectMetrics() {
+export async function collectMetrics({ force = false } = {}) {
   if (running) return lastRun;
   running = true;
   try {
-    const posts = await collectPostMetrics();
-    const audience = await collectAudience();
+    const result = await syncAnalytics({ force });
     lastRun = {
-      at: Date.now(),
-      posts: posts.written,
-      accounts: audience.written,
-      errors: [...posts.errors, ...audience.errors],
+      at: result.at,
+      posts: result.posts,
+      accounts: result.accounts,
+      errors: result.errors || [],
+      stalePlatforms: result.stalePlatforms || [],
     };
-    if (posts.written || audience.written) {
+    if (result.posts || result.accounts) {
       console.log(
-        `[metrics] collected ${posts.written} post snapshot(s), ${audience.written} account snapshot(s)`
+        `[metrics] synced ${result.posts} post snapshot(s), ${result.accounts} account snapshot(s)`
       );
     }
     for (const err of lastRun.errors) console.warn(`[metrics] ${err}`);
@@ -129,9 +40,12 @@ export async function collectMetrics() {
   }
 }
 
-export function metricsStatus() {
+export async function metricsStatus() {
+  const [syncedAt, stale] = await Promise.all([latestSyncAt(), stalePlatformStatus()]);
   return {
     ...lastRun,
+    lastSyncedAt: syncedAt || lastRun.at,
+    stalePlatforms: stale.length ? stale : lastRun.stalePlatforms || [],
     intervalMinutes: config.metrics.intervalMinutes,
     enabled: config.metrics.intervalMinutes > 0,
   };
@@ -142,12 +56,12 @@ export function startMetricsCollector() {
     console.log("[metrics] collector disabled (METRICS_INTERVAL_MINUTES=0)");
     return;
   }
-  const period = config.metrics.intervalMinutes * 60 * 1000;
-  // First pass shortly after boot so a restarted server backfills quickly,
-  // then on the configured interval.
+  // Tick often; age tiers decide which posts are actually due.
+  const period = Math.max(5, config.metrics.intervalMinutes) * 60 * 1000;
   setTimeout(() => collectMetrics().catch((e) => console.error("[metrics]", e)), 15000).unref();
   timer = setInterval(() => collectMetrics().catch((e) => console.error("[metrics]", e)), period);
   timer.unref();
+  console.log(`[metrics] age-tiered collector every ${config.metrics.intervalMinutes}m`);
 }
 
 export function stopMetricsCollector() {
@@ -157,8 +71,8 @@ export function stopMetricsCollector() {
 
 /* ---------- Read helpers used by the API routes ---------- */
 
-// Sum of the newest snapshot of every post, optionally restricted to one
-// platform. Returns zeros when nothing has been collected yet.
+// Legacy helper: latest lifetime totals for posts published after sinceMs.
+// Prefer analytics/rangeGain.js for true in-window gains.
 export async function totalsSince(sinceMs, platform = null) {
   const params = [sinceMs];
   let platformFilter = "";
@@ -192,17 +106,6 @@ export async function totalsSince(sinceMs, platform = null) {
   };
 }
 
-// Everything the platforms report is a lifetime running total - a video's
-// view count, an account's follower count. So a series is built by taking
-// each post's most recent reading at or before each bucket boundary and
-// summing across posts, carrying the last known value forward through
-// buckets where no collection happened. A gap in collection therefore shows
-// as a flat line, not a drop to zero.
-//
-// Each point carries the interval it covers. It used to report only the
-// bucket's start while holding the total as of the bucket's *end*, which
-// shifted every label one bucket into the past and meant the newest point on
-// a 30-day chart was dated four days ago.
 function bucketize(rows, { keyField, edges, startingValues }) {
   const carried = new Map(startingValues || []);
   const out = [];
@@ -216,10 +119,6 @@ function bucketize(rows, { keyField, edges, startingValues }) {
     }
     let total = 0;
     for (const value of carried.values()) total += value;
-    // `observed` separates "nothing had been collected yet" from a real zero.
-    // Without it a bucket from before the first snapshot reads 0, and a
-    // channel that already had 1.66K followers when collection started draws
-    // a cliff from zero that looks exactly like 1.66K of growth.
     out.push({ start: edges[i], end, value: total, observed: carried.size > 0 });
   }
   return out;
@@ -229,9 +128,6 @@ const METRIC_COLUMNS = {
   views: "views", likes: "likes", comments: "comments", shares: "shares", saves: "saves",
 };
 
-// Time series of a post metric across the bucket edges resolveRange built.
-// Readings from before the window seed the first bucket so a chart of the
-// last 24 hours still starts at the real running total.
 export async function postSeries({ metric = "views", edges, platform = null }) {
   const column = METRIC_COLUMNS[metric] || "views";
   const params = [];
@@ -249,7 +145,6 @@ export async function postSeries({ metric = "views", edges, platform = null }) {
     params
   );
 
-  // Seed with the last reading before the window opened.
   const seed = new Map();
   const inWindow = [];
   for (const row of rows) {
@@ -259,7 +154,6 @@ export async function postSeries({ metric = "views", edges, platform = null }) {
   return bucketize(inWindow, { keyField: "k", edges, startingValues: seed });
 }
 
-// Same shape for follower counts across every connected account.
 export async function followerSeries({ edges, platform = null }) {
   const params = [];
   let platformFilter = "";
@@ -284,9 +178,6 @@ export async function followerSeries({ edges, platform = null }) {
   return bucketize(inWindow, { keyField: "k", edges, startingValues: seed });
 }
 
-// Estimated revenue per 1000 views, or null when the operator hasn't
-// supplied rates - no publishing API reports ad revenue, so a number here
-// would be invented.
 export function cpmFor(platform) {
   const { byPlatform, default: fallback } = config.metrics.cpm;
   return byPlatform[platform] ?? fallback ?? null;
@@ -304,27 +195,25 @@ export function estimateRevenue(perPlatformViews) {
   return anyRate ? revenue : null;
 }
 
-// Per-platform view totals, used for the revenue estimate and the
-// "top accounts" list.
 export async function viewsByPlatform() {
   const rows = await q(
-    `SELECT p.platform, COALESCE(SUM(m.views), 0) AS views
-     FROM ugc_posts p JOIN post_metrics m ON m.post_id = p.id
-     WHERE m.collected_at = (
+    `SELECT p.platform, COALESCE(SUM(COALESCE(p.views, m.views)), 0) AS views
+     FROM ugc_posts p
+     LEFT JOIN post_metrics m ON m.post_id = p.id AND m.collected_at = (
        SELECT MAX(m2.collected_at) FROM post_metrics m2 WHERE m2.post_id = p.id
      )
+     WHERE p.status = 'done'
      GROUP BY p.platform`
   );
   return Object.fromEntries(rows.map((r) => [r.platform, Number(r.views || 0)]));
 }
 
-// Newest reading per account, joined to the account for display.
 export async function accountLeaderboard(limit = 10) {
   const rows = await q(
     `SELECT a.id, a.platform, a.display_name, a.external_id,
-            COALESCE(SUM(m.views), 0) AS views
+            COALESCE(SUM(COALESCE(p.views, m.views)), 0) AS views
      FROM accounts a
-     LEFT JOIN ugc_posts p ON p.account_id = a.id
+     LEFT JOIN ugc_posts p ON p.account_id = a.id AND p.status = 'done'
      LEFT JOIN post_metrics m ON m.post_id = p.id AND m.collected_at = (
        SELECT MAX(m2.collected_at) FROM post_metrics m2 WHERE m2.post_id = p.id
      )
