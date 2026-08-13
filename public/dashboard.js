@@ -9,6 +9,12 @@
 
   const DAY_MS = 86400000;
 
+  const RANGE_OPTIONS = {
+    "24h": { label: "Last day" },
+    "7d": { label: "Last 7 days" },
+    "30d": { label: "Last 30 days" },
+  };
+
   // The Monday of the week containing `date` - the week grid runs Mon..Sun.
   function startOfWeek(date) {
     const d = new Date(date);
@@ -21,6 +27,8 @@
   let calendarDays = {};
   let weekStart = startOfWeek(new Date());
   let monthCursor = new Date();
+  let rangeKey = "30d";
+  let requestId = 0;
 
   /* ---------- stat tiles ---------- */
 
@@ -39,10 +47,69 @@
       }
     };
 
-    set("views", fmtCompact(stats.views.value, 1), stats.views.delta);
+    set("views", fmtSigned(stats.views.value), stats.views.delta);
     set("followers", fmtSigned(stats.followers.value), stats.followers.delta);
     set("videosPosted", fmtInt(stats.videosPosted.value), null);
+
+    const rangeLabel = RANGE_OPTIONS[rangeKey]?.label || "Last 30 days";
+    const videosRange = document.getElementById("dash-videos-range-label");
+    if (videosRange) videosRange.textContent = rangeLabel;
   }
+
+  /* ---------- range menu ---------- */
+
+  function setRange(next) {
+    if (!RANGE_OPTIONS[next] || next === rangeKey) {
+      closeRangeMenu();
+      return;
+    }
+    rangeKey = next;
+
+    const labelEl = document.getElementById("dash-range-label");
+    if (labelEl) labelEl.textContent = RANGE_OPTIONS[next].label;
+
+    document.querySelectorAll("#dash-range-menu [data-range]").forEach((btn) => {
+      btn.setAttribute("aria-selected", btn.dataset.range === rangeKey ? "true" : "false");
+    });
+
+    closeRangeMenu();
+    load();
+  }
+
+  function openRangeMenu() {
+    const menu = document.getElementById("dash-range-menu");
+    const btn = document.getElementById("dash-range-btn");
+    if (!menu || !btn) return;
+    menu.hidden = false;
+    btn.setAttribute("aria-expanded", "true");
+  }
+
+  function closeRangeMenu() {
+    const menu = document.getElementById("dash-range-menu");
+    const btn = document.getElementById("dash-range-btn");
+    if (!menu || !btn) return;
+    menu.hidden = true;
+    btn.setAttribute("aria-expanded", "false");
+  }
+
+  document.getElementById("dash-range-btn")?.addEventListener("click", (e) => {
+    e.stopPropagation();
+    const menu = document.getElementById("dash-range-menu");
+    if (menu?.hidden) openRangeMenu();
+    else closeRangeMenu();
+  });
+
+  document.querySelectorAll("#dash-range-menu [data-range]").forEach((btn) => {
+    btn.addEventListener("click", (e) => {
+      e.stopPropagation();
+      setRange(btn.dataset.range);
+    });
+  });
+
+  document.addEventListener("click", (e) => {
+    const wrap = document.getElementById("dash-range");
+    if (wrap && !wrap.contains(e.target)) closeRangeMenu();
+  });
 
   /* ---------- calendar ---------- */
 
@@ -404,14 +471,19 @@
   /* ---------- load ---------- */
 
   async function load() {
+    const token = ++requestId;
     try {
       const start = startOfWeek(new Date()).getTime() - 40 * DAY_MS;
       const end = start + 120 * DAY_MS;
       const tz = timeZone();
+      const dashParams = new URLSearchParams({ range: rangeKey });
+      if (tz) dashParams.set("tz", tz);
+
       const [dashboard, calendar] = await Promise.all([
-        api(`/api/dashboard${tz ? `?tz=${encodeURIComponent(tz)}` : ""}`),
+        api(`/api/dashboard?${dashParams}`),
         api(`/api/calendar?start=${start}&end=${end}`),
       ]);
+      if (token !== requestId) return;
 
       calendarDays = calendar.days;
       // "Start" vs "Edit my automated plan" depends on whether anything is
@@ -427,6 +499,7 @@
       renderDay();
       renderMonth();
     } catch (err) {
+      if (token !== requestId) return;
       console.error(err);
       const grid = document.getElementById("dash-week-grid");
       if (grid) grid.innerHTML = errorBlock(`Couldn't load the dashboard: ${err.message}`);
