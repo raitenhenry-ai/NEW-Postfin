@@ -457,6 +457,46 @@
     document.querySelectorAll(".analytics-chart-card[data-chart]").forEach(setupCard);
     updateTotals();
     renderRecent();
+    renderSyncMeta();
+  }
+
+  function fmtUpdatedAgo(ms) {
+    if (!ms) return "";
+    const mins = Math.max(0, Math.round((Date.now() - Number(ms)) / 60000));
+    if (mins < 1) return "Updated just now";
+    if (mins === 1) return "Updated 1 min ago";
+    if (mins < 60) return `Updated ${mins} min ago`;
+    const hours = Math.round(mins / 60);
+    if (hours === 1) return "Updated 1 hour ago";
+    if (hours < 48) return `Updated ${hours} hours ago`;
+    return `Updated ${Math.round(hours / 24)} days ago`;
+  }
+
+  function renderSyncMeta() {
+    const updated = document.getElementById("analytics-updated");
+    const staleEl = document.getElementById("analytics-stale");
+    const noteEl = document.getElementById("analytics-note");
+    if (updated) updated.textContent = fmtUpdatedAgo(payload?.lastSyncedAt) || "";
+
+    const stale = payload?.stalePlatforms || [];
+    if (staleEl) {
+      if (!stale.length) {
+        staleEl.hidden = true;
+        staleEl.textContent = "";
+      } else {
+        const parts = stale.map((s) => {
+          const name = PLATFORM_LABELS[s.platform] || s.platform;
+          const ago = s.lastSuccessAt ? fmtUpdatedAgo(s.lastSuccessAt).replace(/^Updated /, "") : "unknown";
+          return `${name} analytics temporarily unavailable. Last updated ${ago}.`;
+        });
+        staleEl.textContent = parts.join(" ");
+        staleEl.hidden = false;
+      }
+    }
+    if (noteEl) {
+      noteEl.textContent = payload?.note || "";
+      noteEl.hidden = !payload?.note;
+    }
   }
 
   /* ---------- data ---------- */
