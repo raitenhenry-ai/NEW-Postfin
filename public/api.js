@@ -133,14 +133,18 @@
   function fmtDelta(delta) {
     if (delta === null || delta === undefined || !Number.isFinite(delta)) return "";
     const pct = delta * 100;
-    const arrow = delta >= 0 ? "↗" : "↘";
     const magnitude = Math.abs(pct) >= 100 ? Math.round(pct) : Math.round(pct * 10) / 10;
+    if (magnitude === 0) return "0%";
+    const arrow = delta > 0 ? "↗" : "↘";
     return `${arrow} ${magnitude}%`;
   }
 
   function deltaClass(delta) {
     if (delta === null || delta === undefined || !Number.isFinite(delta)) return "";
-    return delta >= 0 ? "up" : "down";
+    const pct = delta * 100;
+    const magnitude = Math.abs(pct) >= 100 ? Math.round(pct) : Math.round(pct * 10) / 10;
+    if (magnitude === 0) return "muted";
+    return delta > 0 ? "up" : "down";
   }
 
   function fmtDuration(seconds) {

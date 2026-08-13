@@ -4436,13 +4436,18 @@ body.theme-light .analytics-note {
   border: 0;
 }
 
+.stat-up.up { color: #3dd68c; }
 .stat-up.down { color: #ff7676; }
 .stat-up.muted { color: #6a6a72; }
 .post-dot.red { background: #ff7676; }
 .month-dots i.red { background: #ff7676; }
 
+.analytics-chart-delta.up,
+.analytics-total-delta.up { color: #3dd68c; }
 .analytics-chart-delta.down,
 .analytics-total-delta.down { color: #ff7676; }
+.analytics-chart-delta.muted,
+.analytics-total-delta.muted { color: #6a6a72; }
 
 .video-thumb-fallback {
   width: 100%;
