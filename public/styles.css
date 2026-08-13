@@ -5803,10 +5803,9 @@ body.theme-light .account-metric-label {
   color: #6a6a72;
 }
 
-body.theme-light .suggestion-row,
-body.theme-light .video-card {
-  background: #ffffff;
-  border-color: #e2e2e8;
+body.theme-light .suggestion-row {
+  background: transparent;
+  border-color: #e6e6ec;
   color: #222228;
 }
 
