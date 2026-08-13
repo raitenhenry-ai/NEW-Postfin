@@ -16,7 +16,6 @@ import {
 } from "./shared.js";
 import { gainsForRange } from "../analytics/rangeGain.js";
 import { latestSyncAt } from "../analytics/syncAnalytics.js";
-import { q, q1 } from "../db.js";
 
 const router = Router();
 
