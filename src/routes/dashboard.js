@@ -12,8 +12,11 @@ import { heygenConfigured } from "../ugc/heygen.js";
 import { scrapeProduct } from "../ugc/scrape.js";
 import { accountProfileUrl, postUrl } from "../postUrl.js";
 import {
-  wrap, resolveRange, seriesDelta, seriesGain, shapeJob, postsForJobs, jobTimestamp, jobDotStatus,
+  wrap, resolveRange, expandAllTimeRange, seriesDelta, seriesGain, shapeJob, postsForJobs, jobTimestamp, jobDotStatus,
 } from "./shared.js";
+import { gainsForRange } from "../analytics/rangeGain.js";
+import { latestSyncAt } from "../analytics/syncAnalytics.js";
+import { q, q1 } from "../db.js";
 
 const router = Router();
 
