@@ -23,7 +23,6 @@
 
   let platform = "all";
   let rangeKey = "30d";
-  let customDays = 14;
   let axisLabels = [];
   let tipLabels = [];
   let payload = null;
