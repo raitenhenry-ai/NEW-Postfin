@@ -6257,6 +6257,10 @@ body.theme-light .account-row {
   box-shadow: none !important;
 }
 
+body.theme-light a.account-row.is-link:hover {
+  background: rgba(17, 17, 20, 0.05) !important;
+}
+
 body.theme-light .account-metric,
 body.theme-light .account-views {
   color: #222228 !important;
