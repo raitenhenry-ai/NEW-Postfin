@@ -127,13 +127,27 @@ export function resolveRange(rangeKey, customDays = 14, timeZone = null) {
     case "1h":
       return intradayRange("1h", now, 12, 5 * MINUTE);
     case "24h":
-      return intradayRange("24h", now, 12, 2 * HOUR);
+      // Hourly buckets when we have snapshot density; 24 points max.
+      return intradayRange("24h", now, 24, HOUR);
     case "7d":
       return calendarRange("7d", now, 7, zone);
+    case "all": {
+      // Up to ~90 daily buckets, or weekly if the history is longer.
+      // sinceMs is the earliest snapshot we have (or 90 days back as a floor).
+      return {
+        key: "all",
+        points: MAX_POINTS,
+        bucketMs: DAY,
+        bucketDays: 1,
+        edges: null, // filled async by expandAllTimeRange
+        sinceMs: 0,
+        endMs: now,
+        labelStyle: "date",
+        zone,
+      };
+    }
     case "custom": {
       const days = Math.max(1, Math.min(365, Math.round(Number(customDays) || 14)));
-      // Under three days there aren't enough whole days to draw a line from,
-      // so those windows bucket by the hour instead.
       const range = days < 3
         ? intradayRange("custom", now, MAX_POINTS, Math.ceil(days * DAY / MAX_POINTS / HOUR) * HOUR)
         : calendarRange("custom", now, days, zone);
@@ -143,6 +157,22 @@ export function resolveRange(rangeKey, customDays = 14, timeZone = null) {
     default:
       return calendarRange("30d", now, 30, zone);
   }
+}
+
+// Completes the "all" range once we know the earliest snapshot timestamp.
+export function expandAllTimeRange(range, earliestMs, timeZone = null) {
+  if (range.key !== "all") return range;
+  const now = Date.now();
+  const zone = normalizeZone(timeZone) || range.zone || null;
+  const start = earliestMs && earliestMs > 0
+    ? earliestMs
+    : now - 90 * DAY;
+  const spanDays = Math.max(1, Math.ceil((now - start) / DAY));
+  if (spanDays > 90) {
+    // Weekly buckets for long histories.
+    return { ...calendarRange("all", now, spanDays, zone), key: "all", days: spanDays };
+  }
+  return { ...calendarRange("all", now, spanDays, zone), key: "all", days: spanDays };
 }
 
 // These series are running totals, and the stretch before collection

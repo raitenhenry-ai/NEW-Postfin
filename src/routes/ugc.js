@@ -7,6 +7,11 @@ import { slideshowAngles, slideshowConfigured, testImageGeneration } from "../ug
 import { planContent, normalizeSettings } from "../ugc/plan.js";
 import { heygenConfigured, heygenCatalog, testConnection } from "../ugc/heygen.js";
 import { collectMetrics } from "../metrics.js";
+import {
+  checkRefreshCooldown,
+  markRefreshCooldown,
+  latestSyncAt,
+} from "../analytics/syncAnalytics.js";
 import { reschedule } from "../schedule.js";
 import { runAssistant, assistantAvailable } from "../agent.js";
 import {
@@ -422,10 +427,32 @@ router.post("/heygen/test", wrap(async (req, res) => {
   }
 }));
 
-// Pull fresh numbers from the platform APIs on demand, so the analytics page
-// has a refresh button that doesn't wait for the next collection interval.
-router.post("/metrics/refresh", wrap(async (req, res) => {
-  res.json(await collectMetrics());
-}));
+// Pull fresh numbers from the platform APIs on demand.
+// Cooldown: one manual refresh every N minutes per session.
+async function handleAnalyticsRefresh(req, res) {
+  const sessionKey = req.session?.id || req.session?.email || "operator";
+  const gate = await checkRefreshCooldown(sessionKey);
+  if (!gate.allowed) {
+    return res.status(429).json({
+      error: "Refresh cooldown — try again shortly.",
+      retryAfterMs: gate.retryAfterMs,
+      nextRefreshAt: gate.nextRefreshAt,
+    });
+  }
+
+  const result = await collectMetrics({ force: true });
+  const cooldown = await markRefreshCooldown(sessionKey);
+  const lastSyncedAt = await latestSyncAt();
+
+  res.json({
+    ...result,
+    lastSyncedAt: lastSyncedAt || result.at,
+    nextRefreshAt: cooldown.nextRefreshAt,
+  });
+}
+
+router.post("/analytics/refresh", wrap(handleAnalyticsRefresh));
+// Back-compat alias used by older clients.
+router.post("/metrics/refresh", wrap(handleAnalyticsRefresh));
 
 export default router;
