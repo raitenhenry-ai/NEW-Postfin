@@ -82,8 +82,27 @@ export async function scrapeProduct(productUrl) {
   } finally {
     clearTimeout(timer);
   }
-  const html = decodeEntities((await res.text()).slice(0, MAX_HTML_BYTES));
+  if (!res.ok) throw new Error(`Product page answered ${res.status} ${res.statusText}`);
+
+  const type = (res.headers.get("content-type") || "").toLowerCase();
   const finalUrl = res.url || url.toString();
+  if (/^image\/(jpe?g|png|webp|gif)/.test(type) || /\.(jpe?g|png|webp|gif)(\?|$)/i.test(finalUrl)) {
+    const file = finalUrl.split("/").pop()?.split("?")[0] || "Uploaded image";
+    const name = decodeURIComponent(file.replace(/\.[^.]+$/, "").replace(/[-_]+/g, " ")).trim()
+      || "Uploaded image";
+    return {
+      url: finalUrl,
+      site: url.hostname.replace(/^www\./, ""),
+      name,
+      description: null,
+      price: null,
+      currency: null,
+      brand: null,
+      images: [finalUrl],
+    };
+  }
+
+  const html = decodeEntities((await res.text()).slice(0, MAX_HTML_BYTES));
 
   const product = {
     url: finalUrl,
