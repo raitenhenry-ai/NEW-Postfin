@@ -96,16 +96,23 @@
       <div class="dash-greeting">
         <h1>Dashboard</h1>
       </div>
-      <button class="date-range" type="button" id="dash-range-btn">
-        <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
-          <rect x="3.5" y="5" width="17" height="15.5" rx="2.5" stroke="currentColor" stroke-width="1.75"/>
-          <path d="M3.5 10h17M8 3.5v3M16 3.5v3" stroke="currentColor" stroke-width="1.75" stroke-linecap="round"/>
-        </svg>
-        <span>Last 30 Days</span>
-        <svg viewBox="0 0 12 12" fill="none" aria-hidden="true">
-          <path d="M3 4.5L6 7.5L9 4.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-        </svg>
-      </button>
+      <div class="analytics-range" id="dash-range">
+        <button class="date-range" type="button" id="dash-range-btn" aria-haspopup="listbox" aria-expanded="false">
+          <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+            <rect x="3.5" y="5" width="17" height="15.5" rx="2.5" stroke="currentColor" stroke-width="1.75"/>
+            <path d="M3.5 10h17M8 3.5v3M16 3.5v3" stroke="currentColor" stroke-width="1.75" stroke-linecap="round"/>
+          </svg>
+          <span id="dash-range-label">Last 30 days</span>
+          <svg viewBox="0 0 12 12" fill="none" aria-hidden="true">
+            <path d="M3 4.5L6 7.5L9 4.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </button>
+        <div class="analytics-range-menu" id="dash-range-menu" role="listbox" hidden>
+          <button type="button" role="option" data-range="24h" aria-selected="false">Last day</button>
+          <button type="button" role="option" data-range="7d" aria-selected="false">Last 7 days</button>
+          <button type="button" role="option" data-range="30d" aria-selected="true">Last 30 days</button>
+        </div>
+      </div>
     </div>
 
     <div class="stat-grid">
@@ -127,7 +134,7 @@
         <div class="stat-card-copy">
           <a class="stat-label" href="analytics.html">Videos posted</a>
           <span class="stat-value" data-live>—</span>
-          <span class="stat-meta">Last 30 days</span>
+          <span class="stat-meta" id="dash-videos-range-label">Last 30 days</span>
         </div>
       </article>
     </div>
