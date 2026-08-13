@@ -3169,6 +3169,32 @@ body.theme-light .cal-post-fields {
   height: 10px;
 }
 
+.cal-attach-chip {
+  height: 32px;
+  padding: 0 8px 0 4px;
+  background: #2a2a30;
+  color: #ececf0;
+}
+
+.cal-attach-chip img {
+  width: 24px;
+  height: 24px;
+  border-radius: 6px;
+  object-fit: cover;
+  flex-shrink: 0;
+}
+
+.cal-attach-chip .cal-date-chip-label {
+  max-width: 140px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.cal-composer-plus.is-busy {
+  opacity: 0.45;
+  pointer-events: none;
+}
+
 .cal-composer textarea {
   width: 100%;
   min-height: 56px;
@@ -6195,6 +6221,11 @@ body.theme-light .cal-msg.is-assistant .cal-msg-body {
 body.theme-light .cal-date-chip {
   background: #e8eeff;
   color: #3b5bdb;
+}
+
+body.theme-light .cal-attach-chip {
+  background: #ececef;
+  color: #222228;
 }
 
 body.theme-light .cal-month-option {
