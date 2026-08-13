@@ -836,8 +836,8 @@ a.account-row.is-link:hover {
 
 .video-rank-col {
   flex-shrink: 0;
-  width: 2.4em;
-  font-size: 15px;
+  width: 2.5em;
+  font-size: 16px;
   font-weight: 700;
   letter-spacing: -0.03em;
   color: #9a9aa4;
@@ -847,8 +847,8 @@ a.account-row.is-link:hover {
 
 .video-thumb {
   position: relative;
-  width: 84px;
-  height: 112px;
+  width: 96px;
+  height: 128px;
   flex-shrink: 0;
   aspect-ratio: auto;
   border-radius: 12px;
