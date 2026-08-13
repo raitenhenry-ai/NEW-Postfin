@@ -15,7 +15,6 @@ import {
   wrap, resolveRange, expandAllTimeRange, seriesDelta, seriesGain, shapeJob, postsForJobs, jobTimestamp, jobDotStatus,
 } from "./shared.js";
 import { gainsForRange } from "../analytics/rangeGain.js";
-import { latestSyncAt } from "../analytics/syncAnalytics.js";
 
 const router = Router();
 
