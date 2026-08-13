@@ -82,8 +82,6 @@ export async function scrapeProduct(productUrl) {
   } finally {
     clearTimeout(timer);
   }
-  if (!res.ok) throw new Error(`Product page answered ${res.status} ${res.statusText}`);
-
   const html = decodeEntities((await res.text()).slice(0, MAX_HTML_BYTES));
   const finalUrl = res.url || url.toString();
 

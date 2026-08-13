@@ -103,7 +103,11 @@ async function processJob(jobId) {
     let product = job.product_json ? JSON.parse(job.product_json) : null;
     if (!product && job.product_url) {
       await setJob(job.id, { status: "scraping", error: null });
-      product = await scrapeProduct(job.product_url);
+      const saved = await q1("SELECT product_json FROM products WHERE url = ?", [job.product_url]);
+      if (saved?.product_json) {
+        try { product = JSON.parse(saved.product_json); } catch { product = null; }
+      }
+      if (!product) product = await scrapeProduct(job.product_url);
       await setJob(job.id, { product_json: JSON.stringify(product) });
       console.log(`[ugc] job ${job.id}: scraped "${product.name}" (${product.images.length} images)`);
     }
