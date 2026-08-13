@@ -135,6 +135,39 @@ CREATE INDEX IF NOT EXISTS ugc_posts_posted_at_idx
   ON ugc_posts (posted_at) WHERE status = 'done';
 CREATE INDEX IF NOT EXISTS ugc_jobs_slot_idx
   ON ugc_jobs (COALESCE(scheduled_at, created_at));
+
+ALTER TABLE ugc_posts ADD COLUMN IF NOT EXISTS views BIGINT;
+ALTER TABLE ugc_posts ADD COLUMN IF NOT EXISTS likes BIGINT;
+ALTER TABLE ugc_posts ADD COLUMN IF NOT EXISTS comments BIGINT;
+ALTER TABLE ugc_posts ADD COLUMN IF NOT EXISTS shares BIGINT;
+ALTER TABLE ugc_posts ADD COLUMN IF NOT EXISTS saves BIGINT;
+ALTER TABLE ugc_posts ADD COLUMN IF NOT EXISTS impressions BIGINT;
+ALTER TABLE ugc_posts ADD COLUMN IF NOT EXISTS reach BIGINT;
+ALTER TABLE ugc_posts ADD COLUMN IF NOT EXISTS metrics_synced_at BIGINT;
+ALTER TABLE ugc_posts ADD COLUMN IF NOT EXISTS metrics_error TEXT;
+
+ALTER TABLE post_metrics ADD COLUMN IF NOT EXISTS impressions BIGINT;
+ALTER TABLE post_metrics ADD COLUMN IF NOT EXISTS reach BIGINT;
+
+CREATE TABLE IF NOT EXISTS analytics_sync_state (
+  account_id BIGINT PRIMARY KEY REFERENCES accounts(id) ON DELETE CASCADE,
+  platform TEXT NOT NULL,
+  last_success_at BIGINT,
+  last_attempt_at BIGINT,
+  last_error TEXT,
+  stale INTEGER NOT NULL DEFAULT 0,
+  next_eligible_at BIGINT
+);
+
+CREATE TABLE IF NOT EXISTS analytics_refresh_cooldown (
+  session_key TEXT PRIMARY KEY,
+  last_refresh_at BIGINT NOT NULL
+);
+
+CREATE INDEX IF NOT EXISTS post_metrics_collected_idx ON post_metrics (collected_at);
+CREATE INDEX IF NOT EXISTS ugc_posts_platform_posted_idx
+  ON ugc_posts (platform, posted_at) WHERE status = 'done';
+CREATE INDEX IF NOT EXISTS ugc_posts_metrics_synced_idx ON ugc_posts (metrics_synced_at);
 `;
 
 if (config.databaseUrl) {
