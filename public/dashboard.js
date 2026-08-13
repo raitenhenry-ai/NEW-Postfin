@@ -13,6 +13,7 @@
     "24h": { label: "Last day" },
     "7d": { label: "Last 7 days" },
     "30d": { label: "Last 30 days" },
+    all: { label: "All time" },
   };
 
   // The Monday of the week containing `date` - the week grid runs Mon..Sun.
