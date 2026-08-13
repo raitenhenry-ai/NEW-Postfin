@@ -3,7 +3,7 @@ import config, { PLATFORM_NAMES, ENABLED_PLATFORMS } from "../config.js";
 import { q, q1, run as dbRun } from "../db.js";
 import { platforms, resolveTargetPlatforms } from "../accounts.js";
 import {
-  totalsSince, postSeries, followerSeries, viewsByPlatform,
+  postSeries, followerSeries, viewsByPlatform,
   estimateRevenue, accountLeaderboard, metricsStatus,
 } from "../metrics.js";
 import { ugcQueueLength, pickProvider, jobFormat } from "../ugc/pipeline.js";
