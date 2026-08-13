@@ -882,10 +882,6 @@ body.theme-light .video-duration {
   color: #222228;
   box-shadow: 0 1px 4px rgba(17, 17, 20, 0.12);
 }
-  font-size: 10px;
-  font-weight: 600;
-  letter-spacing: 0.02em;
-}
 
 .video-meta {
   min-width: 0;
