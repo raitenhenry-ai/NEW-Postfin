@@ -466,6 +466,20 @@ body.sidebar-expanded {
   margin-bottom: 24px;
 }
 
+.dash-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  flex-shrink: 0;
+}
+
+#dash-refresh.is-loading {
+  opacity: 0.7;
+  cursor: wait;
+}
+
 .dash-greeting h1 {
   color: #fff;
   font-size: 26px;
