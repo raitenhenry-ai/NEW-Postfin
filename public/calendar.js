@@ -1328,7 +1328,7 @@
 
   function syncSendState() {
     if (!sendBtn || !field) return;
-    sendBtn.disabled = assistantBusy || !field.value.trim();
+    sendBtn.disabled = assistantBusy || !(field.value.trim() || attachedUpload);
   }
 
   function resizeField() {
@@ -1821,8 +1821,10 @@
 
   form?.addEventListener("submit", (e) => {
     e.preventDefault();
-    if (!field || !field.value.trim() || assistantBusy) return;
-    const text = field.value.trim();
+    if (!field || assistantBusy) return;
+    const typed = field.value.trim();
+    const text = typed || (attachedUpload ? `Make videos using this product photo (${attachedUpload.name}).` : "");
+    if (!text) return;
     field.value = "";
     submitMessage(text);
   });
@@ -1897,8 +1899,11 @@
   function setSelectedProduct(url) {
     selectedProductUrl = url || "";
     localStorage.setItem(PRODUCT_KEY, selectedProductUrl);
+    if (attachedUpload && attachedUpload.url !== selectedProductUrl) attachedUpload = null;
     syncProductPill();
     renderProductMenu();
+    renderAttachChip();
+    syncSendState();
   }
 
   async function loadProductOptions() {
