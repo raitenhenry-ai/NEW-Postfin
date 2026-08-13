@@ -457,7 +457,7 @@
       return `
       <article class="video-card">
         <div class="video-thumb">
-          <span class="video-rank-col" aria-label="Rank ${rank}">#${rank}</span>
+          <span class="video-rank-col" aria-label="Rank ${rank}">${rank}</span>
           ${v.thumb
             ? `<img src="${escapeHtml(v.thumb)}" alt="" loading="lazy">`
             : `<div class="video-thumb-fallback" aria-hidden="true"></div>`}
