@@ -45,7 +45,7 @@ router.get("/dashboard", wrap(async (req, res) => {
 
   const revenue = estimateRevenue(perPlatformViews);
   const lifetimeViews = totals.views;
-  const cpm = revenue !== null && lifetimeViews ? (lifetimeViews && (revenue / lifetimeViews) * 1000) : null;
+  const cpm = revenue !== null && lifetimeViews ? (revenue / lifetimeViews) * 1000 : null;
 
   res.json({
     range: { key: range.key, days: range.days ?? null },
