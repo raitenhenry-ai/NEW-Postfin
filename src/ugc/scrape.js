@@ -177,11 +177,21 @@ export async function scrapeProduct(productUrl) {
 export async function downloadImages(images, destDir, limit = 5) {
   const fs = await import("node:fs");
   const path = await import("node:path");
+  const config = (await import("../config.js")).default;
   fs.mkdirSync(destDir, { recursive: true });
 
   const saved = [];
   for (const [i, src] of images.slice(0, limit).entries()) {
     try {
+      const localUpload = localUploadPath(src, path, config);
+      if (localUpload && fs.existsSync(localUpload)) {
+        const ext = path.extname(localUpload) || ".jpg";
+        const file = path.join(destDir, `img${i}${ext}`);
+        fs.copyFileSync(localUpload, file);
+        saved.push(file);
+        continue;
+      }
+
       const controller = new AbortController();
       const timer = setTimeout(() => controller.abort(), FETCH_TIMEOUT_MS);
       const res = await fetch(src, {
@@ -190,8 +200,8 @@ export async function downloadImages(images, destDir, limit = 5) {
       }).finally(() => clearTimeout(timer));
       if (!res.ok) continue;
       const type = res.headers.get("content-type") || "";
-      if (!/image\/(jpe?g|png|webp)/i.test(type)) continue;
-      const ext = /png/i.test(type) ? ".png" : /webp/i.test(type) ? ".webp" : ".jpg";
+      if (!/image\/(jpe?g|png|webp|gif)/i.test(type)) continue;
+      const ext = /png/i.test(type) ? ".png" : /webp/i.test(type) ? ".webp" : /gif/i.test(type) ? ".gif" : ".jpg";
       const file = path.join(destDir, `img${i}${ext}`);
       const buf = Buffer.from(await res.arrayBuffer());
       if (buf.length < 5000) continue; // skip tracking pixels / tiny thumbs
@@ -200,4 +210,17 @@ export async function downloadImages(images, destDir, limit = 5) {
     } catch { /* skip broken images */ }
   }
   return saved;
+}
+
+function localUploadPath(src, path, config) {
+  try {
+    const parsed = new URL(String(src), config.baseUrl);
+    const match = parsed.pathname.match(/\/ugc-media\/uploads\/([^/]+)$/);
+    if (!match) return null;
+    const name = path.basename(match[1]);
+    if (!name || name.includes("..")) return null;
+    return path.join(config.ugcDir, "uploads", name);
+  } catch {
+    return null;
+  }
 }

@@ -18,6 +18,9 @@ import {
   enqueueUgcJob, postJob, pickProvider, ugcQueueLength, deleteJobFiles,
 } from "../ugc/pipeline.js";
 import { wrap, shapeJob, postsFor, postsForJobs } from "./shared.js";
+import fs from "node:fs";
+import path from "node:path";
+import crypto from "node:crypto";
 
 const router = Router();
 
@@ -425,6 +428,74 @@ router.post("/heygen/test", wrap(async (req, res) => {
   } catch (err) {
     res.status(502).json({ ok: false, error: String(err.message || err) });
   }
+}));
+
+const UPLOAD_TYPES = {
+  "image/jpeg": ".jpg",
+  "image/jpg": ".jpg",
+  "image/png": ".png",
+  "image/webp": ".webp",
+  "image/gif": ".gif",
+};
+const MAX_UPLOAD_BYTES = 6 * 1024 * 1024;
+
+// Calendar + button: save an image, add it to the product catalog, and
+// return a URL the assistant can plan videos around.
+router.post("/uploads", wrap(async (req, res) => {
+  const mime = String(req.body?.mime || "").toLowerCase().split(";")[0].trim();
+  const ext = UPLOAD_TYPES[mime];
+  if (!ext) {
+    return res.status(400).json({ error: "Upload a JPEG, PNG, WebP, or GIF image." });
+  }
+
+  const raw = String(req.body?.data || "").replace(/^data:[^;]+;base64,/, "");
+  let buf;
+  try {
+    buf = Buffer.from(raw, "base64");
+  } catch {
+    return res.status(400).json({ error: "Could not read that file." });
+  }
+  if (!buf.length) return res.status(400).json({ error: "That file was empty." });
+  if (buf.length > MAX_UPLOAD_BYTES) {
+    return res.status(400).json({ error: "Keep uploads under 6 MB." });
+  }
+
+  const id = crypto.randomBytes(8).toString("hex");
+  const dir = path.join(config.ugcDir, "uploads");
+  fs.mkdirSync(dir, { recursive: true });
+  const filename = `${id}${ext}`;
+  fs.writeFileSync(path.join(dir, filename), buf);
+
+  const publicPath = `/ugc-media/uploads/${filename}`;
+  const publicUrl = `${String(config.baseUrl).replace(/\/+$/, "")}${publicPath}`;
+  const original = String(req.body?.filename || "Upload")
+    .replace(/[^\w.\- ]+/g, "")
+    .slice(0, 80) || "Upload";
+  const name = original.replace(/\.[^.]+$/, "").trim() || "Uploaded image";
+
+  const product = {
+    url: publicUrl,
+    site: "upload",
+    name,
+    description: null,
+    price: null,
+    currency: null,
+    brand: null,
+    images: [publicUrl],
+  };
+  const now = Date.now();
+  await q1(
+    `INSERT INTO products (url, product_json, created_at, updated_at)
+     VALUES (?, ?, ?, ?) RETURNING id`,
+    [publicUrl, JSON.stringify(product), now, now]
+  );
+
+  res.status(201).json({
+    url: publicUrl,
+    path: publicPath,
+    name,
+    product: { url: publicUrl, name, image: publicUrl, images: [publicUrl] },
+  });
 }));
 
 // Pull fresh numbers from the platform APIs on demand.
