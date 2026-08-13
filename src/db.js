@@ -413,4 +413,44 @@ CREATE TABLE IF NOT EXISTS products (
 );`);
     db.pragma("user_version = 5");
   }
+
+  // v6: cached latest post metrics, richer snapshots, age-tiered sync state.
+  if (version < 6) {
+    const postCols = db.prepare("PRAGMA table_info(ugc_posts)").all().map((c) => c.name);
+    for (const col of [
+      "views", "likes", "comments", "shares", "saves",
+      "impressions", "reach", "metrics_synced_at", "metrics_error",
+    ]) {
+      if (!postCols.includes(col)) {
+        db.exec(`ALTER TABLE ugc_posts ADD COLUMN ${col} INTEGER`);
+      }
+    }
+    const metricCols = db.prepare("PRAGMA table_info(post_metrics)").all().map((c) => c.name);
+    if (!metricCols.includes("impressions")) {
+      db.exec("ALTER TABLE post_metrics ADD COLUMN impressions INTEGER");
+    }
+    if (!metricCols.includes("reach")) {
+      db.exec("ALTER TABLE post_metrics ADD COLUMN reach INTEGER");
+    }
+    db.exec(`
+CREATE TABLE IF NOT EXISTS analytics_sync_state (
+  account_id INTEGER PRIMARY KEY REFERENCES accounts(id) ON DELETE CASCADE,
+  platform TEXT NOT NULL,
+  last_success_at INTEGER,
+  last_attempt_at INTEGER,
+  last_error TEXT,
+  stale INTEGER NOT NULL DEFAULT 0,
+  next_eligible_at INTEGER
+);
+CREATE TABLE IF NOT EXISTS analytics_refresh_cooldown (
+  session_key TEXT PRIMARY KEY,
+  last_refresh_at INTEGER NOT NULL
+);
+CREATE INDEX IF NOT EXISTS post_metrics_collected_idx ON post_metrics (collected_at);
+CREATE INDEX IF NOT EXISTS ugc_posts_platform_posted_idx
+  ON ugc_posts (platform, posted_at);
+CREATE INDEX IF NOT EXISTS ugc_posts_metrics_synced_idx ON ugc_posts (metrics_synced_at);
+`);
+    db.pragma("user_version = 6");
+  }
 }

@@ -126,8 +126,13 @@ const config = {
   // like / comment counts, and how long a post stays in the polling set.
   // 0 minutes disables the collector entirely.
   metrics: {
-    intervalMinutes: Number(process.env.METRICS_INTERVAL_MINUTES || 30),
-    maxAgeDays: Number(process.env.METRICS_MAX_AGE_DAYS || 90),
+    // Tick interval for the age-tiered sync scheduler (minutes). 0 disables.
+    intervalMinutes: Number(process.env.METRICS_INTERVAL_MINUTES || 15),
+    maxAgeDays: Number(process.env.METRICS_MAX_AGE_DAYS || 365),
+    // Manual refresh cooldown per session (minutes).
+    refreshCooldownMinutes: Number(process.env.METRICS_REFRESH_COOLDOWN_MINUTES || 3),
+    // Max posts synced in one scheduler/manual pass.
+    batchLimit: Number(process.env.METRICS_BATCH_LIMIT || 200),
     // No platform reports ad revenue for posts published through their
     // publishing APIs, so CPM is only shown when the operator supplies their
     // own rates (dollars per 1000 views). Missing = the UI shows no CPM
