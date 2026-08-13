@@ -6601,6 +6601,12 @@ body.theme-light .cal-msg.is-assistant .cal-msg-body {
 }
 
 /* Keep accents after text catch-all */
+body.theme-light .video-duration {
+  color: #fff !important;
+}
+body.theme-light .video-rank-col {
+  color: #8a8a92 !important;
+}
 body.theme-light .analytics-platform-btn {
   color: #4a4a52 !important;
 }
