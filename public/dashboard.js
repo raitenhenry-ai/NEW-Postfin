@@ -395,18 +395,30 @@
       list.innerHTML = emptyBlock("No accounts connected yet.");
       return;
     }
-    list.innerHTML = accounts.map((a) => `
-      <li class="account-row">
+    list.innerHTML = accounts.map((a) => {
+      const name = escapeHtml(a.displayName || PLATFORM_LABELS[a.platform]);
+      const handle = escapeHtml(a.handle || PLATFORM_LABELS[a.platform] || a.platform);
+      const body = `
         <span class="account-icon" aria-hidden="true">${platformIcon(a.platform)}</span>
         <div class="account-info">
-          <span class="account-name">${escapeHtml(a.displayName || PLATFORM_LABELS[a.platform])}</span>
-          <span class="account-handle">${escapeHtml(PLATFORM_LABELS[a.platform] || a.platform)}</span>
+          <span class="account-name">${name}</span>
+          <span class="account-handle">${handle}</span>
         </div>
         <div class="account-metric">
           <span class="account-views">${fmtCompact(a.views, 1)}</span>
           <span class="account-metric-label">views</span>
-        </div>
-      </li>`).join("");
+        </div>`;
+      if (a.url) {
+        return `
+          <li>
+            <a class="account-row is-link" href="${escapeHtml(a.url)}" target="_blank" rel="noopener noreferrer"
+               aria-label="Open ${name} on ${escapeHtml(PLATFORM_LABELS[a.platform] || a.platform)}">
+              ${body}
+            </a>
+          </li>`;
+      }
+      return `<li class="account-row">${body}</li>`;
+    }).join("");
   }
 
   function renderVideos(videos) {

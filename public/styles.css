@@ -654,6 +654,20 @@ body.sidebar-expanded {
   padding: 10px 4px;
 }
 
+a.account-row.is-link {
+  text-decoration: none;
+  color: inherit;
+  border-radius: 10px;
+  margin: 0 -4px;
+  padding: 10px 8px;
+  transition: background 0.15s ease;
+  cursor: pointer;
+}
+
+a.account-row.is-link:hover {
+  background: rgba(255, 255, 255, 0.04);
+}
+
 .account-icon {
   width: 36px;
   height: 36px;
