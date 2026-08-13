@@ -23,41 +23,41 @@ const DAY_MS = 86400000;
 
 /* ---------------------------------------------------------------- Dashboard */
 
+async function resolveAnalyticsRange(req) {
+  let range = resolveRange(req.query.range || "30d", req.query.days, req.query.tz);
+  if (range.key === "all") {
+    const earliest = await q1("SELECT MIN(collected_at) AS at FROM post_metrics");
+    range = expandAllTimeRange(range, earliest?.at ? Number(earliest.at) : null, req.query.tz);
+  }
+  return range;
+}
+
 // Everything dashboard.html draws: the four stat tiles, the embedded calendar,
 // the account leaderboard, top videos and the suggestion list.
 router.get("/dashboard", wrap(async (req, res) => {
-  const range = resolveRange(req.query.range || "30d", req.query.days, req.query.tz);
-  const since = range.sinceMs;
+  const range = await resolveAnalyticsRange(req);
 
-  const [viewSeries, followers, totals, perPlatformViews, accounts] = await Promise.all([
+  const [viewSeries, followers, gains, perPlatformViews, accounts, metrics] = await Promise.all([
     postSeries({ metric: "views", ...range }),
     followerSeries(range),
-    totalsSince(since),
+    gainsForRange(range),
     viewsByPlatform(),
     accountLeaderboard(6),
+    metricsStatus(),
   ]);
 
-  const postedInRange = Number(
-    (await q1("SELECT COUNT(*) AS n FROM ugc_posts WHERE status = 'done' AND posted_at > ?", [since]))?.n || 0
-  );
-  // Lead with what moved inside the window - same split as /api/analytics.
-  // A lifetime total under "Last 7 days" reads as growth that never happened.
-  const viewGain = seriesGain(viewSeries);
   const followerGain = seriesGain(followers);
-
   const revenue = estimateRevenue(perPlatformViews);
-  const lifetimeViews = totals.views;
+  const lifetimeViews = viewSeries.at(-1)?.value ?? 0;
   const cpm = revenue !== null && lifetimeViews ? (revenue / lifetimeViews) * 1000 : null;
 
   res.json({
     range: { key: range.key, days: range.days ?? null },
     stats: {
-      views: { value: viewGain, total: viewSeries.at(-1)?.value ?? 0, delta: seriesDelta(viewSeries) },
-      // No publishing API reports ad revenue, so this stays null unless the
-      // operator supplied CPM rates in the environment.
+      views: { value: gains.views, total: lifetimeViews, delta: seriesDelta(viewSeries) },
       cpm: { value: cpm, configured: cpm !== null },
       followers: { value: followerGain, total: followers.at(-1)?.value ?? 0, delta: seriesDelta(followers) },
-      videosPosted: { value: postedInRange },
+      videosPosted: { value: gains.published },
     },
     topAccounts: accounts.map((a) => ({
       ...a,
@@ -71,8 +71,9 @@ router.get("/dashboard", wrap(async (req, res) => {
       provider: pickProvider(),
       heygenConfigured: heygenConfigured(),
       openaiConfigured: Boolean(config.openaiApiKey),
-      metrics: metricsStatus(),
+      metrics,
       connectedAccounts: (await q("SELECT id FROM accounts")).length,
+      lastSyncedAt: metrics.lastSyncedAt || null,
     },
   });
 }));
