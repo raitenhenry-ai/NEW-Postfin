@@ -7,6 +7,9 @@
   const chatTitle = document.getElementById("cal-chat-title");
   const dayPanel = document.getElementById("cal-chat-messages");
   const dateChips = document.getElementById("cal-date-chips");
+  const attachChips = document.getElementById("cal-attach-chips");
+  const attachInput = document.getElementById("cal-attach-input");
+  const plusBtn = document.getElementById("cal-composer-plus");
   const form = document.getElementById("cal-chat-form");
   const field = document.getElementById("cal-chat-field");
   const sendBtn = document.getElementById("cal-chat-send");
@@ -65,6 +68,7 @@
       '<svg viewBox="0 0 16 16" fill="none"><rect x="2.5" y="3.5" width="11" height="9" rx="1.5" stroke="currentColor" stroke-width="1.4"/><path d="M7 6.2v3.6L10.2 8 7 6.2z" fill="currentColor"/></svg>',
   };
   let selectedProductUrl = localStorage.getItem(PRODUCT_KEY) || "";
+  let attachedUpload = null;
   let selectedFormat = localStorage.getItem(FORMAT_KEY) === "slideshow" ? "slideshow" : "video";
   let selectedPlatforms = loadSelectedPlatforms(); // empty Set => all platforms
   let productCatalog = [];
