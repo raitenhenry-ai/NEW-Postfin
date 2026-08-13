@@ -2139,6 +2139,8 @@
     e.preventDefault();
     attachFile(file);
   });
+
+  formatBtn?.addEventListener("click", (e) => {
     e.stopPropagation();
     setProductMenuOpen(false);
     setPlatformMenuOpen(false);
