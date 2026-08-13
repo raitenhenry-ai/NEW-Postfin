@@ -321,14 +321,14 @@ export async function viewsByPlatform() {
 // Newest reading per account, joined to the account for display.
 export async function accountLeaderboard(limit = 10) {
   const rows = await q(
-    `SELECT a.id, a.platform, a.display_name,
+    `SELECT a.id, a.platform, a.display_name, a.external_id,
             COALESCE(SUM(m.views), 0) AS views
      FROM accounts a
      LEFT JOIN ugc_posts p ON p.account_id = a.id
      LEFT JOIN post_metrics m ON m.post_id = p.id AND m.collected_at = (
        SELECT MAX(m2.collected_at) FROM post_metrics m2 WHERE m2.post_id = p.id
      )
-     GROUP BY a.id, a.platform, a.display_name
+     GROUP BY a.id, a.platform, a.display_name, a.external_id
      ORDER BY views DESC, a.id ASC
      LIMIT ?`,
     [limit]
@@ -337,6 +337,7 @@ export async function accountLeaderboard(limit = 10) {
     id: r.id,
     platform: r.platform,
     displayName: r.display_name,
+    externalId: r.external_id || null,
     views: Number(r.views || 0),
   }));
 }

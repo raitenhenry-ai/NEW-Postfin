@@ -10,7 +10,7 @@ import { ugcQueueLength, pickProvider, jobFormat } from "../ugc/pipeline.js";
 import { checkStorage } from "../storage.js";
 import { heygenConfigured } from "../ugc/heygen.js";
 import { scrapeProduct } from "../ugc/scrape.js";
-import { postUrl } from "../postUrl.js";
+import { accountProfileUrl, postUrl } from "../postUrl.js";
 import {
   wrap, resolveRange, seriesDelta, seriesGain, shapeJob, postsForJobs, jobTimestamp, jobDotStatus,
 } from "./shared.js";
@@ -60,6 +60,7 @@ router.get("/dashboard", wrap(async (req, res) => {
     topAccounts: accounts.map((a) => ({
       ...a,
       handle: a.displayName?.startsWith("@") ? a.displayName : `@${(a.displayName || "").replace(/\s+/g, "").toLowerCase()}`,
+      url: accountProfileUrl(a),
     })),
     topVideos: await topVideos(6),
     suggestions: await suggestions(),
