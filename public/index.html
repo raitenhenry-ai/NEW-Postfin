@@ -2071,7 +2071,11 @@
           });
         });
         Promise.all(ready).then(fill);
-        window.addEventListener("resize", fill);
+        let resizeTimer = 0;
+        window.addEventListener("resize", () => {
+          window.clearTimeout(resizeTimer);
+          resizeTimer = window.setTimeout(fill, 150);
+        });
       })();
 
       (function () {
