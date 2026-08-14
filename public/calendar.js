@@ -260,16 +260,6 @@
     return popupMode === "edit" && post && post.jobStatus !== "posted";
   }
 
-  function shiftPopupMinutes(ms, delta) {
-    const d = new Date(ms);
-    let mins = d.getHours() * 60 + d.getMinutes();
-    if (delta > 0) mins = Math.floor(mins / 15) * 15 + 15;
-    else mins = Math.ceil(mins / 15) * 15 - 15;
-    mins = Math.max(0, Math.min(23 * 60 + 45, mins));
-    d.setHours(Math.floor(mins / 60), mins % 60, 0, 0);
-    return d.getTime();
-  }
-
   function positionPopupTimeMenu() {
     if (!dayPopupTimeMenu || !dayPopupTimeBtn || dayPopupTimeMenu.hidden) return;
     const rect = dayPopupTimeBtn.getBoundingClientRect();
