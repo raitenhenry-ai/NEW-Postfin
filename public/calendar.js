@@ -1900,10 +1900,8 @@
   function setSelectedProduct(url) {
     selectedProductUrl = url || "";
     localStorage.setItem(PRODUCT_KEY, selectedProductUrl);
-    if (attachedUpload && attachedUpload.url !== selectedProductUrl) attachedUpload = null;
     syncProductPill();
     renderProductMenu();
-    renderAttachChip();
     syncSendState();
   }
 
