@@ -424,7 +424,7 @@
       editor?.querySelectorAll("[data-switch-post]").forEach((btn) => {
         btn.addEventListener("click", () => {
           const next = Number(btn.getAttribute("data-switch-post"));
-          openDayPopup(key, cell || grid.querySelector(`.cal-cell[data-date="${key}"]`), next);
+          openDayPopup(key, cell || grid.querySelector(`.cal-cell[data-date="${key}"]`), next, { fresh: false });
         });
       });
       editor?.querySelector(".cal-day-editor-save")?.addEventListener("click", () => {
