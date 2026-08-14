@@ -2224,12 +2224,11 @@ body.theme-light .video-duration {
 }
 
 .cal-day-popup-chrome {
-  display: flex;
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
   align-items: center;
-  justify-content: flex-end;
-  gap: 8px;
   height: 28px;
-  padding: 0 6px 0 12px;
+  padding: 0 6px;
   flex-shrink: 0;
   border-bottom: 1px solid #2a2a30;
   background: #222228;
@@ -2244,14 +2243,18 @@ body.theme-light .video-duration {
 }
 
 .cal-day-popup-grip {
-  flex: 1 1 auto;
+  grid-column: 2;
+  width: 36px;
   height: 4px;
-  max-width: 42px;
-  margin-right: auto;
   border-radius: 999px;
   background: #4a4a54;
-  opacity: 0.9;
+  opacity: 0.95;
   pointer-events: none;
+}
+
+.cal-day-popup-chrome .cal-day-popup-close {
+  grid-column: 3;
+  justify-self: end;
 }
 
 .cal-day-popup-head {
