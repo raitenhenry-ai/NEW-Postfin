@@ -530,6 +530,10 @@
   }
 
   async function savePopupPost(key, postIndex) {
+    if (!canEditPopupDay(key)) {
+      toast("Past posts can't be edited", "error");
+      return;
+    }
     const post = events[key]?.[postIndex];
     const editor = dayPopupList?.querySelector(".cal-day-editor");
     if (!post?.id || !editor) return;
