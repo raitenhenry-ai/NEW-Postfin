@@ -1116,7 +1116,7 @@ export async function runAssistant({
         model: config.openaiChatModel,
         temperature: 0.4,
         messages: thread,
-        tools: TOOLS,
+        tools: toolsFor(ctx.connectedPlatforms),
       }),
     });
     const data = await res.json();
