@@ -239,6 +239,126 @@
     });
   }
 
+  function formatPopupTime(ms) {
+    return new Date(ms).toLocaleTimeString("en-US", {
+      hour: "numeric",
+      minute: "2-digit",
+    });
+  }
+
+  function focusedPopupPost() {
+    if (!dayPopupKey) return null;
+    const posts = events[dayPopupKey] || [];
+    if (dayPopupEventIndex != null && posts[dayPopupEventIndex]) return posts[dayPopupEventIndex];
+    return posts[0] || null;
+  }
+
+  function popupPostTimestamp(post) {
+    const ms = Number(post?.scheduledAt || post?.at);
+    return Number.isFinite(ms) && ms > 0 ? ms : Date.now();
+  }
+
+  function canEditPopupTime(post) {
+    return popupMode === "edit" && post && post.jobStatus !== "posted";
+  }
+
+  function shiftPopupMinutes(ms, delta) {
+    const d = new Date(ms);
+    let mins = d.getHours() * 60 + d.getMinutes();
+    if (delta > 0) mins = Math.floor(mins / 15) * 15 + 15;
+    else mins = Math.ceil(mins / 15) * 15 - 15;
+    mins = Math.max(0, Math.min(23 * 60 + 45, mins));
+    d.setHours(Math.floor(mins / 60), mins % 60, 0, 0);
+    return d.getTime();
+  }
+
+  function setPopupTimeMenuOpen(open) {
+    if (!dayPopupTimePicker || !dayPopupTimeBtn || !dayPopupTimeMenu) return;
+    if (open) {
+      const post = focusedPopupPost();
+      if (!canEditPopupTime(post)) return;
+      renderPopupTimeMenu(post);
+      setPopupTimeMenuOpen.closing = false;
+    }
+    dayPopupTimePicker.classList.toggle("open", open);
+    dayPopupTimeBtn.setAttribute("aria-expanded", open ? "true" : "false");
+    dayPopupTimeMenu.hidden = !open;
+    dayPopup?.classList.toggle("is-time-open", open);
+    if (open) {
+      const active = dayPopupTimeMenu.querySelector(".active");
+      active?.scrollIntoView({ block: "center" });
+    }
+  }
+
+  function renderPopupTimeMenu(post) {
+    if (!dayPopupTimeMenu || !post) return;
+    const current = popupPostTimestamp(post);
+    const now = Date.now();
+    dayPopupTimeMenu.innerHTML = "";
+    for (let mins = 0; mins < 24 * 60; mins += 15) {
+      const slot = new Date(current);
+      slot.setHours(Math.floor(mins / 60), mins % 60, 0, 0);
+      const at = slot.getTime();
+      const btn = document.createElement("button");
+      btn.type = "button";
+      btn.className = "cal-day-popup-time-option";
+      btn.setAttribute("role", "option");
+      btn.textContent = formatPopupTime(at);
+      const active = Math.abs(at - current) < 60 * 1000;
+      btn.classList.toggle("active", active);
+      btn.setAttribute("aria-selected", active ? "true" : "false");
+      if (at <= now) {
+        btn.disabled = true;
+      } else {
+        btn.addEventListener("click", (e) => {
+          e.stopPropagation();
+          setPopupTimeMenuOpen(false);
+          applyPopupTime(post, at);
+        });
+      }
+      dayPopupTimeMenu.appendChild(btn);
+    }
+  }
+
+  function syncPopupTimeSwitcher() {
+    const post = focusedPopupPost();
+    const locked = !canEditPopupTime(post);
+    dayPopupTimeNav?.classList.toggle("is-locked", locked || !post);
+    dayPopupTimeNav?.classList.toggle("is-empty", !post);
+    [dayPopupTimePrev, dayPopupTimeNext, dayPopupTimeBtn].forEach((el) => {
+      if (el) el.disabled = locked || !post;
+    });
+    if (locked) setPopupTimeMenuOpen(false);
+  }
+
+  async function applyPopupTime(post, scheduledAt) {
+    if (!post?.id) return;
+    if (scheduledAt <= Date.now()) {
+      toast("Pick a time in the future", "error");
+      return;
+    }
+    try {
+      await api(`/api/jobs/${post.id}`, {
+        method: "PATCH",
+        body: { scheduledAt },
+      });
+      post.scheduledAt = scheduledAt;
+      post.at = scheduledAt;
+      post.time = formatPopupTime(scheduledAt);
+      if (dayPopupCount) dayPopupCount.textContent = post.time;
+      await loadEvents();
+      render();
+    } catch (err) {
+      toast(err.message || "Could not change that time", "error");
+    }
+  }
+
+  function stepPopupTime(dir) {
+    const post = focusedPopupPost();
+    if (!canEditPopupTime(post)) return;
+    applyPopupTime(post, shiftPopupMinutes(popupPostTimestamp(post), dir));
+  }
+
   function clampPopupPosition(left, top) {
     if (!calBoard || !dayPopup) return { left, top };
     const board = calBoard.getBoundingClientRect();
