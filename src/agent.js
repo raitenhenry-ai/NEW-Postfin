@@ -1009,10 +1009,10 @@ export async function runAssistant({
 
   const lastUser = [...history].reverse().find((m) => m.role === "user");
   if (lastUser) {
-    const vision = attachedImages.length ? attachedImages : productImages;
+    const vision = [...attachedImages, ...productImages.filter((u) => !attachedImages.includes(u))].slice(0, 4);
     if (vision.length) {
       lastUser.content = visionUserContent(lastUser.content, vision, {
-        asProduct: !attachedImages.length && productImages.length > 0,
+        asProduct: attachedImages.length === 0 && productImages.length > 0,
       });
     }
   }
