@@ -984,7 +984,7 @@ function systemPrompt(ctx) {
       `tones are ${toneOptions().join(", ")}, the avatar styles are ` +
       `${styleOptions().join(", ")}, the slideshow angles are ` +
       `${slideshowAngles().join(", ")}, and the platforms are ` +
-      `${ENABLED_PLATFORMS.join(", ")}.`,
+      `${(ctx.connectedPlatforms || []).join(", ") || "none linked"}.`,
     // The composer has its own format switch; when it is set the question is
     // already answered and asking again would be noise.
     ctx.outputFormat === "slideshow"
