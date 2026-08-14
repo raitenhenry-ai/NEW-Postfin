@@ -2150,6 +2150,7 @@ body.theme-light .video-duration {
 }
 
 .cal-day-popup {
+  container-type: inline-size;
   position: absolute;
   z-index: 40;
   width: min(420px, calc(100% - 16px));
