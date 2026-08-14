@@ -372,31 +372,36 @@
       </select>`;
   }
 
-  function editorPlatformChoices(post) {
-    const extra = (post.platforms || []).filter((p) => !PLATFORM_CHOICES.includes(p));
-    return [...PLATFORM_CHOICES, ...extra];
+  function editorPlatformChoices() {
+    return platformChoices();
   }
 
   function initialPopupPlatforms(post) {
-    const list = (post.platforms || []).filter(Boolean);
-    return list.length ? list : [...PLATFORM_CHOICES];
+    const linked = platformChoices();
+    const list = (post.platforms || []).filter((p) => linked.includes(p));
+    return list.length ? list : [...linked];
   }
 
   function popupPlatformPickerHtml(post) {
+    const choices = editorPlatformChoices();
     const selected = new Set(initialPopupPlatforms(post));
+    const items = choices.length
+      ? choices.map((p) => `
+          <button type="button" class="cal-day-editor-platform-item${selected.has(p) ? " is-on" : ""}" role="menuitemcheckbox" data-popup-platform="${escapeHtml(p)}" aria-checked="${selected.has(p) ? "true" : "false"}">
+            <span class="cal-day-editor-platform-icon">${platformIcon(p)}</span>
+            <span>${escapeHtml(platformName(p))}</span>
+            ${PLATFORM_CHECK}
+          </button>
+        `).join("")
+      : `<p class="cal-platform-menu-empty">No accounts linked</p>`;
     return `
       <div class="cal-day-editor-platform-picker">
-        <button type="button" class="cal-day-editor-platforms" aria-haspopup="menu" aria-expanded="false" aria-label="Post to">
-          <span class="cal-day-editor-platforms-label">${escapeHtml(platformLabel({ platforms: [...selected] }))}</span>
+        <button type="button" class="cal-day-editor-platforms" aria-haspopup="menu" aria-expanded="false" aria-label="Post to"${choices.length ? "" : " disabled"}>
+          <span class="cal-day-editor-platforms-label">${escapeHtml(choices.length ? platformLabel({ platforms: [...selected] }) : "No accounts")}</span>
           <svg class="cal-day-editor-platforms-caret" viewBox="0 0 12 12" fill="none" aria-hidden="true"><path d="M3 4.5L6 7.5L9 4.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
         </button>
         <div class="cal-day-editor-platform-menu" role="menu" hidden>
-          ${editorPlatformChoices(post).map((p) => `
-            <button type="button" class="cal-day-editor-platform-item${selected.has(p) ? " is-on" : ""}" role="menuitemcheckbox" data-popup-platform="${escapeHtml(p)}" aria-checked="${selected.has(p) ? "true" : "false"}">
-              <span class="cal-day-editor-platform-icon">${platformIcon(p)}</span>
-              <span>${escapeHtml(PLATFORM_LABELS[p] || p)}</span>
-            </button>
-          `).join("")}
+          ${items}
         </div>
       </div>`;
   }
