@@ -3939,56 +3939,117 @@ body.theme-light .cal-post-fields {
 
 .cal-platform-picker {
   position: relative;
-  flex: 1 1 0;
+  flex: 0 1 auto;
   min-width: 0;
-  max-width: 42%;
+  max-width: min(148px, 38%);
   z-index: 2;
 }
 
 .cal-platform-btn {
-  gap: 7px;
-  padding-left: 8px;
-}
-
-.cal-platform-btn-icons {
   display: inline-flex;
   align-items: center;
-  flex-shrink: 0;
+  gap: 6px;
+  width: 100%;
+  min-width: 0;
+  height: 32px;
+  padding: 0 8px 0 6px;
+  border: 1px solid #3a3a42;
+  border-radius: 8px;
+  background: #2a2a30;
+  color: #f0f0f4;
+  font: inherit;
+  font-size: 12px;
+  font-weight: 550;
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s, color 0.15s;
 }
 
-.cal-platform-btn-icons[hidden] {
-  display: none;
+.cal-platform-btn:hover,
+.cal-platform-btn[aria-expanded="true"] {
+  background: #34343c;
+  border-color: #4a4a54;
+  color: #fff;
+}
+
+.cal-platform-btn:disabled {
+  opacity: 0.55;
+  cursor: default;
 }
 
 .cal-platform-btn-icon {
-  width: 16px;
-  height: 16px;
+  width: 18px;
+  height: 18px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
-  border-radius: 4px;
+  border-radius: 5px;
   overflow: hidden;
   background: #1a1a1e;
 }
 
-.cal-platform-btn-icons .cal-platform-btn-icon + .cal-platform-btn-icon {
-  margin-left: -5px;
-  box-shadow: -1px 0 0 #2a2a30;
+.cal-platform-btn-icon[hidden] {
+  display: none;
 }
 
-.cal-platform-btn-icon img,
-.cal-platform-btn-icon svg {
-  width: 16px;
-  height: 16px;
+.cal-platform-btn-icon.is-stack {
+  width: auto;
+  min-width: 18px;
+  padding: 0 1px;
+  gap: 0;
+  background: transparent;
+  overflow: visible;
+}
+
+.cal-platform-btn-icon > img,
+.cal-platform-btn-icon > svg {
+  width: 18px;
+  height: 18px;
   display: block;
   object-fit: contain;
+}
+
+.cal-platform-stack-icon {
+  width: 14px;
+  height: 14px;
+  display: inline-flex;
+  flex-shrink: 0;
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+.cal-platform-stack-icon + .cal-platform-stack-icon {
+  margin-left: -4px;
+}
+
+.cal-platform-stack-icon img,
+.cal-platform-stack-icon svg {
+  width: 14px;
+  height: 14px;
+  display: block;
+  object-fit: contain;
+}
+
+.cal-platform-btn-label {
+  min-width: 0;
+  flex: 1 1 auto;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  text-align: left;
+}
+
+.cal-platform-btn-caret {
+  width: 11px;
+  height: 11px;
+  flex-shrink: 0;
+  color: #9a9aa2;
 }
 
 .cal-platform-menu {
   position: absolute;
   left: 0;
-  right: 0;
+  right: auto;
   bottom: calc(100% + 6px);
   z-index: 40;
   min-width: 100%;
