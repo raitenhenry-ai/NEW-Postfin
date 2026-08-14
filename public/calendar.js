@@ -896,6 +896,7 @@
           </div>
         </div>
         ${referencePanelHtml(post)}
+        ${productImagePanelHtml(post)}
         <div class="cal-day-editor-panel" data-editor-panel="caption" hidden>
           <span class="cal-day-editor-label">Caption</span>
           <div class="cal-day-editor-box">
