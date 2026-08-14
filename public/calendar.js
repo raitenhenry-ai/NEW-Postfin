@@ -618,10 +618,8 @@
     openDayPopup(key, grid.querySelector(`.cal-cell[data-date="${key}"]`), index);
   }
 
-  function eventChipLabel(event) {
-    const title = (event.title || "Untitled").trim();
-    const when = [formatShort(event.key), event.time].filter(Boolean).join(" · ");
-    return when ? `${title} · ${when}` : title;
+  function eventChipLabel() {
+    return "selected post";
   }
 
   function clearSelectedEvent() {
