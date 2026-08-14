@@ -1900,7 +1900,8 @@ body.theme-light .video-duration {
 
 .cal-icon-btn:hover,
 .cal-view-btn:hover,
-.cal-month-label:hover {
+.cal-month-label:hover,
+.cal-day-popup-time:hover:not(:disabled) {
   background: #222226;
   border-color: #2e2e32;
   color: #fff;
