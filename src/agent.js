@@ -884,12 +884,13 @@ function systemPrompt(ctx) {
         "without naming dates, pick sensible upcoming dates and say which you chose.",
     ctx.productUrl
       ? `The user selected this product for the current chat: ${ctx.productName || "product"} (${ctx.productUrl}). ` +
-        (ctx.productImages?.length
-          ? "The product photo is attached to their latest message — you CAN see it. " +
-            "Describe and use what is actually in the photo. Never say you cannot view images. "
-          : "") +
         "When planning videos, pass that URL as productUrl unless they ask for a different product."
       : "No product is selected in the chat picker. Plan from the brief alone unless they paste a product URL.",
+    ctx.attachedImages?.length
+      ? "The user attached a screenshot or reference image to their latest message — you CAN see it. " +
+        "It is NOT automatically the product. Treat it as extra context (a screenshot, mock, example, or note) " +
+        "unless they clearly say that image IS the product."
+      : null,
     ctx.accounts
       ? `Connected accounts: ${ctx.accounts}.`
       : "No social accounts are connected yet - videos will generate but cannot publish.",
