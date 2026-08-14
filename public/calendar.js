@@ -694,7 +694,6 @@
           </div>
         </div>
         <div class="cal-day-editor-panel cal-day-editor-panel-reference" data-editor-panel="reference" hidden>
-          <span class="cal-day-editor-label">Reference</span>
         </div>
         <div class="cal-day-editor-panel" data-editor-panel="caption" hidden>
           <span class="cal-day-editor-label">Caption</span>
