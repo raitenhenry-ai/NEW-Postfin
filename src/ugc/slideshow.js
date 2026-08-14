@@ -115,6 +115,8 @@ function subjectFor(product, settings) {
         `\n\nDescription:\n${product.description || "(none found)"}`
     );
   }
+  const refs = formatReferencesBlock(settings, product);
+  if (refs) parts.push(refs);
   return parts.join("\n\n");
 }
 

@@ -58,26 +58,16 @@ function subjectBlock(product, settings) {
         `\n\nProduct description:\n${product.description || "(none found)"}`
     );
   }
+  const refs = formatReferencesBlock(settings, product);
+  if (refs) parts.push(refs);
   return parts.join("\n\n");
 }
 
-// The user turn, with the product photos attached when there are any, so
-// the model writes copy and visual direction from what the product actually
-// looks like rather than from its name alone.
+// The user turn, with the product photos and any pinned reference images
+// attached, so the model writes copy and visual direction from what it can
+// actually see rather than from names alone.
 function visionContent(product, settings) {
-  const text = subjectBlock(product, settings);
-  const images = (product?.images || []).slice(0, MAX_VISION_IMAGES);
-  if (!images.length) return text;
-
-  return [
-    {
-      type: "text",
-      text:
-        `${text}\n\nThe product photos follow, in order - photo 0 first. ` +
-        "Refer to them by index in the storyboard.",
-    },
-    ...images.map((url) => ({ type: "image_url", image_url: { url, detail: "low" } })),
-  ];
+  return visionUserContent(subjectBlock(product, settings), product, settings);
 }
 
 // One entry per spoken line: what is on screen, and whether the creator is
