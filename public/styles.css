@@ -2879,10 +2879,10 @@ body.theme-light .video-duration {
   flex: 0 0 auto;
   height: 32px;
   padding: 0 14px;
-  border: 0;
+  border: 1px solid #3a3a42;
   border-radius: 8px;
-  background: #f4f4f6;
-  color: #111114;
+  background: #2a2a30;
+  color: #e8e8ee;
   font-family: inherit;
   font-size: 12px;
   font-weight: 650;
@@ -2890,7 +2890,9 @@ body.theme-light .video-duration {
 }
 
 .cal-day-editor-reference-submit:hover {
-  background: #fff;
+  background: #34343c;
+  border-color: #4a4a54;
+  color: #fff;
 }
 
 .cal-day-editor-reference-list {
