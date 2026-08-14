@@ -2337,7 +2337,7 @@
       || !selectedPlatforms.size
       || selectedPlatforms.size >= choices.length;
     if (platformBtnLabel) platformBtnLabel.textContent = platformPickerLabel();
-    platformBtn?.toggleAttribute("disabled", !choices.length);
+    platformBtn?.toggleAttribute("disabled", linkedPlatformsLoaded && !choices.length);
     platformMenu?.querySelectorAll("[data-platform]").forEach((btn) => {
       const key = btn.getAttribute("data-platform");
       const on = key === "all" ? allOn : selectedPlatforms.has(key);
