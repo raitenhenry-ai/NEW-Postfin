@@ -1080,6 +1080,8 @@ export async function runAssistant({
     changed: false,
     questions: [],
     accounts: accountRows.map((a) => `${a.platform} (${a.display_name})`).join(", "),
+    connectedPlatforms: connected,
+    targetPlatforms,
   };
 
   const history = messages
