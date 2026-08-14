@@ -535,6 +535,8 @@
     dayPopupList?.querySelectorAll("[data-editor-panel]").forEach((panel) => {
       panel.hidden = panel.getAttribute("data-editor-panel") !== popupTab;
     });
+    // A hidden textarea measures as zero, so size the panel we just revealed.
+    autosizePopupTexts();
   }
 
   async function savePopupPost(key, postIndex) {
