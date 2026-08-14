@@ -1760,7 +1760,12 @@
   dayPopup?.addEventListener("pointerdown", (e) => e.stopPropagation());
 
   document.addEventListener("keydown", (e) => {
-    if (e.key === "Escape") closeDayPopup();
+    if (e.key !== "Escape") return;
+    if (dayPopupTimeMenu && !dayPopupTimeMenu.hidden) {
+      setPopupTimeMenuOpen(false);
+      return;
+    }
+    closeDayPopup();
   });
 
   modeButtons.forEach((btn) => {
