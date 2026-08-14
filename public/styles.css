@@ -6778,6 +6778,53 @@ body.theme-light .cal-day-editor-reference-btn:hover {
   color: #111114;
 }
 
+body.theme-light .cal-day-editor-reference-btn.is-on {
+  background: #111114;
+  border-color: #111114;
+  color: #fff;
+}
+
+body.theme-light .cal-day-editor-reference-input {
+  background: #fff;
+  border-color: #d8d8de;
+  color: #111114;
+}
+
+body.theme-light .cal-day-editor-reference-input:focus {
+  border-color: #a8a8b2;
+}
+
+body.theme-light .cal-day-editor-reference-submit {
+  background: #111114;
+  color: #fff;
+}
+
+body.theme-light .cal-day-editor-reference-submit:hover {
+  background: #2a2a30;
+}
+
+body.theme-light .cal-day-editor-reference-empty {
+  color: #6a6a72;
+}
+
+body.theme-light .cal-day-editor-reference-item {
+  background: #fff;
+  border-color: #e2e2e8;
+}
+
+body.theme-light .cal-day-editor-reference-thumb {
+  background: #f0f0f3;
+}
+
+body.theme-light .cal-day-editor-reference-name {
+  color: #222228;
+}
+
+body.theme-light .cal-day-editor-reference-remove:hover {
+  background: #ebebef;
+  color: #111114;
+}
+
 body.theme-light .cal-day-popup-item {
   background: #f3f3f6;
   color: #222228;
