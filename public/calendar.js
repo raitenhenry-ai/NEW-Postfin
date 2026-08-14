@@ -333,9 +333,14 @@
     }
     const current = popupPostTimestamp(post);
     const prevAt = shiftPopupMinutes(current, -1);
-    const nextAt = shiftPopupMinutes(current, 1);
+    let nextAt = shiftPopupMinutes(current, 1);
+    let cursor = current;
+    while (nextAt <= Date.now() && nextAt > cursor) {
+      cursor = nextAt;
+      nextAt = shiftPopupMinutes(cursor, 1);
+    }
     if (dayPopupTimePrev) dayPopupTimePrev.disabled = prevAt >= current || prevAt <= Date.now();
-    if (dayPopupTimeNext) dayPopupTimeNext.disabled = nextAt <= current;
+    if (dayPopupTimeNext) dayPopupTimeNext.disabled = nextAt <= current || nextAt <= Date.now();
   }
 
   async function applyPopupTime(post, scheduledAt) {
