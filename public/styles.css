@@ -5444,10 +5444,10 @@ body.theme-light .recent-card-warning {
 
 .cal-msg-images img {
   display: block;
-  width: min(220px, 72vw);
-  height: min(220px, 72vw);
+  width: min(140px, 42vw);
+  height: min(140px, 42vw);
   object-fit: cover;
-  border-radius: 14px;
+  border-radius: 12px;
   background: #1c1c20;
 }
 
