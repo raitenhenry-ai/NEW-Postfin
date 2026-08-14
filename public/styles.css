@@ -7202,11 +7202,13 @@ body.theme-light .automated-plan-btn:hover * {
 }
 
 body.theme-light .cal-day-popup-heading strong,
+body.theme-light .cal-day-popup-date-input,
 body.theme-light .cal-day-editor-title,
 body.theme-light .cal-day-editor-text {
   color: #111114 !important;
 }
 body.theme-light .cal-day-popup-heading span,
+body.theme-light .cal-day-popup-time-input,
 body.theme-light .cal-day-editor-platforms,
 body.theme-light .cal-day-editor-label,
 body.theme-light .cal-day-editor-count,
