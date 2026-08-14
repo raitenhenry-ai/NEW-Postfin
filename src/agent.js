@@ -1037,6 +1037,10 @@ export async function runAssistant({
   }
 
   const accountRows = await q("SELECT platform, display_name FROM accounts ORDER BY platform");
+  const connected = await connectedPlatforms();
+  const targetPlatforms = (Array.isArray(platforms) ? platforms : [])
+    .map((p) => String(p || "").toLowerCase())
+    .filter((p) => connected.includes(p));
   let productName = "";
   let productImages = [];
   if (productUrl) {
