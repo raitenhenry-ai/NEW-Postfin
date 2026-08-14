@@ -243,6 +243,7 @@
     dayPopupKey = null;
     dayPopupEventIndex = null;
     if (!dayPopup) return;
+    closePopupPlatformMenus();
     dayPopup.hidden = true;
     dayPopupList && (dayPopupList.innerHTML = "");
   }
