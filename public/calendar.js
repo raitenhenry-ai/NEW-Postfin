@@ -400,10 +400,6 @@
     } else {
       dayPopupList.innerHTML = renderPopupEditor(key, posts, focusIndex);
       const editor = dayPopupList.querySelector(".cal-day-editor");
-      bindPromptCounter(
-        editor?.querySelector('[data-editor-panel="prompt"] textarea'),
-        editor?.querySelector(".cal-day-editor-count")
-      );
       editor?.querySelectorAll("[data-editor-tab]").forEach((btn) => {
         btn.addEventListener("click", () => setPopupTab(btn.getAttribute("data-editor-tab")));
       });
