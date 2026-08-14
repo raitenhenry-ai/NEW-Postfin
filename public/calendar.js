@@ -256,8 +256,12 @@
     return Number.isFinite(ms) && ms > 0 ? ms : Date.now();
   }
 
+  function canEditPopupDay(key = dayPopupKey) {
+    return Boolean(key) && !isPastKey(key);
+  }
+
   function canEditPopupTime(post) {
-    return popupMode === "edit" && post && post.jobStatus !== "posted";
+    return canEditPopupDay() && popupMode === "edit" && post && post.jobStatus !== "posted";
   }
 
   function positionPopupTimeMenu() {
