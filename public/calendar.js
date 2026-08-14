@@ -1758,6 +1758,7 @@
           // Sent so "Friday" means the user's Friday, not the server's.
           offsetMinutes: -new Date().getTimezoneOffset(),
           productUrl: selectedProductUrl || "",
+          imageUrls: attachedUpload ? [attachedUpload.url || attachedUpload.path] : [],
           outputFormat: selectedFormat,
           platforms: [...selectedPlatforms],
         },
