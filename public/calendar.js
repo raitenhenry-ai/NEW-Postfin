@@ -685,6 +685,7 @@
           <button type="button" role="tab" data-editor-tab="prompt">Prompt</button>
           <button type="button" role="tab" data-editor-tab="caption">Caption</button>
           <button type="button" role="tab" data-editor-tab="model">Model</button>
+          <button type="button" role="tab" data-editor-tab="reference">Reference</button>
         </div>
         <div class="cal-day-editor-panel" data-editor-panel="prompt">
           <span class="cal-day-editor-label">Prompt</span>
@@ -701,6 +702,9 @@
         <div class="cal-day-editor-panel" data-editor-panel="model" hidden>
           <span class="cal-day-editor-label">Model</span>
           ${modelSelectHtml(modelId)}
+        </div>
+        <div class="cal-day-editor-panel" data-editor-panel="reference" hidden>
+          <span class="cal-day-editor-label">Reference</span>
         </div>
         <button type="button" class="cal-day-editor-save">Save</button>
       </div>`;
