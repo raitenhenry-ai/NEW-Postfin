@@ -492,8 +492,18 @@
       post.platforms = platforms;
       if (model && MODEL_OPTIONS.some((m) => m.id === model)) post.provider = model;
       toast("Saved");
+      const movedTo = payload.scheduledAt ? keyFromDate(new Date(payload.scheduledAt)) : key;
+      dayPopupKey = movedTo;
       await loadEvents();
       render();
+      const nextPosts = events[movedTo] || [];
+      const nextIndex = nextPosts.findIndex((p) => p.id === post.id);
+      openDayPopup(
+        movedTo,
+        grid.querySelector(`.cal-cell[data-date="${movedTo}"]`),
+        nextIndex >= 0 ? nextIndex : 0,
+        { fresh: false }
+      );
     } catch (err) {
       toast(err.message || "Could not save", "error");
       if (saveBtn) saveBtn.disabled = false;
