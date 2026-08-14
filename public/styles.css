@@ -6652,8 +6652,13 @@ body.theme-light a:not(.schedule-btn):not(.automated-plan-btn):not(.stat-label) 
 }
 
 body.theme-light .schedule-btn,
-body.theme-light .automated-plan-btn {
+body.theme-light .automated-plan-btn,
+body.theme-light .automated-plan-btn * {
   color: #3b6ef5 !important;
+}
+body.theme-light .automated-plan-btn:hover,
+body.theme-light .automated-plan-btn:hover * {
+  color: #2554d6 !important;
 }
 
 body.theme-light .nav-btn,
