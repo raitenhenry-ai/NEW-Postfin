@@ -324,10 +324,18 @@
     const locked = !canEditPopupTime(post);
     dayPopupTimeNav?.classList.toggle("is-locked", locked || !post);
     dayPopupTimeNav?.classList.toggle("is-empty", !post);
-    [dayPopupTimePrev, dayPopupTimeNext, dayPopupTimeBtn].forEach((el) => {
-      if (el) el.disabled = locked || !post;
-    });
-    if (locked) setPopupTimeMenuOpen(false);
+    if (dayPopupTimeBtn) dayPopupTimeBtn.disabled = locked || !post;
+    if (locked || !post) {
+      if (dayPopupTimePrev) dayPopupTimePrev.disabled = true;
+      if (dayPopupTimeNext) dayPopupTimeNext.disabled = true;
+      setPopupTimeMenuOpen(false);
+      return;
+    }
+    const current = popupPostTimestamp(post);
+    const prevAt = shiftPopupMinutes(current, -1);
+    const nextAt = shiftPopupMinutes(current, 1);
+    if (dayPopupTimePrev) dayPopupTimePrev.disabled = prevAt >= current || prevAt <= Date.now();
+    if (dayPopupTimeNext) dayPopupTimeNext.disabled = nextAt <= current;
   }
 
   async function applyPopupTime(post, scheduledAt) {
@@ -1688,6 +1696,28 @@
     setPopupMode(btn.getAttribute("data-popup-mode"));
   });
 
+  dayPopupTimePrev?.addEventListener("click", (e) => {
+    e.stopPropagation();
+    setPopupTimeMenuOpen(false);
+    stepPopupTime(-1);
+  });
+
+  dayPopupTimeNext?.addEventListener("click", (e) => {
+    e.stopPropagation();
+    setPopupTimeMenuOpen(false);
+    stepPopupTime(1);
+  });
+
+  dayPopupTimeBtn?.addEventListener("click", (e) => {
+    e.stopPropagation();
+    if (dayPopupTimeBtn.disabled) return;
+    const open = dayPopupTimeBtn.getAttribute("aria-expanded") !== "true";
+    setPopupTimeMenuOpen(open);
+  });
+
+  dayPopupTimeMenu?.addEventListener("click", (e) => e.stopPropagation());
+  dayPopupTimePicker?.addEventListener("click", (e) => e.stopPropagation());
+
   dayPopupDrag?.addEventListener("pointerdown", (e) => {
     if (e.button !== 0 || !dayPopup || !calBoard) return;
     if (e.target.closest(".cal-day-popup-close, .cal-day-popup-mode, .cal-day-popup-time-nav")) return;
@@ -1824,6 +1854,7 @@
       setModeMenuOpen(false);
       setMonthMenuOpen(false);
       setHistoryMenuOpen(false);
+      setPopupTimeMenuOpen(false);
     }
   });
 
