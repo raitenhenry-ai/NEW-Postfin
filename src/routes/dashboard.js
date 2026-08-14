@@ -434,7 +434,7 @@ router.get("/calendar", wrap(async (req, res) => {
 // slideshow is shown as its slides instead - that is what it actually is.
 // References and the main product image are part of the prompt the writers
 // see, so they show up here too.
-function promptText(script, settings, concept, brief, product = null) {
+function promptText(script, settings, concept, brief, product = null, productImage = null) {
   const parts = [];
   const briefText = String(brief || settings?.brief || "").trim();
   if (briefText) parts.push(`Brief:\n${briefText}`);
@@ -461,9 +461,9 @@ function promptText(script, settings, concept, brief, product = null) {
           .join("\n")
     );
   }
-  const productImage = product?.images?.[0] || null;
-  if (productImage) {
-    parts.push(`Main product image:\n${productImage}`);
+  const mainImage = product?.images?.[0] || productImage || null;
+  if (mainImage) {
+    parts.push(`Main product image:\n${mainImage}`);
   }
 
   if (!script) return parts.join("\n\n");
