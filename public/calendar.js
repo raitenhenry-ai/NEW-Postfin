@@ -1569,6 +1569,48 @@
   dayPopupDrag?.addEventListener("pointerup", endPopupDrag);
   dayPopupDrag?.addEventListener("pointercancel", endPopupDrag);
 
+  dayPopup?.querySelectorAll("[data-popup-resize]").forEach((handle) => {
+    handle.addEventListener("pointerdown", (e) => {
+      if (e.button !== 0 || !dayPopup || !calBoard) return;
+      e.preventDefault();
+      e.stopPropagation();
+      popupDrag = null;
+      popupResize = {
+        edge: handle.getAttribute("data-popup-resize") || "se",
+        startX: e.clientX,
+        startY: e.clientY,
+        startW: dayPopup.offsetWidth,
+        startH: dayPopup.offsetHeight,
+      };
+      dayPopup.classList.add("is-resizing");
+      handle.setPointerCapture?.(e.pointerId);
+    });
+    handle.addEventListener("pointermove", (e) => {
+      if (!popupResize || !dayPopup) return;
+      const dx = e.clientX - popupResize.startX;
+      const dy = e.clientY - popupResize.startY;
+      let width = popupResize.startW;
+      let height = popupResize.startH;
+      if (popupResize.edge.includes("e")) width += dx;
+      if (popupResize.edge.includes("s")) height += dy;
+      const next = clampPopupSize(width, height, dayPopup.offsetLeft, dayPopup.offsetTop);
+      dayPopup.classList.add("is-sized");
+      dayPopup.style.width = `${Math.round(next.width)}px`;
+      dayPopup.style.height = `${Math.round(next.height)}px`;
+    });
+    const endPopupResize = () => {
+      if (!popupResize || !dayPopup) {
+        popupResize = null;
+        return;
+      }
+      persistPopupSize(dayPopup.offsetWidth, dayPopup.offsetHeight);
+      dayPopup.classList.remove("is-resizing");
+      popupResize = null;
+    };
+    handle.addEventListener("pointerup", endPopupResize);
+    handle.addEventListener("pointercancel", endPopupResize);
+  });
+
   dayPopup?.addEventListener("pointerdown", (e) => e.stopPropagation());
 
   document.addEventListener("keydown", (e) => {
