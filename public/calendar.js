@@ -592,6 +592,7 @@
       popupMode = isEditMode() ? "edit" : "view";
     }
     dayPopup.hidden = false;
+    applyPopupSize(loadPopupSize());
     setPopupTab(popupTab);
     setPopupMode(popupMode);
     placeDayPopupBeside(cell || grid.querySelector(`.cal-cell[data-date="${key}"]`));
