@@ -1704,18 +1704,6 @@
     setPopupMode(btn.getAttribute("data-popup-mode"));
   });
 
-  dayPopupTimePrev?.addEventListener("click", (e) => {
-    e.stopPropagation();
-    setPopupTimeMenuOpen(false);
-    stepPopupTime(-1);
-  });
-
-  dayPopupTimeNext?.addEventListener("click", (e) => {
-    e.stopPropagation();
-    setPopupTimeMenuOpen(false);
-    stepPopupTime(1);
-  });
-
   dayPopupTimeBtn?.addEventListener("click", (e) => {
     e.stopPropagation();
     if (dayPopupTimeBtn.disabled) return;
