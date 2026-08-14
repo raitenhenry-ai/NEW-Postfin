@@ -357,6 +357,17 @@ router.get("/calendar", wrap(async (req, res) => {
   // shows "No platform".
   const defaultPlatforms = await resolveTargetPlatforms([]);
   const linkedPlatforms = await connectedPlatforms();
+  // A job scraped before its product was saved to the catalog has no images of
+  // its own, so the popup's product image falls back to the catalog row.
+  const catalogImages = new Map();
+  for (const row of await q("SELECT url, product_json FROM products")) {
+    try {
+      const images = JSON.parse(row.product_json || "null")?.images;
+      if (Array.isArray(images) && images[0]) catalogImages.set(row.url, images[0]);
+    } catch {
+      // A product row with unreadable JSON just has no image.
+    }
+  }
 
   const days = {};
   for (const job of jobs) {
