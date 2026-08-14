@@ -317,6 +317,13 @@ router.patch("/jobs/:id", wrap(async (req, res) => {
     }
   }
 
+  if (nextPlatforms) {
+    const settings = JSON.parse(job.settings_json || "{}");
+    settings.platforms = nextPlatforms;
+    await dbRun("UPDATE ugc_jobs SET settings_json = ?, updated_at = ? WHERE id = ?",
+      [JSON.stringify(settings), Date.now(), job.id]);
+  }
+
   const updated = await q1("SELECT * FROM ugc_jobs WHERE id = ?", [job.id]);
   res.json(shapeJob(updated, await postsFor(job.id)));
 }));

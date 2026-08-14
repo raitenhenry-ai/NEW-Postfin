@@ -98,7 +98,7 @@
     "Jul", "Aug", "Sep", "Oct", "Nov", "Dec",
   ];
 
-  const { api, escapeHtml, PLATFORM_LABELS, toast } = window.Postfin;
+  const { api, escapeHtml, PLATFORM_LABELS, platformIcon, toast } = window.Postfin;
 
   // Jobs keyed by YYYY-MM-DD, filled from /api/calendar.
   let events = {};
@@ -280,9 +280,17 @@
     dayPopup?.querySelectorAll(".cal-day-editor-title, .cal-day-editor-text").forEach((el) => {
       el.readOnly = popupMode === "view";
     });
-    dayPopup?.querySelectorAll(".cal-day-popup-model").forEach((el) => {
+    dayPopup?.querySelectorAll(".cal-day-popup-model, .cal-day-editor-platforms").forEach((el) => {
       el.disabled = popupMode === "view";
     });
+    if (popupMode === "view") {
+      dayPopup?.querySelectorAll(".cal-day-editor-platform-menu").forEach((menu) => {
+        menu.hidden = true;
+      });
+      dayPopup?.querySelectorAll(".cal-day-editor-platforms").forEach((btn) => {
+        btn.setAttribute("aria-expanded", "false");
+      });
+    }
     const save = dayPopup?.querySelector(".cal-day-editor-save");
     if (save) save.hidden = popupMode === "view";
   }
