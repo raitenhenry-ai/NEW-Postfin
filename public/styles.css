@@ -6792,7 +6792,8 @@ body.theme-light .cal-composer-send:disabled {
 }
 
 body.theme-light .cal-product-pill-btn,
-body.theme-light .cal-format-btn {
+body.theme-light .cal-format-btn,
+body.theme-light .cal-platform-btn {
   background: #f0f0f3;
   border-color: #d8d8de;
   color: #222228;
@@ -6801,7 +6802,9 @@ body.theme-light .cal-format-btn {
 body.theme-light .cal-product-pill-btn:hover,
 body.theme-light .cal-product-pill-btn[aria-expanded="true"],
 body.theme-light .cal-format-btn:hover,
-body.theme-light .cal-format-btn[aria-expanded="true"] {
+body.theme-light .cal-format-btn[aria-expanded="true"],
+body.theme-light .cal-platform-btn:hover,
+body.theme-light .cal-platform-btn[aria-expanded="true"] {
   background: #e6e6ea;
   border-color: #ccccd4;
   color: #111114;
