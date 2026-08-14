@@ -903,7 +903,7 @@
           <svg viewBox="0 0 12 12" fill="none" aria-hidden="true"><path d="M3 3l6 6M9 3L3 9" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
         </button>
       `;
-      chip.querySelector(".cal-date-chip-label").textContent = eventChipLabel();
+      chip.querySelector(".cal-date-chip-label").textContent = "selected post";
       chip.querySelector(".cal-date-chip-remove").addEventListener("click", (e) => {
         e.preventDefault();
         e.stopPropagation();
