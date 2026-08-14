@@ -6387,6 +6387,7 @@ body.theme-light .cal-day-popup-date-input {
 }
 
 body.theme-light .cal-day-popup-heading span,
+body.theme-light .cal-day-popup-time-input,
 body.theme-light .cal-day-popup-empty {
   color: #6a6a72;
 }
