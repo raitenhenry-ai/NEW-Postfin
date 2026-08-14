@@ -577,6 +577,10 @@
     focused = key;
   }
 
+  function eventIdentity(ev, key, index) {
+    return ev?.id != null ? `id:${ev.id}` : `${key}:${index}`;
+  }
+
   function pinCalendarEvent(ev, key, index, { toggleOff = false } = {}) {
     const eventId = eventIdentity(ev, key, index);
     if (toggleOff && isEditMode() && selectedEvent?.id === eventId) {
