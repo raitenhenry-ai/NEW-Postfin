@@ -544,6 +544,7 @@
     chat.messages.forEach((m) => conversation.push({
       role: m.role,
       content: m.content,
+      ...(m.imageUrls?.length ? { imageUrls: m.imageUrls } : {}),
       ...(m.actions?.length ? { actions: m.actions } : {}),
       ...(m.questions?.length ? { questions: m.questions } : {}),
       ...(m.answered ? { answered: true } : {}),
@@ -1533,6 +1534,7 @@
     }
     const bubbles = conversation.map((m, index) => `
       <div class="cal-msg is-${m.role}">
+        ${m.role === "user" ? renderMsgImages(m.imageUrls) : ""}
         <div class="cal-msg-body">${
           m.role === "assistant" ? formatReply(m.content) : escapeHtml(m.content)
         }</div>
@@ -1740,8 +1742,29 @@
     return lines ? `<ul class="cal-plan-list">${lines}</ul>` : "";
   }
 
+  function renderMsgImages(urls) {
+    const srcs = (Array.isArray(urls) ? urls : [])
+      .map((u) => String(u || "").trim())
+      .filter((u) => u.startsWith("/ugc-media/") || /^https?:\/\//i.test(u));
+    if (!srcs.length) return "";
+    return `<div class="cal-msg-images">${srcs.map((src) =>
+      `<img src="${escapeHtml(src)}" alt="">`
+    ).join("")}</div>`;
+  }
+
   async function sendToAssistant(text) {
-    conversation.push({ role: "user", content: text });
+    const imageUrls = attachedUpload
+      ? [attachedUpload.url || attachedUpload.path].filter(Boolean)
+      : [];
+    attachedUpload = null;
+    renderAttachChip();
+    syncSendState();
+
+    conversation.push({
+      role: "user",
+      content: text,
+      ...(imageUrls.length ? { imageUrls } : {}),
+    });
     persistActiveChat();
     renderThread(true);
     syncChatCancel();
@@ -1759,7 +1782,7 @@
           // Sent so "Friday" means the user's Friday, not the server's.
           offsetMinutes: -new Date().getTimezoneOffset(),
           productUrl: selectedProductUrl || "",
-          imageUrls: attachedUpload ? [attachedUpload.url || attachedUpload.path] : [],
+          imageUrls,
           outputFormat: selectedFormat,
           platforms: [...selectedPlatforms],
         },

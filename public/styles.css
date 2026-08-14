@@ -5434,6 +5434,27 @@ body.theme-light .recent-card-warning {
   align-items: flex-end;
 }
 
+.cal-msg-images {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 6px;
+  max-width: 88%;
+}
+
+.cal-msg-images img {
+  display: block;
+  width: min(220px, 72vw);
+  height: min(220px, 72vw);
+  object-fit: cover;
+  border-radius: 14px;
+  background: #1c1c20;
+}
+
+body.theme-light .cal-msg-images img {
+  background: #ececef;
+}
+
 .cal-msg.is-user .cal-msg-body {
   background: #2a2a2e;
   color: #f0f0f4;
