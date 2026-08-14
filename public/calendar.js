@@ -470,9 +470,10 @@
       id: activeChatId,
       updatedAt: Date.now(),
       selectedDates: [...selected].sort(),
-      messages: conversation.map(({ role, content, actions, questions, answered }) => ({
+      messages: conversation.map(({ role, content, actions, questions, answered, imageUrls }) => ({
         role,
         content,
+        ...(imageUrls?.length ? { imageUrls } : {}),
         ...(actions?.length ? { actions } : {}),
         ...(questions?.length ? { questions } : {}),
         ...(answered ? { answered: true } : {}),
