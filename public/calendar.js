@@ -1356,6 +1356,7 @@
     if (isViewMode()) {
       setFocusedDay(cell.dataset.date);
       applySelectionClasses();
+      openDayPopup(cell.dataset.date, cell);
       return;
     }
 
