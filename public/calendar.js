@@ -1384,6 +1384,14 @@
     closeDayPopup();
   });
 
+  dayPopup?.querySelector(".cal-day-popup-mode")?.addEventListener("click", (e) => {
+    const btn = e.target.closest("[data-popup-mode]");
+    if (!btn) return;
+    e.preventDefault();
+    e.stopPropagation();
+    setPopupMode(btn.getAttribute("data-popup-mode"));
+  });
+
   dayPopupDrag?.addEventListener("pointerdown", (e) => {
     if (e.button !== 0 || !dayPopup || !calBoard) return;
     if (e.target.closest(".cal-day-popup-close, .cal-day-popup-mode")) return;
