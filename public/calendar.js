@@ -931,6 +931,7 @@
         e.stopPropagation();
       });
       bindPopupPlatformPicker(editor);
+      bindPopupReferences(editor, key, focusIndex);
     }
 
     if (fresh) {
