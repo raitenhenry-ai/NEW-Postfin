@@ -672,6 +672,19 @@
     });
   }
 
+  // The prompt/caption boxes grow with their text so the popup body is what
+  // scrolls - the Save button ends up below the fold rather than pinned over
+  // a textarea with its own scrollbar.
+  function autosizePopupText(el) {
+    if (!el || el.offsetParent === null) return;
+    el.style.height = "auto";
+    el.style.height = `${el.scrollHeight}px`;
+  }
+
+  function autosizePopupTexts() {
+    dayPopupList?.querySelectorAll(".cal-day-editor-text").forEach(autosizePopupText);
+  }
+
   const REFERENCE_ACCEPT = "image/jpeg,image/png,image/webp,image/gif";
   const MAX_POPUP_REFERENCES = 12;
 
