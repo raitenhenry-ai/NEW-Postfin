@@ -412,26 +412,42 @@ router.get("/calendar", wrap(async (req, res) => {
 // slideshow is shown as its slides instead - that is what it actually is.
 function promptText(script, settings, concept) {
   const parts = [];
-  // A planned video shows its concept even before the script exists, so the
-  // calendar has something to display while it is still rendering.
   if (concept?.title) parts.push(`Concept: ${concept.title}`);
   if (concept?.angle) parts.push(`Angle: ${concept.angle}`);
   if (!script) return parts.join("\n\n");
 
   if (script.slides?.length) {
+    if (script.styleNote) parts.push(`Look: ${script.styleNote}`);
     parts.push(
       script.slides
-        .map((slide, i) => `Slide ${i + 1}: ${slide.overlay}${slide.spoken ? `\n   ${slide.spoken}` : ""}`)
-        .join("\n")
+        .map((slide, i) => {
+          const lines = [`Slide ${i + 1}`];
+          if (slide.overlay) lines.push(`On screen: ${slide.overlay}`);
+          if (slide.spoken) lines.push(`Voiceover: ${slide.spoken}`);
+          if (slide.imagePrompt) lines.push(`Image prompt: ${slide.imagePrompt}`);
+          return lines.join("\n");
+        })
+        .join("\n\n")
     );
     if (script.angle) parts.push(`Angle: ${script.angle}`);
     return parts.join("\n\n");
   }
 
-  if (script.hook) parts.push(`Hook: ${script.hook}`);
+  if (script.hook) parts.push(`Hook (spoken): ${script.hook}`);
   const scenes = (script.scenes || []).map((s, i) => `${i + 1}. ${s.text || s}`);
-  if (scenes.length) parts.push(`Scenes:\n${scenes.join("\n")}`);
-  if (script.cta) parts.push(`CTA: ${script.cta}`);
+  if (scenes.length) parts.push(`Spoken scenes:\n${scenes.join("\n")}`);
+  if (script.cta) parts.push(`CTA (spoken): ${script.cta}`);
+  if (script.storyboard?.length) {
+    parts.push(
+      "Image prompts (sent to the image model):\n" +
+        script.storyboard
+          .map((entry, i) => {
+            const shot = entry.shot === "product" ? "product cutaway" : "creator scene";
+            return `${i + 1}. [${shot}] ${entry.visual || "(none)"}`;
+          })
+          .join("\n")
+    );
+  }
   const meta = [settings?.tone, settings?.style].filter(Boolean).join(" · ");
   if (meta) parts.push(`Style: ${meta}`);
   return parts.join("\n\n");

@@ -89,12 +89,13 @@ export function slideshowConfigured() {
 // small text, and our overlay is burned in afterwards at a known size inside
 // the safe zone - so the art is asked to stay wordless and leave room for it.
 const IMAGE_RULES =
-  "imagePrompt: what the image model should draw for this slide. Describe one " +
-  "concrete scene in a sentence or two. It must contain NO text, NO words, NO " +
-  "numbers, NO logos and NO user-interface labels - the caption is added " +
-  "afterwards - and must leave the upper third visually calm so the caption " +
-  "can sit on it. Shoot it like a real phone photo or a real screen capture, " +
-  "not like a stock advert.";
+  "imagePrompt: a detailed prompt for the image model, 5-10 sentences. Cover " +
+  "the setting, time of day, lighting, camera distance and angle, what is " +
+  "happening, who is in frame, materials, and mood. One concrete scene, not " +
+  "a collage. It must contain NO text, NO words, NO numbers, NO logos and NO " +
+  "user-interface labels - the caption is burned in afterwards - and must " +
+  "leave the upper third visually calm so the caption can sit on it. Shoot " +
+  "it like a real phone photo or a real screen capture, not like a stock advert.";
 
 function subjectFor(product, settings) {
   const parts = [];
@@ -235,7 +236,7 @@ function shapeSlides(raw, photoCount) {
       return {
         overlay: String(slide?.overlay || "").trim().slice(0, 90),
         spoken: String(slide?.spoken || "").trim().slice(0, 220),
-        imagePrompt: String(slide?.imagePrompt || "").trim().slice(0, 600),
+        imagePrompt: String(slide?.imagePrompt || "").trim().slice(0, 2500),
         showsProduct: Boolean(showsProduct && photoCount),
       };
     })
