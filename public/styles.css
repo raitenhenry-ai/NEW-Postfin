@@ -2219,9 +2219,9 @@ body.theme-light .video-duration {
 }
 
 .cal-day-popup-head {
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: start;
   gap: 10px;
   padding: 14px 14px 10px;
   border-bottom: none;
@@ -2238,8 +2238,11 @@ body.theme-light .video-duration {
 .cal-day-popup-heading {
   display: flex;
   flex-direction: column;
+  align-items: center;
   gap: 2px;
   min-width: 0;
+  grid-column: 2;
+  text-align: center;
 }
 
 .cal-day-popup-heading strong {
@@ -2261,6 +2264,8 @@ body.theme-light .video-duration {
   align-items: center;
   gap: 8px;
   flex-shrink: 0;
+  grid-column: 3;
+  justify-self: end;
 }
 
 .cal-day-popup-mode {
