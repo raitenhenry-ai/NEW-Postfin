@@ -2040,6 +2040,40 @@
     </footer>
 
     <script>
+      (function setupModelsMarquee() {
+        const marquee = document.querySelector(".models-marquee");
+        const row = marquee && marquee.querySelector(".models-row");
+        const source = row && row.querySelector(".models-group");
+        if (!marquee || !row || !source) return;
+        if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+
+        function fill() {
+          while (row.children.length > 1) row.removeChild(row.lastElementChild);
+          const groupW = source.offsetWidth;
+          const viewW = marquee.offsetWidth;
+          if (!groupW) return;
+          let copies = 1;
+          while (copies * groupW - groupW < viewW || copies < 2) {
+            const clone = source.cloneNode(true);
+            clone.setAttribute("aria-hidden", "true");
+            row.appendChild(clone);
+            copies += 1;
+            if (copies > 12) break;
+          }
+          row.style.setProperty("--models-shift", groupW + "px");
+        }
+
+        const ready = Array.from(source.querySelectorAll("img")).map((img) => {
+          if (img.complete) return Promise.resolve();
+          return new Promise((resolve) => {
+            img.addEventListener("load", resolve, { once: true });
+            img.addEventListener("error", resolve, { once: true });
+          });
+        });
+        Promise.all(ready).then(fill);
+        window.addEventListener("resize", fill);
+      })();
+
       (function () {
         const phrase = "Create a week of content for my brand";
         const el = document.getElementById("typed-prompt");
