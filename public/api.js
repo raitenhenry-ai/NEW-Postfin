@@ -36,7 +36,7 @@
   // An <img> where we ship the logo, a coloured lettermark everywhere else.
   function platformIcon(key) {
     if (ICON_FILES.has(key)) {
-      return `<img src="icons/${key}.png" alt="${escapeHtml(PLATFORM_LABELS[key] || key)}">`;
+      return `<img src="icons/${key}.png?v=2" alt="${escapeHtml(PLATFORM_LABELS[key] || key)}">`;
     }
     const label = PLATFORM_LABELS[key] || key || "?";
     const color = PLATFORM_COLORS[key] || "#6d7688";
