@@ -691,8 +691,7 @@ const IMPLEMENTATIONS = {
     }
 
     if (Array.isArray(platforms)) {
-      const wanted = platforms.filter((p) => ENABLED_PLATFORMS.includes(p));
-      if (!wanted.length) throw new Error("None of those are platforms this workspace can post to");
+      const wanted = await resolveLinkedPlatforms(platforms, ctx, { required: true });
       const settings = JSON.parse(job.settings_json || "{}");
       settings.platforms = wanted;
       await dbRun("UPDATE ugc_jobs SET settings_json = ?, updated_at = ? WHERE id = ?",
