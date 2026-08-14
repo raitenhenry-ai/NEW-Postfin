@@ -4045,13 +4045,33 @@ body.theme-light .cal-post-fields {
   overflow: hidden;
 }
 
-.cal-platform-menu-icon.is-all {
-  color: #c8c8d0;
-  font-size: 11px;
-  font-weight: 700;
+.cal-platform-menu-icon.is-all,
+.cal-platform-menu-icon-stack {
+  width: auto;
+  min-width: 22px;
+  padding: 0 3px;
+  gap: 0;
 }
 
-.cal-platform-menu-icon img {
+.cal-platform-menu-icon-stack .cal-platform-btn-icon {
+  width: 14px;
+  height: 14px;
+  background: transparent;
+}
+
+.cal-platform-menu-icon-stack .cal-platform-btn-icon + .cal-platform-btn-icon {
+  margin-left: -4px;
+  box-shadow: none;
+}
+
+.cal-platform-menu-icon-stack .cal-platform-btn-icon img,
+.cal-platform-menu-icon-stack .cal-platform-btn-icon svg {
+  width: 14px;
+  height: 14px;
+}
+
+.cal-platform-menu-icon img,
+.cal-platform-menu-icon svg {
   width: 14px;
   height: 14px;
   display: block;
