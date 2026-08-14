@@ -2188,9 +2188,10 @@ body.theme-light .video-duration {
 
 .cal-day-popup-heading strong {
   color: #f0f0f4;
-  font-size: 12.5px;
-  font-weight: 650;
-  line-height: 1.3;
+  font-size: 16px;
+  font-weight: 700;
+  line-height: 1.2;
+  letter-spacing: -0.02em;
 }
 
 .cal-day-popup-heading span {
