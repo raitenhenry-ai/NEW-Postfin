@@ -2104,13 +2104,8 @@
         path: result.path,
         name: result.name || file.name,
       };
-      if (result.product) {
-        productCatalog = [
-          result.product,
-          ...productCatalog.filter((p) => p.url !== result.product.url),
-        ];
-      }
-      setSelectedProduct(result.url);
+      renderAttachChip();
+      syncSendState();
       toast(`Attached ${attachedUpload.name}`);
     } catch (err) {
       toast(err.message || "Could not upload that file", "error");
