@@ -2836,8 +2836,158 @@ body.theme-light .video-duration {
   color: #fff;
 }
 
+.cal-day-editor-reference-btn.is-on {
+  background: #f4f4f6;
+  border-color: #f4f4f6;
+  color: #111114;
+}
+
 .cal-day-popup.is-viewing .cal-day-editor-reference-btn {
   opacity: 0.55;
+  pointer-events: none;
+}
+
+.cal-day-editor-reference-form {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.cal-day-editor-reference-form[hidden] {
+  display: none;
+}
+
+.cal-day-editor-reference-input {
+  flex: 1 1 auto;
+  min-width: 0;
+  height: 32px;
+  padding: 0 10px;
+  border: 1px solid #3a3a42;
+  border-radius: 8px;
+  background: #1c1c21;
+  color: #e8e8ee;
+  font-family: inherit;
+  font-size: 12px;
+}
+
+.cal-day-editor-reference-input:focus {
+  outline: none;
+  border-color: #5a5a66;
+}
+
+.cal-day-editor-reference-submit {
+  flex: 0 0 auto;
+  height: 32px;
+  padding: 0 14px;
+  border: 0;
+  border-radius: 8px;
+  background: #f4f4f6;
+  color: #111114;
+  font-family: inherit;
+  font-size: 12px;
+  font-weight: 650;
+  cursor: pointer;
+}
+
+.cal-day-editor-reference-submit:hover {
+  background: #fff;
+}
+
+.cal-day-editor-reference-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.cal-day-editor-reference-list::-webkit-scrollbar {
+  display: none;
+}
+
+.cal-day-editor-reference-empty {
+  margin: 0;
+  font-size: 12px;
+  line-height: 1.5;
+  color: #8a8a92;
+}
+
+.cal-day-editor-reference-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 8px;
+  border: 1px solid #2e2e36;
+  border-radius: 8px;
+  background: #1c1c21;
+}
+
+.cal-day-editor-reference-thumb {
+  flex: 0 0 auto;
+  width: 28px;
+  height: 28px;
+  border-radius: 6px;
+  object-fit: cover;
+  background: #2a2a30;
+}
+
+.cal-day-editor-reference-thumb-link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: #9a9aa4;
+}
+
+.cal-day-editor-reference-thumb-link svg {
+  width: 15px;
+  height: 15px;
+}
+
+.cal-day-editor-reference-name {
+  flex: 1 1 auto;
+  min-width: 0;
+  font-size: 12px;
+  color: #e8e8ee;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  text-decoration: none;
+}
+
+a.cal-day-editor-reference-name:hover {
+  text-decoration: underline;
+}
+
+.cal-day-editor-reference-remove {
+  flex: 0 0 auto;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  color: #8a8a92;
+  cursor: pointer;
+}
+
+.cal-day-editor-reference-remove svg {
+  width: 10px;
+  height: 10px;
+}
+
+.cal-day-editor-reference-remove:hover {
+  background: #2e2e36;
+  color: #f4f4f6;
+}
+
+.cal-day-editor-reference-remove:disabled {
+  opacity: 0.4;
+  cursor: default;
   pointer-events: none;
 }
 
