@@ -702,6 +702,8 @@
       const post = focusIndex != null ? posts[focusIndex] : null;
       dayPopupCount.textContent = post?.time || (posts.length ? `${posts.length} posts` : "No posts");
     }
+    syncPopupTimeSwitcher();
+    setPopupTimeMenuOpen(false);
 
     if (!posts.length) {
       dayPopupList.innerHTML = `<p class="cal-day-popup-empty">Nothing scheduled this day.</p>`;
