@@ -2260,10 +2260,10 @@ body.theme-light .video-duration {
 
 .cal-day-popup-list {
   overflow: auto;
-  padding: 12px;
+  padding: 4px 14px 14px;
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 10px;
   min-height: 0;
   scrollbar-width: none;
 }
