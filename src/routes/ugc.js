@@ -259,6 +259,21 @@ router.patch("/jobs/:id", wrap(async (req, res) => {
   const job = await q1("SELECT * FROM ugc_jobs WHERE id = ?", [req.params.id]);
   if (!job) return res.status(404).json({ error: "Job not found" });
 
+  let nextPlatforms = null;
+  if ("platforms" in req.body) {
+    if (!Array.isArray(req.body.platforms)) {
+      return res.status(400).json({ error: "platforms must be an array" });
+    }
+    nextPlatforms = [...new Set(
+      req.body.platforms
+        .map((p) => String(p || "").toLowerCase())
+        .filter((p) => ENABLED_PLATFORMS.includes(p))
+    )];
+    if (!nextPlatforms.length) {
+      return res.status(400).json({ error: "Pick at least one platform this workspace can post to" });
+    }
+  }
+
   if (typeof req.body.title === "string") {
     await dbRun("UPDATE ugc_jobs SET title = ?, updated_at = ? WHERE id = ?",
       [req.body.title.slice(0, 120), Date.now(), job.id]);
