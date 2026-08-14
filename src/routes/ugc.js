@@ -275,6 +275,17 @@ router.patch("/jobs/:id", wrap(async (req, res) => {
     }
   }
 
+  let nextReferences = null;
+  if ("references" in req.body) {
+    if (!Array.isArray(req.body.references)) {
+      return res.status(400).json({ error: "references must be an array" });
+    }
+    nextReferences = normalizeReferences(req.body.references);
+    if (nextReferences === null) {
+      return res.status(400).json({ error: "Each reference needs a link or an uploaded image" });
+    }
+  }
+
   if (typeof req.body.title === "string") {
     await dbRun("UPDATE ugc_jobs SET title = ?, updated_at = ? WHERE id = ?",
       [req.body.title.slice(0, 120), Date.now(), job.id]);
