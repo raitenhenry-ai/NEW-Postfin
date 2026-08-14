@@ -2275,6 +2275,7 @@
   }
 
   function setLinkedPlatforms(list) {
+    linkedPlatformsLoaded = true;
     linkedPlatforms = (Array.isArray(list) ? list : [])
       .map((p) => String(p || "").toLowerCase())
       .filter((p) => PLATFORM_LABELS[p] || PLATFORM_PICKER_LABELS[p]);
