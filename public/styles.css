@@ -3533,7 +3533,8 @@ body.theme-light .cal-post-fields {
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  width: max-content;
+  width: 100%;
+  min-width: 0;
   max-width: 100%;
   height: 32px;
   padding: 0 10px 0 12px;
