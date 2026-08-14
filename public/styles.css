@@ -6790,16 +6790,15 @@ body.theme-light .cal-day-editor-reference-input:focus {
 }
 
 body.theme-light .cal-day-editor-reference-submit {
-  background: #111114;
-  color: #fff;
+  background: #f0f0f3;
+  border-color: #d8d8de;
+  color: #222228;
 }
 
 body.theme-light .cal-day-editor-reference-submit:hover {
-  background: #2a2a30;
-}
-
-body.theme-light .cal-day-editor-reference-empty {
-  color: #6a6a72;
+  background: #e6e6ea;
+  border-color: #ccccd4;
+  color: #111114;
 }
 
 body.theme-light .cal-day-editor-reference-item {
