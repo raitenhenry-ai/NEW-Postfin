@@ -927,11 +927,16 @@ export async function runAssistant({
 
   const accountRows = await q("SELECT platform, display_name FROM accounts ORDER BY platform");
   let productName = "";
+  let productImages = [];
   if (productUrl) {
     const saved = await q1("SELECT product_json FROM products WHERE url = ?", [productUrl]);
     if (saved?.product_json) {
       try {
-        productName = JSON.parse(saved.product_json)?.name || "";
+        const parsed = JSON.parse(saved.product_json);
+        productName = parsed?.name || "";
+        productImages = (Array.isArray(parsed?.images) ? parsed.images : [])
+          .filter((u) => typeof u === "string" && u)
+          .slice(0, 4);
       } catch {
         productName = "";
       }
@@ -942,6 +947,7 @@ export async function runAssistant({
     selectedDates,
     productUrl: productUrl || "",
     productName,
+    productImages,
     // The composer's own format switch. When it is set, it is an answer the
     // user has already given, so the assistant uses it instead of asking.
     outputFormat: outputFormat === "slideshow" ? "slideshow" : outputFormat === "avatar" ? "avatar" : "",
@@ -954,6 +960,13 @@ export async function runAssistant({
     .filter((m) => m && typeof m.content === "string" && ["user", "assistant"].includes(m.role))
     .slice(-MAX_HISTORY)
     .map((m) => ({ role: m.role, content: m.content }));
+
+  if (productImages.length) {
+    const lastUser = [...history].reverse().find((m) => m.role === "user");
+    if (lastUser) {
+      lastUser.content = visionUserContent(lastUser.content, productImages);
+    }
+  }
 
   const thread = [{ role: "system", content: systemPrompt(ctx) }, ...history];
   const actions = [];
