@@ -409,21 +409,6 @@
     try {
       const payload = { title, caption, hashtags, platforms };
       if (!String(post.prompt || "").trim()) payload.brief = prompt;
-      if (post.jobStatus !== "posted") {
-        const dateVal = dayPopupDate?.value || key;
-        const timeVal = dayPopupTime?.value || "09:00";
-        const scheduledAt = timestampFromLocal(dateVal, timeVal);
-        const prevDate = localDateValue(postTimestamp(post));
-        const prevTime = localTimeValue(postTimestamp(post));
-        if (dateVal !== prevDate || timeVal !== prevTime) {
-          if (!Number.isFinite(scheduledAt) || scheduledAt <= Date.now()) {
-            toast("Pick a date and time in the future", "error");
-            if (saveBtn) saveBtn.disabled = false;
-            return;
-          }
-          payload.scheduledAt = scheduledAt;
-        }
-      }
       await api(`/api/jobs/${post.id}`, {
         method: "PATCH",
         body: payload,
@@ -438,18 +423,8 @@
       post.platforms = platforms;
       if (model && MODEL_OPTIONS.some((m) => m.id === model)) post.provider = model;
       toast("Saved");
-      const movedTo = payload.scheduledAt ? keyFromDate(new Date(payload.scheduledAt)) : key;
-      dayPopupKey = movedTo;
       await loadEvents();
       render();
-      const nextPosts = events[movedTo] || [];
-      const nextIndex = nextPosts.findIndex((p) => p.id === post.id);
-      openDayPopup(
-        movedTo,
-        grid.querySelector(`.cal-cell[data-date="${movedTo}"]`),
-        nextIndex >= 0 ? nextIndex : 0,
-        { fresh: false }
-      );
     } catch (err) {
       toast(err.message || "Could not save", "error");
       if (saveBtn) saveBtn.disabled = false;
@@ -596,7 +571,11 @@
       ? dayPopupEventIndex
       : (posts.length ? 0 : null);
 
-    fillPopupSchedule(focusIndex != null ? posts[focusIndex] : null, key);
+    if (dayPopupDate) dayPopupDate.textContent = formatPopupDate(key);
+    if (dayPopupCount) {
+      const post = focusIndex != null ? posts[focusIndex] : null;
+      dayPopupCount.textContent = post?.time || (posts.length ? `${posts.length} posts` : "No posts");
+    }
 
     if (!posts.length) {
       dayPopupList.innerHTML = `<p class="cal-day-popup-empty">Nothing scheduled this day.</p>`;
@@ -1582,7 +1561,7 @@
 
   dayPopupDrag?.addEventListener("pointerdown", (e) => {
     if (e.button !== 0 || !dayPopup || !calBoard) return;
-    if (e.target.closest(".cal-day-popup-close, .cal-day-popup-mode, .cal-day-popup-date-input, .cal-day-popup-time-input")) return;
+    if (e.target.closest(".cal-day-popup-close, .cal-day-popup-mode")) return;
     e.preventDefault();
     e.stopPropagation();
     const board = calBoard.getBoundingClientRect();
