@@ -363,7 +363,13 @@
   function stepPopupTime(dir) {
     const post = focusedPopupPost();
     if (!canEditPopupTime(post)) return;
-    applyPopupTime(post, shiftPopupMinutes(popupPostTimestamp(post), dir));
+    let at = popupPostTimestamp(post);
+    let next = shiftPopupMinutes(at, dir);
+    while (dir > 0 && next <= Date.now() && next > at) {
+      at = next;
+      next = shiftPopupMinutes(at, dir);
+    }
+    applyPopupTime(post, next);
   }
 
   function clampPopupPosition(left, top) {
