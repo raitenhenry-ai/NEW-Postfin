@@ -2242,47 +2242,6 @@ body.theme-light .video-duration {
   min-width: 0;
 }
 
-.cal-day-popup-date-input,
-.cal-day-popup-time-input {
-  width: auto;
-  max-width: 100%;
-  margin: 0;
-  border: none;
-  background: transparent;
-  font: inherit;
-  padding: 0;
-  outline: none;
-  color-scheme: dark;
-  cursor: text;
-  user-select: text;
-  touch-action: manipulation;
-}
-
-.cal-day-popup-date-input {
-  color: #f0f0f4;
-  font-size: 16px;
-  font-weight: 700;
-  line-height: 1.2;
-  letter-spacing: -0.02em;
-}
-
-.cal-day-popup-time-input {
-  color: #8a8a92;
-  font-size: 12.5px;
-  font-weight: 550;
-}
-
-.cal-day-popup-date-input:disabled,
-.cal-day-popup-time-input:disabled {
-  cursor: default;
-  opacity: 1;
-}
-
-.cal-day-popup:not(.is-viewing) .cal-day-popup-date-input:not(:disabled):hover,
-.cal-day-popup:not(.is-viewing) .cal-day-popup-time-input:not(:disabled):hover {
-  color: #fff;
-}
-
 .cal-day-popup-heading strong {
   color: #f0f0f4;
   font-size: 16px;
@@ -6381,18 +6340,11 @@ body.theme-light .cal-day-popup-head {
   border-bottom-color: transparent;
 }
 
-body.theme-light .cal-day-popup-date-input,
-body.theme-light .cal-day-popup-time-input {
-  color-scheme: light;
-}
-
-body.theme-light .cal-day-popup:not(.is-viewing) .cal-day-popup-date-input:not(:disabled):hover,
-body.theme-light .cal-day-popup:not(.is-viewing) .cal-day-popup-time-input:not(:disabled):hover {
+body.theme-light .cal-day-popup-heading strong {
   color: #111114;
 }
 
 body.theme-light .cal-day-popup-heading span,
-body.theme-light .cal-day-popup-time-input,
 body.theme-light .cal-day-popup-empty {
   color: #6a6a72;
 }
@@ -7207,13 +7159,11 @@ body.theme-light .automated-plan-btn:hover * {
 }
 
 body.theme-light .cal-day-popup-heading strong,
-body.theme-light .cal-day-popup-date-input,
 body.theme-light .cal-day-editor-title,
 body.theme-light .cal-day-editor-text {
   color: #111114 !important;
 }
 body.theme-light .cal-day-popup-heading span,
-body.theme-light .cal-day-popup-time-input,
 body.theme-light .cal-day-editor-platforms,
 body.theme-light .cal-day-editor-label,
 body.theme-light .cal-day-editor-count,
