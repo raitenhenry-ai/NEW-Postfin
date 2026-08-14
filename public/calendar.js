@@ -336,7 +336,7 @@
     const model = editor.querySelector(".cal-day-popup-model")?.value;
     const platforms = [...editor.querySelectorAll("[data-popup-platform].is-on")]
       .map((btn) => btn.getAttribute("data-popup-platform"))
-      .filter((p) => PLATFORM_CHOICES.includes(p) || Boolean(PLATFORM_LABELS[p]));
+      .filter((p) => platformChoices().includes(p));
     const saveBtn = editor.querySelector(".cal-day-editor-save");
     if (!platforms.length) {
       toast("Pick at least one platform", "error");
