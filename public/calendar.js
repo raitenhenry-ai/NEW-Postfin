@@ -736,6 +736,22 @@
       </div>`;
   }
 
+  // The product's own main image, the same one the products page leads with.
+  function productImagePanelHtml(post) {
+    const src = post.productImage || "";
+    const name = post.productName || "";
+    const body = src
+      ? `<div class="cal-day-editor-image-box">
+           <img class="cal-day-editor-image" src="${escapeHtml(src)}" alt="${escapeHtml(name || "Product image")}" referrerpolicy="no-referrer">
+         </div>
+         ${name ? `<span class="cal-day-editor-image-name">${escapeHtml(name)}</span>` : ""}`
+      : `<p class="cal-day-editor-image-empty">No product image</p>`;
+    return `
+      <div class="cal-day-editor-panel cal-day-editor-panel-image" data-editor-panel="image" hidden>
+        ${body}
+      </div>`;
+  }
+
   async function savePopupReferences(key, postIndex, next) {
     const post = events[key]?.[postIndex];
     if (!post?.id) return false;
