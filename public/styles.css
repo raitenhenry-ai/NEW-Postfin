@@ -6496,6 +6496,15 @@ body.theme-light .cal-day-popup {
   box-shadow: 0 18px 40px rgba(20, 20, 28, 0.14);
 }
 
+body.theme-light .cal-day-popup-chrome {
+  background: #ececef;
+  border-bottom-color: #e0e0e6;
+}
+
+body.theme-light .cal-day-popup-grip {
+  background: #b8b8c0;
+}
+
 body.theme-light .cal-day-popup-resize.is-se {
   color: #9a9aa2;
 }
