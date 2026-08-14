@@ -442,7 +442,7 @@
         ${switcher}
         <div class="cal-day-editor-title-row">
           <input class="cal-day-editor-title" type="text" maxlength="120" value="${escapeHtml(post.title || "")}" placeholder="Post title">
-          <span class="cal-day-editor-platforms">${escapeHtml(platformLabel(post))}</span>
+          ${popupPlatformPickerHtml(post)}
         </div>
         <div class="cal-day-editor-tabs" role="tablist" aria-label="Post fields">
           <button type="button" role="tab" data-editor-tab="prompt">Prompt</button>
