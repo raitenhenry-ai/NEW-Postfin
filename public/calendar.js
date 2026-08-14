@@ -691,9 +691,6 @@
 
   function referenceListHtml(post) {
     const refs = popupReferences(post);
-    if (!refs.length) {
-      return `<p class="cal-day-editor-reference-empty">Add a link to a video or post you like, or an image of a post or product.</p>`;
-    }
     return refs.map((ref, i) => `
       <div class="cal-day-editor-reference-item">
         ${ref.kind === "image"
