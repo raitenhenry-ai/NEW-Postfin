@@ -873,12 +873,7 @@
             <textarea class="cal-day-editor-text" placeholder="Script not generated yet.">${escapeHtml(prompt)}</textarea>
           </div>
         </div>
-        <div class="cal-day-editor-panel cal-day-editor-panel-reference" data-editor-panel="reference" hidden>
-          <div class="cal-day-editor-reference-actions">
-            <button type="button" class="cal-day-editor-reference-btn" data-reference-action="link">Add link</button>
-            <button type="button" class="cal-day-editor-reference-btn" data-reference-action="image">Add image</button>
-          </div>
-        </div>
+        ${referencePanelHtml(post)}
         <div class="cal-day-editor-panel" data-editor-panel="caption" hidden>
           <span class="cal-day-editor-label">Caption</span>
           <div class="cal-day-editor-box">
