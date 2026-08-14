@@ -577,8 +577,37 @@
     focused = key;
   }
 
-  function eventIdentity(ev, key, index) {
-    return ev?.id != null ? `id:${ev.id}` : `${key}:${index}`;
+  function pinCalendarEvent(ev, key, index, { toggleOff = false } = {}) {
+    const eventId = eventIdentity(ev, key, index);
+    if (toggleOff && isEditMode() && selectedEvent?.id === eventId) {
+      selectedEvent = null;
+      render();
+      closeDayPopup();
+      return;
+    }
+    const videoId = Number(ev?.id);
+    const pinned = {
+      id: eventId,
+      key,
+      index,
+      videoId: Number.isFinite(videoId) && videoId > 0 ? videoId : null,
+      title: ev?.title || "Untitled",
+      time: ev?.time || "",
+    };
+    if (!isEditMode()) setMode("edit");
+    selectedEvent = pinned;
+    selected.clear();
+    drag = null;
+    grid.classList.remove("is-dragging");
+    setChatCollapsed(false);
+    render();
+    openDayPopup(key, grid.querySelector(`.cal-cell[data-date="${key}"]`), index);
+  }
+
+  function eventChipLabel(event) {
+    const title = (event.title || "Untitled").trim();
+    const when = [formatShort(event.key), event.time].filter(Boolean).join(" · ");
+    return when ? `${title} · ${when}` : title;
   }
 
   function clearSelectedEvent() {
