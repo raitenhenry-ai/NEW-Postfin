@@ -2760,6 +2760,7 @@ body.theme-light .video-duration {
 
 .cal-day-editor-tabs {
   display: flex;
+  flex-shrink: 0;
   gap: 6px;
   padding: 4px;
   border-radius: 999px;
