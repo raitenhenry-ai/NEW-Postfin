@@ -1824,7 +1824,7 @@
     e.preventDefault();
     if (!field || assistantBusy) return;
     const typed = field.value.trim();
-    const text = typed || (attachedUpload ? `Make videos using this product photo (${attachedUpload.name}).` : "");
+    const text = typed || (attachedUpload ? "Look at this screenshot." : "");
     if (!text) return;
     field.value = "";
     submitMessage(text);
