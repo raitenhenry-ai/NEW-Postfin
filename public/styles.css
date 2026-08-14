@@ -7566,8 +7566,12 @@ body.theme-light .cal-day-editor-platform-item.is-on {
   background: #ececef !important;
 }
 body.theme-light .cal-day-editor-save {
-  background: #111114 !important;
+  background: #2f6fed !important;
   color: #ffffff !important;
+}
+
+body.theme-light .cal-day-editor-save:hover:not(:disabled) {
+  background: #2560d8 !important;
 }
 
 body.theme-light .nav-btn,
