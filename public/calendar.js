@@ -713,7 +713,7 @@
           <button type="button" class="cal-day-editor-reference-btn" data-reference-action="image">Add image</button>
         </div>
         <form class="cal-day-editor-reference-form" hidden>
-          <input class="cal-day-editor-reference-input" type="url" placeholder="Paste a link to a video or post" spellcheck="false">
+          <input class="cal-day-editor-reference-input" type="url" placeholder="Paste a link" spellcheck="false">
           <button type="submit" class="cal-day-editor-reference-submit">Add</button>
         </form>
         <input class="cal-day-editor-reference-file" type="file" accept="${REFERENCE_ACCEPT}" hidden>
