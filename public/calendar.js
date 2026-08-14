@@ -670,6 +670,7 @@
   let dayPopupKey = null;
   let dayPopupEventIndex = null;
   let popupDrag = null;
+  let popupResize = null;
   let planAbort = null;
   const chatCancelBtn = document.getElementById("cal-chat-cancel");
   const historyPicker = document.getElementById("cal-history-picker");
