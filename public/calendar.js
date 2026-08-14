@@ -265,13 +265,124 @@
     return caption || tags || "—";
   }
 
-  function modelSelectHtml(selectedId) {
+  const PROMPT_MAX = 2000;
+
+  function postPromptText(post) {
+    const brief = String(post?.brief || "").trim();
+    const prompt = String(post?.prompt || "").trim();
+    return brief || prompt || "";
+  }
+
+  function setPopupMode(next) {
+    popupMode = next === "view" ? "view" : "edit";
+    dayPopup?.querySelectorAll("[data-popup-mode]").forEach((btn) => {
+      btn.classList.toggle("is-on", btn.getAttribute("data-popup-mode") === popupMode);
+    });
+    dayPopup?.classList.toggle("is-viewing", popupMode === "view");
+    dayPopup?.querySelectorAll(".cal-day-editor-title, .cal-day-editor-text").forEach((el) => {
+      el.readOnly = popupMode === "view";
+    });
+    dayPopup?.querySelectorAll(".cal-day-popup-model").forEach((el) => {
+      el.disabled = popupMode === "view";
+    });
+    const save = dayPopup?.querySelector(".cal-day-editor-save");
+    if (save) save.hidden = popupMode === "view";
+  }
+
+  function setPopupTab(next) {
+    popupTab = ["prompt", "caption", "model"].includes(next) ? next : "prompt";
+    dayPopupList?.querySelectorAll("[data-editor-tab]").forEach((btn) => {
+      const on = btn.getAttribute("data-editor-tab") === popupTab;
+      btn.classList.toggle("is-on", on);
+      btn.setAttribute("aria-selected", on ? "true" : "false");
+    });
+    dayPopupList?.querySelectorAll("[data-editor-panel]").forEach((panel) => {
+      panel.hidden = panel.getAttribute("data-editor-panel") !== popupTab;
+    });
+  }
+
+  function bindPromptCounter(textarea, countEl) {
+    if (!textarea || !countEl) return;
+    const sync = () => {
+      countEl.textContent = `${textarea.value.length}/${PROMPT_MAX}`;
+    };
+    textarea.addEventListener("input", sync);
+    sync();
+  }
+
+  async function savePopupPost(key, postIndex) {
+    const post = events[key]?.[postIndex];
+    const editor = dayPopupList?.querySelector(".cal-day-editor");
+    if (!post?.id || !editor) return;
+    const title = editor.querySelector(".cal-day-editor-title")?.value || "";
+    const prompt = editor.querySelector('[data-editor-panel="prompt"] textarea')?.value || "";
+    const caption = editor.querySelector('[data-editor-panel="caption"] textarea')?.value || "";
+    const model = editor.querySelector(".cal-day-popup-model")?.value;
+    const saveBtn = editor.querySelector(".cal-day-editor-save");
+    if (saveBtn) saveBtn.disabled = true;
+    try {
+      await api(`/api/jobs/${post.id}`, {
+        method: "PATCH",
+        body: { title, caption, brief: prompt },
+      });
+      post.title = title.slice(0, 120);
+      post.caption = caption;
+      post.brief = prompt;
+      post.prompt = prompt;
+      if (model && MODEL_OPTIONS.some((m) => m.id === model)) post.provider = model;
+      toast("Saved");
+      await loadEvents();
+      render();
+      const cell = grid.querySelector(`.cal-cell[data-date="${key}"]`);
+      openDayPopup(key, cell, postIndex);
+    } catch (err) {
+      toast(err.message || "Could not save", "error");
+      if (saveBtn) saveBtn.disabled = false;
+    }
+  }
+
+  function renderPopupEditor(key, posts, postIndex) {
+    const post = posts[postIndex];
+    if (!post) return "";
+    const prompt = postPromptText(post);
+    const caption = String(post.caption || "");
+    const modelId = resolveModelId(post);
+    const switcher = posts.length > 1
+      ? `<div class="cal-day-editor-switcher">${posts.map((p, i) => `
+          <button type="button" class="cal-day-editor-switch${i === postIndex ? " is-on" : ""}" data-switch-post="${i}">${escapeHtml(p.title || "Untitled")}</button>
+        `).join("")}</div>`
+      : "";
     return `
-      <select class="cal-day-popup-model" aria-label="Model">
-        ${MODEL_OPTIONS.map((m) => `
-          <option value="${escapeHtml(m.id)}"${m.id === selectedId ? " selected" : ""}>${escapeHtml(m.label)}</option>
-        `).join("")}
-      </select>`;
+      <div class="cal-day-editor" data-post-index="${postIndex}">
+        ${switcher}
+        <div class="cal-day-editor-title-row">
+          <input class="cal-day-editor-title" type="text" maxlength="120" value="${escapeHtml(post.title || "")}" placeholder="Post title">
+          <span class="cal-day-editor-platforms">${escapeHtml(platformLabel(post))}</span>
+        </div>
+        <div class="cal-day-editor-tabs" role="tablist" aria-label="Post fields">
+          <button type="button" role="tab" data-editor-tab="prompt">Prompt</button>
+          <button type="button" role="tab" data-editor-tab="caption">Caption</button>
+          <button type="button" role="tab" data-editor-tab="model">Model</button>
+        </div>
+        <div class="cal-day-editor-panel" data-editor-panel="prompt">
+          <span class="cal-day-editor-label">Prompt</span>
+          <div class="cal-day-editor-box">
+            <textarea class="cal-day-editor-text" maxlength="${PROMPT_MAX}" placeholder="Script not generated yet.">${escapeHtml(prompt)}</textarea>
+            <span class="cal-day-editor-count"></span>
+          </div>
+        </div>
+        <div class="cal-day-editor-panel" data-editor-panel="caption" hidden>
+          <span class="cal-day-editor-label">Caption</span>
+          <div class="cal-day-editor-box">
+            <textarea class="cal-day-editor-text" maxlength="2200" placeholder="Caption">${escapeHtml(caption)}</textarea>
+          </div>
+        </div>
+        <div class="cal-day-editor-panel" data-editor-panel="model" hidden>
+          <span class="cal-day-editor-label">Model</span>
+          ${modelSelectHtml(modelId)}
+        </div>
+        <button type="button" class="cal-day-editor-save">Save</button>
+      </div>`;
   }
 
   function openDayPopup(key, cell, eventIndex = null) {
@@ -279,70 +390,50 @@
     dayPopupKey = key;
     dayPopupEventIndex = Number.isInteger(eventIndex) ? eventIndex : null;
     const posts = events[key] || [];
-    const focusIndex = dayPopupEventIndex;
-    const shownIndexes = focusIndex != null && posts[focusIndex]
-      ? [focusIndex]
-      : posts.map((_, i) => i);
-    const shown = shownIndexes.map((i) => posts[i]).filter(Boolean);
+    const focusIndex = dayPopupEventIndex != null && posts[dayPopupEventIndex]
+      ? dayPopupEventIndex
+      : (posts.length ? 0 : null);
 
     if (dayPopupDate) dayPopupDate.textContent = formatPopupDate(key);
     if (dayPopupCount) {
-      dayPopupCount.textContent = shown.length === 1
-        ? (shown[0].time || "1 post")
-        : (shown.length ? `${shown.length} posts` : "No posts");
+      const post = focusIndex != null ? posts[focusIndex] : null;
+      dayPopupCount.textContent = post?.time || (posts.length ? `${posts.length} posts` : "No posts");
     }
-    if (!shown.length) {
+
+    if (!posts.length) {
       dayPopupList.innerHTML = `<p class="cal-day-popup-empty">Nothing scheduled this day.</p>`;
     } else {
-      dayPopupList.innerHTML = shown.map((post) => `
-        <div class="cal-day-popup-item" data-post-index="">
-          <i class="cal-day-popup-item-bar" aria-hidden="true"></i>
-          <div class="cal-day-popup-item-copy">
-            <div class="cal-day-popup-item-title"></div>
-            <div class="cal-day-popup-item-meta">
-              <span class="cal-day-popup-platform"></span>
-              <span class="cal-day-popup-time"></span>
-            </div>
-            <div class="cal-day-popup-field">
-              <span class="cal-day-popup-field-label">Model</span>
-              ${modelSelectHtml(resolveModelId(post))}
-            </div>
-            <div class="cal-day-popup-field">
-              <span class="cal-day-popup-field-label">Caption</span>
-              <p class="cal-day-popup-caption"></p>
-            </div>
-            <div class="cal-day-popup-field">
-              <span class="cal-day-popup-field-label">Prompt</span>
-              <p class="cal-day-popup-prompt"></p>
-            </div>
-          </div>
-        </div>
-      `).join("");
-      [...dayPopupList.children].forEach((row, i) => {
-        const postIndex = shownIndexes[i];
-        const post = posts[postIndex];
-        row.dataset.postIndex = String(postIndex);
-        row.classList.add(`is-${platformKey(primaryPlatform(post))}`);
-        row.querySelector(".cal-day-popup-item-title").textContent = post.title || "Untitled";
-        row.querySelector(".cal-day-popup-platform").textContent = platformLabel(post);
-        row.querySelector(".cal-day-popup-time").textContent = post.time || "";
-        row.querySelector(".cal-day-popup-caption").textContent = captionWithHashtags(post);
-        row.querySelector(".cal-day-popup-prompt").textContent =
-          post.prompt || "Script not generated yet.";
-        row.querySelector(".cal-day-popup-model")?.addEventListener("change", (e) => {
-          const next = e.target.value;
-          if (!MODEL_OPTIONS.some((m) => m.id === next)) return;
-          post.provider = next;
-          // Keep the in-memory calendar entry in sync for this session.
-          if (events[key]?.[postIndex]) events[key][postIndex].provider = next;
-        });
-        row.querySelector(".cal-day-popup-model")?.addEventListener("pointerdown", (e) => {
-          e.stopPropagation();
+      dayPopupList.innerHTML = renderPopupEditor(key, posts, focusIndex);
+      const editor = dayPopupList.querySelector(".cal-day-editor");
+      bindPromptCounter(
+        editor?.querySelector('[data-editor-panel="prompt"] textarea'),
+        editor?.querySelector(".cal-day-editor-count")
+      );
+      editor?.querySelectorAll("[data-editor-tab]").forEach((btn) => {
+        btn.addEventListener("click", () => setPopupTab(btn.getAttribute("data-editor-tab")));
+      });
+      editor?.querySelectorAll("[data-switch-post]").forEach((btn) => {
+        btn.addEventListener("click", () => {
+          const next = Number(btn.getAttribute("data-switch-post"));
+          openDayPopup(key, cell || grid.querySelector(`.cal-cell[data-date="${key}"]`), next);
         });
       });
+      editor?.querySelector(".cal-day-editor-save")?.addEventListener("click", () => {
+        savePopupPost(key, focusIndex);
+      });
+      editor?.querySelector(".cal-day-popup-model")?.addEventListener("change", (e) => {
+        const next = e.target.value;
+        if (!MODEL_OPTIONS.some((m) => m.id === next)) return;
+        if (events[key]?.[focusIndex]) events[key][focusIndex].provider = next;
+      });
+      editor?.querySelector(".cal-day-popup-model")?.addEventListener("pointerdown", (e) => {
+        e.stopPropagation();
+      });
+      setPopupTab(popupTab || "prompt");
     }
+
     dayPopup.hidden = false;
-    // Measure after show, then pin beside the cell inside the board.
+    setPopupMode(isEditMode() ? popupMode || "edit" : popupMode);
     placeDayPopupBeside(cell || grid.querySelector(`.cal-cell[data-date="${key}"]`));
   }
 
