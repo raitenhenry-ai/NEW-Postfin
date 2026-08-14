@@ -411,6 +411,9 @@ router.get("/calendar", wrap(async (req, res) => {
       caption: shaped.script?.caption || "",
       hashtags: (shaped.script?.hashtags || []).join(" "),
       productName: shaped.product?.name || "",
+      productImage: shaped.product?.images?.[0]
+        || catalogImages.get(shaped.productUrl)
+        || null,
       accountCount: posts.length,
       scheduledAt: shaped.scheduledAt,
       references: Array.isArray(shaped.settings.references) ? shaped.settings.references : [],
