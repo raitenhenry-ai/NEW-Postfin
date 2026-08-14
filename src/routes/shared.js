@@ -191,13 +191,15 @@ function baselineIndex(series) {
 
 // Percentage change across the observed part of the series, or null when
 // there is nothing to compare against (no data, or a single observation).
+// 0 → 0 is flat (0%), not "missing" — otherwise comments never get a chip
+// while followers do, just because comments started at zero.
 export function seriesDelta(series) {
   if (!series || series.length < 2) return null;
   const from = baselineIndex(series);
   if (from === -1 || from === series.length - 1) return null;
   const first = series[from].value;
   const last = series[series.length - 1].value;
-  if (!first) return null;
+  if (!first) return last ? null : 0;
   return (last - first) / first;
 }
 
@@ -208,6 +210,20 @@ export function seriesGain(series) {
   const from = baselineIndex(series);
   if (from === -1) return 0;
   return series[series.length - 1].value - series[from].value;
+}
+
+// Plot follower *gain* instead of headcount. Subtract the first observed
+// count so a channel that already had 1.6K when tracking started draws as
+// a flat 0, not a spike of the entire existing audience.
+export function rebaseSeriesToGain(series) {
+  if (!series?.length) return [];
+  const from = baselineIndex(series);
+  if (from === -1) return series.map((p) => ({ ...p }));
+  const baseline = Number(series[from].value || 0);
+  return series.map((p, i) => {
+    if (!p.observed || i < from) return { ...p, observed: false };
+    return { ...p, value: Number(p.value || 0) - baseline };
+  });
 }
 
 // Turns a job row plus its posts into the shape the UI consumes.

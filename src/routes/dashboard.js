@@ -12,7 +12,7 @@ import { heygenConfigured } from "../ugc/heygen.js";
 import { scrapeProduct } from "../ugc/scrape.js";
 import { accountProfileUrl, postUrl } from "../postUrl.js";
 import {
-  wrap, resolveRange, expandAllTimeRange, seriesDelta, seriesGain, shapeJob, postsForJobs, jobTimestamp, jobDotStatus,
+  wrap, resolveRange, expandAllTimeRange, seriesDelta, seriesGain, rebaseSeriesToGain, shapeJob, postsForJobs, jobTimestamp, jobDotStatus,
 } from "./shared.js";
 import { gainsForRange } from "../analytics/rangeGain.js";
 
@@ -207,14 +207,17 @@ router.get("/analytics", wrap(async (req, res) => {
   ]);
 
   const now = Date.now();
-  const chart = (series, gainOverride = null) => ({
-    series: series.map((p) => ({
-      t: p.start, end: Math.min(p.end, now), v: p.value, observed: p.observed,
-    })),
-    total: series.at(-1)?.value ?? 0,
-    gain: gainOverride != null ? gainOverride : seriesGain(series),
-    delta: seriesDelta(series),
-  });
+  const chart = (series, gainOverride = null, { asGain = false } = {}) => {
+    const plot = asGain ? rebaseSeriesToGain(series) : series;
+    return {
+      series: plot.map((p) => ({
+        t: p.start, end: Math.min(p.end, now), v: p.value, observed: p.observed,
+      })),
+      total: series.at(-1)?.value ?? 0,
+      gain: gainOverride != null ? gainOverride : seriesGain(series),
+      delta: seriesDelta(series),
+    };
+  };
 
   const tile = (series, gainOverride = null) => ({
     value: gainOverride != null ? gainOverride : seriesGain(series),
