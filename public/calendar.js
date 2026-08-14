@@ -951,6 +951,15 @@
       editor?.querySelector(".cal-day-popup-model")?.addEventListener("pointerdown", (e) => {
         e.stopPropagation();
       });
+      editor?.querySelectorAll(".cal-day-editor-text").forEach((text) => {
+        text.addEventListener("input", () => autosizePopupText(text));
+      });
+      editor?.querySelectorAll(".cal-day-editor-box").forEach((box) => {
+        box.addEventListener("click", (e) => {
+          if (e.target !== box) return;
+          box.querySelector(".cal-day-editor-text")?.focus();
+        });
+      });
       bindPopupPlatformPicker(editor);
       bindPopupReferences(editor, key, focusIndex);
     }
