@@ -245,7 +245,7 @@ router.get("/analytics", wrap(async (req, res) => {
     platform: platform || "all",
     charts: {
       views: chart(views, gains.views),
-      followers: chart(followers),
+      followers: chart(followers, null, { asGain: true }),
       comments: chart(comments, gains.comments),
     },
     chartPoints,

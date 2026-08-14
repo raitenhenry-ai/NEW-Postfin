@@ -196,9 +196,10 @@ function baselineIndex(series) {
 export function seriesDelta(series) {
   if (!series || series.length < 2) return null;
   const from = baselineIndex(series);
-  if (from === -1 || from === series.length - 1) return null;
+  if (from === -1) return null;
   const first = series[from].value;
   const last = series[series.length - 1].value;
+  if (from === series.length - 1) return first ? null : 0;
   if (!first) return last ? null : 0;
   return (last - first) / first;
 }
