@@ -1988,6 +1988,8 @@
       dayPopup.classList.add("is-sized");
       dayPopup.style.width = `${Math.round(next.width)}px`;
       dayPopup.style.height = `${Math.round(next.height)}px`;
+      // A narrower popup wraps the prompt onto more lines.
+      if (popupResize.edge.includes("e")) autosizePopupTexts();
     });
     const endPopupResize = () => {
       if (!popupResize || !dayPopup) {
