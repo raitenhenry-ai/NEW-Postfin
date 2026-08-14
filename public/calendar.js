@@ -2616,7 +2616,7 @@
       return;
     }
     const allIcons = choices.slice(0, 3)
-      .map((p) => `<span class="cal-platform-btn-icon">${platformIcon(p)}</span>`)
+      .map((p) => `<span class="cal-platform-stack-icon">${platformIcon(p)}</span>`)
       .join("");
     const allRow = choices.length > 1
       ? `<button type="button" class="cal-platform-menu-item" role="menuitemcheckbox" data-platform="all" aria-checked="false">
@@ -2639,13 +2639,23 @@
     const allOn = !choices.length
       || !selectedPlatforms.size
       || selectedPlatforms.size >= choices.length;
+    const keys = platformPickerIconKeys();
     if (platformBtnLabel) platformBtnLabel.textContent = platformPickerLabel();
-    if (platformBtnIcons) {
-      const keys = platformPickerIconKeys();
-      platformBtnIcons.hidden = !keys.length;
-      platformBtnIcons.innerHTML = keys
-        .map((p) => `<span class="cal-platform-btn-icon">${platformIcon(p)}</span>`)
-        .join("");
+    if (platformBtnIcon) {
+      if (!keys.length) {
+        platformBtnIcon.hidden = true;
+        platformBtnIcon.innerHTML = "";
+      } else if (keys.length === 1) {
+        platformBtnIcon.hidden = false;
+        platformBtnIcon.classList.remove("is-stack");
+        platformBtnIcon.innerHTML = platformIcon(keys[0]);
+      } else {
+        platformBtnIcon.hidden = false;
+        platformBtnIcon.classList.add("is-stack");
+        platformBtnIcon.innerHTML = keys
+          .map((p) => `<span class="cal-platform-stack-icon">${platformIcon(p)}</span>`)
+          .join("");
+      }
     }
     platformBtn?.toggleAttribute("disabled", linkedPlatformsLoaded && !choices.length);
     platformMenu?.querySelectorAll("[data-platform]").forEach((btn) => {
