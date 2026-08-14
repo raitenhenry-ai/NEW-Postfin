@@ -3002,19 +3002,22 @@ a.cal-day-editor-reference-name:hover {
   border: 1px solid #3a3a42;
   border-radius: 10px;
   background: #1c1c20;
-  flex: 1 1 auto;
+  flex: 1 0 auto;
   min-height: 56px;
   display: flex;
+  align-items: flex-start;
   overflow: hidden;
+  cursor: text;
 }
 
+/* Height is set from the content by autosizePopupText(), so the box grows
+   with the prompt and the popup body scrolls instead of the textarea. */
 .cal-day-editor-text {
   display: block;
   width: 100%;
-  flex: 1 1 auto;
-  min-height: 0;
+  min-height: 150px;
   height: auto;
-  overflow-y: auto;
+  overflow: hidden;
   padding: 12px;
   border: none;
   background: transparent;
