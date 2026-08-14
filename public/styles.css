@@ -6922,6 +6922,31 @@ body.theme-light .automated-plan-btn:hover * {
   color: #2554d6 !important;
 }
 
+body.theme-light .cal-day-popup-heading strong,
+body.theme-light .cal-day-editor-title,
+body.theme-light .cal-day-editor-text {
+  color: #111114 !important;
+}
+body.theme-light .cal-day-popup-heading span,
+body.theme-light .cal-day-editor-platforms,
+body.theme-light .cal-day-editor-label,
+body.theme-light .cal-day-editor-count,
+body.theme-light .cal-day-popup-mode button,
+body.theme-light .cal-day-editor-tabs button,
+body.theme-light .cal-day-editor-switch {
+  color: #6a6a72 !important;
+}
+body.theme-light .cal-day-popup-mode button.is-on,
+body.theme-light .cal-day-editor-tabs button.is-on,
+body.theme-light .cal-day-editor-switch.is-on {
+  color: #111114 !important;
+  background: #ffffff !important;
+}
+body.theme-light .cal-day-editor-save {
+  background: #111114 !important;
+  color: #ffffff !important;
+}
+
 body.theme-light .nav-btn,
 body.theme-light .nav-btn .nav-label,
 body.theme-light .nav-btn .ads-icon,
