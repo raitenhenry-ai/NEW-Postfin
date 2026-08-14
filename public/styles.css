@@ -6854,9 +6854,15 @@ body.theme-light .cal-day-editor-reference-submit:hover {
   color: #111114;
 }
 
-body.theme-light .cal-day-editor-reference-item {
+body.theme-light .cal-day-editor-reference-item,
+body.theme-light .cal-day-editor-image-box {
   background: #fff;
   border-color: #e2e2e8;
+}
+
+body.theme-light .cal-day-editor-image-name,
+body.theme-light .cal-day-editor-image-empty {
+  color: #6a6a72;
 }
 
 body.theme-light .cal-day-editor-reference-thumb {
