@@ -2804,15 +2804,18 @@ body.theme-light .video-duration {
 }
 
 .cal-day-editor-reference-actions {
-  display: inline-flex;
+  display: flex;
   align-items: center;
   gap: 8px;
+  width: 100%;
 }
 
 .cal-day-editor-reference-btn {
   display: inline-flex;
   align-items: center;
   justify-content: center;
+  flex: 1 1 0;
+  min-width: 0;
   height: 32px;
   padding: 0 12px;
   border: 1px solid #3a3a42;
