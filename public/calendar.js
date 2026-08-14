@@ -353,6 +353,79 @@
       </select>`;
   }
 
+  function editorPlatformChoices(post) {
+    const extra = (post.platforms || []).filter((p) => !PLATFORM_CHOICES.includes(p));
+    return [...PLATFORM_CHOICES, ...extra];
+  }
+
+  function initialPopupPlatforms(post) {
+    const list = (post.platforms || []).filter(Boolean);
+    return list.length ? list : [...PLATFORM_CHOICES];
+  }
+
+  function popupPlatformPickerHtml(post) {
+    const selected = new Set(initialPopupPlatforms(post));
+    return `
+      <div class="cal-day-editor-platform-picker">
+        <button type="button" class="cal-day-editor-platforms" aria-haspopup="menu" aria-expanded="false" aria-label="Post to">
+          <span class="cal-day-editor-platforms-label">${escapeHtml(platformLabel({ platforms: [...selected] }))}</span>
+          <svg class="cal-day-editor-platforms-caret" viewBox="0 0 12 12" fill="none" aria-hidden="true"><path d="M3 4.5L6 7.5L9 4.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </button>
+        <div class="cal-day-editor-platform-menu" role="menu" hidden>
+          ${editorPlatformChoices(post).map((p) => `
+            <button type="button" class="cal-day-editor-platform-item${selected.has(p) ? " is-on" : ""}" role="menuitemcheckbox" data-popup-platform="${escapeHtml(p)}" aria-checked="${selected.has(p) ? "true" : "false"}">
+              <span class="cal-day-editor-platform-icon">${platformIcon(p)}</span>
+              <span>${escapeHtml(PLATFORM_LABELS[p] || p)}</span>
+            </button>
+          `).join("")}
+        </div>
+      </div>`;
+  }
+
+  function closePopupPlatformMenus() {
+    dayPopup?.querySelectorAll(".cal-day-editor-platform-menu").forEach((menu) => {
+      menu.hidden = true;
+    });
+    dayPopup?.querySelectorAll(".cal-day-editor-platforms").forEach((btn) => {
+      btn.setAttribute("aria-expanded", "false");
+    });
+  }
+
+  function syncPopupPlatformPicker(picker) {
+    const selected = [...picker.querySelectorAll("[data-popup-platform].is-on")]
+      .map((btn) => btn.getAttribute("data-popup-platform"));
+    const label = picker.querySelector(".cal-day-editor-platforms-label");
+    if (label) label.textContent = platformLabel({ platforms: selected });
+  }
+
+  function bindPopupPlatformPicker(editor) {
+    const picker = editor?.querySelector(".cal-day-editor-platform-picker");
+    const btn = picker?.querySelector(".cal-day-editor-platforms");
+    const menu = picker?.querySelector(".cal-day-editor-platform-menu");
+    if (!picker || !btn || !menu) return;
+
+    btn.addEventListener("click", (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      if (popupMode === "view") return;
+      const open = menu.hidden;
+      closePopupPlatformMenus();
+      menu.hidden = !open;
+      btn.setAttribute("aria-expanded", open ? "true" : "false");
+    });
+
+    menu.addEventListener("click", (e) => {
+      const item = e.target.closest("[data-popup-platform]");
+      if (!item) return;
+      e.preventDefault();
+      e.stopPropagation();
+      const on = !item.classList.contains("is-on");
+      item.classList.toggle("is-on", on);
+      item.setAttribute("aria-checked", on ? "true" : "false");
+      syncPopupPlatformPicker(picker);
+    });
+  }
+
   function renderPopupEditor(key, posts, postIndex) {
     const post = posts[postIndex];
     if (!post) return "";
