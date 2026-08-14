@@ -278,7 +278,6 @@
       const post = focusedPopupPost();
       if (!canEditPopupTime(post)) return;
       renderPopupTimeMenu(post);
-      setPopupTimeMenuOpen.closing = false;
     }
     dayPopupTimePicker.classList.toggle("open", open);
     dayPopupTimeBtn.setAttribute("aria-expanded", open ? "true" : "false");
