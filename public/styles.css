@@ -2147,12 +2147,12 @@ body.theme-light .video-duration {
 .cal-day-popup {
   position: absolute;
   z-index: 40;
-  width: min(380px, calc(100% - 16px));
-  max-height: min(560px, calc(100% - 16px));
+  width: min(420px, calc(100% - 16px));
+  max-height: min(640px, calc(100% - 16px));
   display: flex;
   flex-direction: column;
   border: 1px solid #2e2e34;
-  border-radius: 12px;
+  border-radius: 16px;
   background: #18181c;
   box-shadow: 0 14px 36px rgba(0, 0, 0, 0.45);
   overflow: hidden;
