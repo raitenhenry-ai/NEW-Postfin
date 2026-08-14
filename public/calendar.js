@@ -618,10 +618,6 @@
     openDayPopup(key, grid.querySelector(`.cal-cell[data-date="${key}"]`), index);
   }
 
-  function eventChipLabel() {
-    return "selected post";
-  }
-
   function clearSelectedEvent() {
     selectedEvent = null;
   }
