@@ -2247,7 +2247,7 @@ body.theme-light .video-duration {
 .cal-day-popup-time-nav {
   display: inline-flex;
   align-items: center;
-  gap: 4px;
+  gap: 8px;
   grid-column: 1;
   justify-self: start;
   min-width: 0;
@@ -2255,8 +2255,6 @@ body.theme-light .video-duration {
 }
 
 .cal-day-popup-time-nav .cal-icon-btn {
-  width: 26px;
-  height: 26px;
   flex-shrink: 0;
 }
 
@@ -2270,35 +2268,7 @@ body.theme-light .video-duration {
 }
 
 .cal-day-popup-time {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  height: 32px;
-  padding: 0 8px;
-  border: 1px solid transparent;
-  background: transparent;
-  border-radius: 8px;
-  color: #f0f0f4;
-  font-family: inherit;
-  font-size: 18px;
-  font-weight: 700;
-  line-height: 1.2;
-  letter-spacing: -0.02em;
   white-space: nowrap;
-  cursor: pointer;
-}
-
-.cal-day-popup-time:hover:not(:disabled),
-.cal-day-popup-time-picker.open .cal-day-popup-time {
-  background: #222226;
-  border-color: #2e2e32;
-}
-
-.cal-day-popup-time svg {
-  width: 11px;
-  height: 11px;
-  opacity: 0.7;
-  flex-shrink: 0;
 }
 
 .cal-day-popup-time:disabled {
@@ -2311,10 +2281,6 @@ body.theme-light .video-duration {
 }
 
 .cal-day-popup-time-nav.is-locked .cal-day-popup-time {
-  height: auto;
-  padding: 0;
-  background: transparent;
-  border-color: transparent;
   pointer-events: none;
 }
 
