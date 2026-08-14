@@ -470,6 +470,42 @@ function spokenFormat(brief) {
   return "";
 }
 
+// Only platforms with a linked account. An explicit list that is entirely
+// unlinked is an error so the assistant tells the user instead of posting
+// somewhere they never connected. Omitted list = composer pick, else all linked.
+async function resolveLinkedPlatforms(requested, ctx, { required = false } = {}) {
+  const connected = ctx.connectedPlatforms || await connectedPlatforms();
+  const named = Array.isArray(requested)
+    ? [...new Set(requested.map((p) => String(p || "").toLowerCase()).filter(Boolean))]
+    : [];
+
+  if (named.length) {
+    const kept = named.filter((p) => connected.includes(p));
+    const dropped = named.filter((p) => !connected.includes(p));
+    if (!kept.length) {
+      throw new Error(
+        connected.length
+          ? `${dropped.join(", ")} ${dropped.length === 1 ? "is" : "are"} not linked. Linked: ${connected.join(", ")}.`
+          : "No social accounts are linked, so this cannot be published there."
+      );
+    }
+    return kept;
+  }
+
+  if (required) {
+    throw new Error(
+      connected.length
+        ? `Pick at least one linked platform (${connected.join(", ")})`
+        : "No social accounts are linked"
+    );
+  }
+
+  if (ctx.targetPlatforms?.length) {
+    return ctx.targetPlatforms.filter((p) => connected.includes(p));
+  }
+  return [...connected];
+}
+
 const IMPLEMENTATIONS = {
   // Does not touch the workspace: it parks the question on ctx, and the loop
   // hands it to the client instead of running another round.
