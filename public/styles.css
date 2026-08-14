@@ -2394,6 +2394,7 @@ body.theme-light .video-duration {
   display: flex;
   flex-direction: column;
   gap: 12px;
+  overflow: visible;
 }
 
 .cal-day-editor-switcher {
