@@ -499,6 +499,7 @@
     }
     const save = dayPopup?.querySelector(".cal-day-editor-save");
     if (save) save.hidden = popupMode === "view";
+    syncPopupTimeSwitcher();
   }
 
   function setPopupTab(next) {
