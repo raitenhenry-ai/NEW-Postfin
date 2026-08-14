@@ -6381,8 +6381,13 @@ body.theme-light .cal-day-popup-head {
   border-bottom-color: transparent;
 }
 
-body.theme-light .cal-day-popup-heading strong,
-body.theme-light .cal-day-popup-date-input {
+body.theme-light .cal-day-popup-date-input,
+body.theme-light .cal-day-popup-time-input {
+  color-scheme: light;
+}
+
+body.theme-light .cal-day-popup:not(.is-viewing) .cal-day-popup-date-input:not(:disabled):hover,
+body.theme-light .cal-day-popup:not(.is-viewing) .cal-day-popup-time-input:not(:disabled):hover {
   color: #111114;
 }
 
