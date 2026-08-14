@@ -3791,7 +3791,7 @@ body.theme-light .cal-post-fields {
   display: flex;
   flex-wrap: nowrap;
   align-items: center;
-  gap: 8px;
+  gap: 6px;
   margin: 0 10px;
   flex-shrink: 0;
   overflow: visible;
