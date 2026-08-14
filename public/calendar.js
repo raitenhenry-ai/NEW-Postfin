@@ -1170,20 +1170,7 @@
           row.addEventListener("click", (e) => {
             e.preventDefault();
             e.stopPropagation();
-            if (isEditMode()) {
-              selected.clear();
-              drag = null;
-              grid.classList.remove("is-dragging");
-              const turningOff = selectedEvent?.id === eventId;
-              selectedEvent = turningOff ? null : { id: eventId, key, index };
-              render();
-              if (turningOff) closeDayPopup();
-              else openDayPopup(key, grid.querySelector(`.cal-cell[data-date="${key}"]`), index);
-              return;
-            }
-            setFocusedDay(key);
-            applySelectionClasses();
-            openDayPopup(key, cell, index);
+            pinCalendarEvent(ev, key, index, { toggleOff: true });
           });
           list.appendChild(row);
         });
