@@ -6774,9 +6774,9 @@ body.theme-light .cal-day-editor-reference-btn:hover {
 }
 
 body.theme-light .cal-day-editor-reference-btn.is-on {
-  background: #111114;
-  border-color: #111114;
-  color: #fff;
+  background: #e2e2e8;
+  border-color: #c4c4cc;
+  color: #111114;
 }
 
 body.theme-light .cal-day-editor-reference-input {
