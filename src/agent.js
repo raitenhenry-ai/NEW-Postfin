@@ -345,6 +345,28 @@ const TOOLS = [
   },
 ];
 
+// plan_videos / edit_video may only name platforms that have a linked
+// account, so the model cannot even offer YouTube if YouTube is not connected.
+function toolsFor(connected) {
+  const linked = Array.isArray(connected) ? connected : [];
+  return TOOLS.map((tool) => {
+    const name = tool.function?.name;
+    if (name !== "plan_videos" && name !== "edit_video") return tool;
+    const copy = JSON.parse(JSON.stringify(tool));
+    const platforms = copy.function?.parameters?.properties?.platforms;
+    if (!platforms) return copy;
+    if (!linked.length) {
+      delete copy.function.parameters.properties.platforms;
+      return copy;
+    }
+    platforms.items.enum = linked;
+    platforms.description = name === "plan_videos"
+      ? `Platforms to post to. Only linked accounts: ${linked.join(", ")}. Omit for all of them.`
+      : `Replaces the platforms this video posts to. Only linked: ${linked.join(", ")}.`;
+    return copy;
+  });
+}
+
 /* ---------------------------------------------------------- tool bodies */
 
 // The client sends its UTC offset so "Friday 9am" means the user's Friday.
