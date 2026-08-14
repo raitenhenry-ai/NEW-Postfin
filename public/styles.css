@@ -3309,9 +3309,8 @@ body.theme-light .cal-post-fields {
 
 .cal-product-pill {
   position: relative;
-  flex: 0 1 auto;
+  flex: 1 1 0;
   min-width: 0;
-  max-width: 100%;
   z-index: 1;
 }
 
