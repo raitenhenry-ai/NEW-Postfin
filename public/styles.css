@@ -2797,7 +2797,7 @@ body.theme-light .video-duration {
 
 .cal-day-editor-panel-reference {
   position: relative;
-  align-items: flex-start;
+  align-items: stretch;
   justify-content: flex-start;
   flex: 1 1 auto;
   min-height: 0;
