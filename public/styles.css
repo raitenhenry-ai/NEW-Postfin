@@ -2791,8 +2791,12 @@ body.theme-light .video-duration {
   min-height: 0;
 }
 
-.cal-day-editor-panel[hidden] {
-  display: none;
+.cal-day-editor-panel-reference {
+  align-items: center;
+}
+
+.cal-day-editor-panel-reference .cal-day-editor-label {
+  align-self: stretch;
 }
 
 .cal-day-editor-label {
