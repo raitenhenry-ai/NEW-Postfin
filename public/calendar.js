@@ -108,7 +108,13 @@
     "Jul", "Aug", "Sep", "Oct", "Nov", "Dec",
   ];
 
-  const { api, escapeHtml, PLATFORM_LABELS, platformIcon, toast } = window.Postfin;
+  function platformChoices() {
+    return linkedPlatforms;
+  }
+
+  function platformName(key) {
+    return PLATFORM_PICKER_LABELS[key] || PLATFORM_LABELS[key] || key;
+  }
 
   // Jobs keyed by YYYY-MM-DD, filled from /api/calendar.
   let events = {};
