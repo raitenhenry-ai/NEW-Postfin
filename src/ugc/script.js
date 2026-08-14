@@ -1,10 +1,6 @@
 import config from "../config.js";
 import { formatReferencesBlock, visionUserContent } from "./references.js";
 
-// How many product photos to show the model and make available as scene
-// backgrounds. More costs vision tokens for diminishing benefit.
-const MAX_VISION_IMAGES = 5;
-
 // Turns scraped product data into a UGC-style talking script plus the
 // caption/hashtags used when posting. Uses the OpenAI chat model when a key
 // is configured; otherwise falls back to a decent template so the pipeline
