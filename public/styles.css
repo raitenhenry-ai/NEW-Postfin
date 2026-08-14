@@ -2266,6 +2266,16 @@ body.theme-light .video-duration {
 
 .cal-day-popup-time {
   white-space: nowrap;
+  background: #2c2c32;
+  border-color: #3e3e46;
+  color: #f0f0f4;
+}
+
+.cal-day-popup-time:hover:not(:disabled),
+.cal-day-popup-time-picker.open .cal-day-popup-time {
+  background: #36363e;
+  border-color: #4a4a54;
+  color: #fff;
 }
 
 .cal-day-popup-time:disabled {
