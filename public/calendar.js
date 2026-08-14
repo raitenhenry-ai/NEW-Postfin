@@ -591,7 +591,9 @@
     const editor = dayPopupList?.querySelector(".cal-day-editor");
     if (!post?.id || !editor) return;
     const title = editor.querySelector(".cal-day-editor-title")?.value || "";
-    const prompt = editor.querySelector('[data-editor-panel="prompt"] textarea')?.value || "";
+    const prompt = stripPromptExtras(
+      editor.querySelector('[data-editor-panel="prompt"] textarea')?.value || ""
+    );
     const captionRaw = editor.querySelector('[data-editor-panel="caption"] textarea')?.value || "";
     const { caption, hashtags } = splitCaptionHashtags(captionRaw);
     const model = editor.querySelector(".cal-day-popup-model")?.value;
