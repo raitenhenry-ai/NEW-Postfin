@@ -394,7 +394,7 @@
       </div>`;
   }
 
-  function openDayPopup(key, cell, eventIndex = null) {
+  function openDayPopup(key, cell, eventIndex = null, { fresh = true } = {}) {
     if (!dayPopup || !dayPopupList || !key) return;
     dayPopupKey = key;
     dayPopupEventIndex = Number.isInteger(eventIndex) ? eventIndex : null;
