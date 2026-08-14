@@ -6704,6 +6704,9 @@ body.theme-light .recent-video-stats span {
   border: 1px solid #e2e2e8;
   box-shadow: 0 1px 4px rgba(20, 20, 28, 0.08);
 }
+body.theme-light .analytics-platform-btn {
+  color: #4a4a52 !important;
+}
 body.theme-light .analytics-platform-btn.active {
   color: #111114 !important;
 }
