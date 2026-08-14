@@ -7,6 +7,8 @@ import { toneOptions, styleOptions } from "./ugc/script.js";
 import { slideshowAngles } from "./ugc/slideshow.js";
 import { reschedule } from "./schedule.js";
 import { totalsSince, accountLeaderboard, viewsByPlatform } from "./metrics.js";
+import fs from "node:fs";
+import path from "node:path";
 
 // The calendar assistant.
 //
