@@ -2507,8 +2507,8 @@ body.theme-light .video-duration {
 .cal-day-editor-text {
   display: block;
   width: 100%;
-  min-height: 168px;
-  padding: 12px 12px 28px;
+  min-height: 220px;
+  padding: 12px;
   border: none;
   background: transparent;
   color: #e8e8ee;

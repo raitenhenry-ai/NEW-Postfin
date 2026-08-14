@@ -363,8 +363,7 @@
         <div class="cal-day-editor-panel" data-editor-panel="prompt">
           <span class="cal-day-editor-label">Prompt</span>
           <div class="cal-day-editor-box">
-            <textarea class="cal-day-editor-text" maxlength="${PROMPT_MAX}" placeholder="Script not generated yet.">${escapeHtml(prompt)}</textarea>
-            <span class="cal-day-editor-count"></span>
+            <textarea class="cal-day-editor-text" placeholder="Script not generated yet.">${escapeHtml(prompt)}</textarea>
           </div>
         </div>
         <div class="cal-day-editor-panel" data-editor-panel="caption" hidden>
