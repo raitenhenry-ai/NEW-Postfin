@@ -3045,7 +3045,7 @@ a.cal-day-editor-reference-name:hover {
 }
 
 .cal-day-editor-save:hover:not(:disabled) {
-  filter: brightness(0.96);
+  background: #2560d8;
 }
 
 .cal-day-editor-save:disabled,
