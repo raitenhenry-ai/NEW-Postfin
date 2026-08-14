@@ -6584,18 +6584,6 @@ body.theme-light .cal-day-editor-save {
   color: #ffffff;
 }
 
-body.theme-light .cal-day-editor-reference-add {
-  background: #f0f0f3;
-  border-color: #d8d8de;
-  color: #3a3a42;
-}
-
-body.theme-light .cal-day-editor-reference-add:hover {
-  background: #e6e6ea;
-  border-color: #ccccd4;
-  color: #111114;
-}
-
 body.theme-light .cal-day-popup-item {
   background: #f3f3f6;
   color: #222228;
