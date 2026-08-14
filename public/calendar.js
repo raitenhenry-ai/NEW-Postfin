@@ -34,6 +34,12 @@
   const dayPopupCount = document.getElementById("cal-day-popup-count");
   const dayPopupList = document.getElementById("cal-day-popup-list");
   const dayPopupClose = document.getElementById("cal-day-popup-close");
+  const dayPopupTimeNav = document.getElementById("cal-day-popup-time-nav");
+  const dayPopupTimePicker = document.getElementById("cal-day-popup-time-picker");
+  const dayPopupTimeBtn = document.getElementById("cal-day-popup-time-btn");
+  const dayPopupTimeMenu = document.getElementById("cal-day-popup-time-menu");
+  const dayPopupTimePrev = document.getElementById("cal-day-popup-time-prev");
+  const dayPopupTimeNext = document.getElementById("cal-day-popup-time-next");
   const PRODUCT_KEY = "cal-product-url";
   const FORMAT_KEY = "cal-output-format";
   const PLATFORM_KEY = "cal-target-platforms";
