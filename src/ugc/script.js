@@ -1,4 +1,5 @@
 import config from "../config.js";
+import { formatReferencesBlock, visionUserContent } from "./references.js";
 
 // How many product photos to show the model and make available as scene
 // backgrounds. More costs vision tokens for diminishing benefit.
