@@ -299,15 +299,6 @@
     });
   }
 
-  function bindPromptCounter(textarea, countEl) {
-    if (!textarea || !countEl) return;
-    const sync = () => {
-      countEl.textContent = `${textarea.value.length}/${PROMPT_MAX}`;
-    };
-    textarea.addEventListener("input", sync);
-    sync();
-  }
-
   async function savePopupPost(key, postIndex) {
     const post = events[key]?.[postIndex];
     const editor = dayPopupList?.querySelector(".cal-day-editor");
