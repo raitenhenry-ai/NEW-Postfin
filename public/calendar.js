@@ -436,6 +436,7 @@
     dayPopupKey = null;
     dayPopupEventIndex = null;
     if (!dayPopup) return;
+    setPopupTimeMenuOpen(false);
     closePopupPlatformMenus();
     dayPopup.hidden = true;
     dayPopupList && (dayPopupList.innerHTML = "");
