@@ -2768,6 +2768,8 @@ body.theme-light .video-duration {
 
 .cal-day-editor-tabs button {
   flex: 1 1 0;
+  min-width: 0;
+  white-space: nowrap;
   border: none;
   background: transparent;
   color: #8a8a92;
