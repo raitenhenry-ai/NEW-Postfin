@@ -443,9 +443,10 @@
       if (!item) return;
       e.preventDefault();
       e.stopPropagation();
-      const on = !item.classList.contains("is-on");
-      item.classList.toggle("is-on", on);
-      item.setAttribute("aria-checked", on ? "true" : "false");
+      const turningOn = !item.classList.contains("is-on");
+      if (!turningOn && picker.querySelectorAll("[data-popup-platform].is-on").length <= 1) return;
+      item.classList.toggle("is-on", turningOn);
+      item.setAttribute("aria-checked", turningOn ? "true" : "false");
       syncPopupPlatformPicker(picker);
     });
   }

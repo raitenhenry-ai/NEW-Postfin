@@ -6335,6 +6335,15 @@ body.theme-light .cal-day-editor-platform-icon {
   background: #f4f4f6;
 }
 
+body.theme-light .cal-platform-menu-empty {
+  color: #6a6a72;
+}
+
+body.theme-light .cal-platform-menu-item.is-on .cal-platform-check,
+body.theme-light .cal-day-editor-platform-item.is-on .cal-platform-check {
+  color: #3b6ef5;
+}
+
 body.theme-light .cal-day-editor-tabs,
 body.theme-light .cal-day-editor-switch {
   background: #ececef;
