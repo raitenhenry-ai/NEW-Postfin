@@ -2050,13 +2050,9 @@
     attachChips.querySelector(".cal-date-chip-remove")?.addEventListener("click", (e) => {
       e.preventDefault();
       e.stopPropagation();
-      const was = attachedUpload?.url;
       attachedUpload = null;
-      if (selectedProductUrl === was) setSelectedProduct("");
-      else {
-        renderAttachChip();
-        syncSendState();
-      }
+      renderAttachChip();
+      syncSendState();
     });
   }
 
