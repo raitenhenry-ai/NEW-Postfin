@@ -1702,10 +1702,12 @@
 
   dayPopup?.querySelector(".cal-day-popup-mode")?.addEventListener("click", (e) => {
     const btn = e.target.closest("[data-popup-mode]");
-    if (!btn) return;
+    if (!btn || btn.disabled) return;
     e.preventDefault();
     e.stopPropagation();
-    setPopupMode(btn.getAttribute("data-popup-mode"));
+    const next = btn.getAttribute("data-popup-mode");
+    if (next === "edit" && !canEditPopupDay()) return;
+    setPopupMode(next);
   });
 
   dayPopupTimeBtn?.addEventListener("click", (e) => {
