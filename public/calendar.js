@@ -500,12 +500,21 @@
     dayPopup?.querySelectorAll(".cal-day-editor-title, .cal-day-editor-text").forEach((el) => {
       el.readOnly = popupMode === "view";
     });
-    dayPopup?.querySelectorAll(".cal-day-popup-model, .cal-day-editor-platforms").forEach((el) => {
+    dayPopup?.querySelectorAll(
+      ".cal-day-popup-model, .cal-day-editor-platforms, .cal-day-editor-reference-btn," +
+      " .cal-day-editor-reference-submit, .cal-day-editor-reference-remove"
+    ).forEach((el) => {
       el.disabled = popupMode === "view";
     });
     if (popupMode === "view") {
       dayPopup?.querySelectorAll(".cal-day-editor-platform-menu").forEach((menu) => {
         menu.hidden = true;
+      });
+      dayPopup?.querySelectorAll(".cal-day-editor-reference-form").forEach((form) => {
+        form.hidden = true;
+      });
+      dayPopup?.querySelectorAll(".cal-day-editor-reference-btn").forEach((btn) => {
+        btn.classList.remove("is-on");
       });
       dayPopup?.querySelectorAll(".cal-day-editor-platforms").forEach((btn) => {
         btn.setAttribute("aria-expanded", "false");
