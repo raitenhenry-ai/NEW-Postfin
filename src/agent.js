@@ -1002,6 +1002,13 @@ export async function runAssistant({
     productName,
     productImages,
     attachedImages,
+    selectedVideo: selectedVideo && Number(selectedVideo.id) > 0
+      ? {
+          id: Number(selectedVideo.id),
+          title: String(selectedVideo.title || "").slice(0, 160),
+          date: String(selectedVideo.date || ""),
+        }
+      : null,
     // The composer's own format switch. When it is set, it is an answer the
     // user has already given, so the assistant uses it instead of asking.
     outputFormat: outputFormat === "slideshow" ? "slideshow" : outputFormat === "avatar" ? "avatar" : "",

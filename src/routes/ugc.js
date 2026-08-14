@@ -394,6 +394,19 @@ router.post("/chat", wrap(async (req, res) => {
     })
     .slice(0, 4);
 
+  let selectedVideo = null;
+  const rawVideo = req.body.selectedVideo;
+  if (rawVideo && typeof rawVideo === "object") {
+    const id = Number(rawVideo.id);
+    if (Number.isFinite(id) && id > 0) {
+      selectedVideo = {
+        id,
+        title: String(rawVideo.title || "").slice(0, 160),
+        date: /^\d{4}-\d{2}-\d{2}$/.test(String(rawVideo.date || "")) ? String(rawVideo.date) : "",
+      };
+    }
+  }
+
   // The composer's Video/Slideshow switch. "video" is this app's avatar
   // format; anything unrecognised leaves the choice to the assistant.
   const outputFormat = req.body.outputFormat === "slideshow"
@@ -403,7 +416,7 @@ router.post("/chat", wrap(async (req, res) => {
       : "";
 
   res.json(await runAssistant({
-    messages, selectedDates, offsetMinutes, productUrl, outputFormat, imageUrls,
+    messages, selectedDates, offsetMinutes, productUrl, outputFormat, imageUrls, selectedVideo,
   }));
 }));
 
