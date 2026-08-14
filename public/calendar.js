@@ -411,7 +411,9 @@
   let focused = mode === "edit" ? null : keyFromDate(now);
   let openedPost = null;
   let editingPost = null;
-  let selectedEvent = null; // { id, key, index }
+  let selectedEvent = null; // { id, key, index, videoId, title, time }
+  let popupMode = "edit";
+  let popupTab = "prompt";
   let drag = null;
   let dayPopupKey = null;
   let dayPopupEventIndex = null;
