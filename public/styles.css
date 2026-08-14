@@ -1918,7 +1918,8 @@ body.theme-light .video-duration {
   position: relative;
 }
 
-.cal-month-label {
+.cal-month-label,
+.cal-day-popup-time {
   display: inline-flex;
   align-items: center;
   gap: 8px;
@@ -1929,13 +1930,15 @@ body.theme-light .video-duration {
   color: #fff;
 }
 
-.cal-month-picker.open .cal-month-label {
+.cal-month-picker.open .cal-month-label,
+.cal-day-popup-time-picker.open .cal-day-popup-time {
   background: #222226;
   border-color: #2e2e32;
 }
 
 .cal-month-label svg,
-.cal-view-btn svg {
+.cal-view-btn svg,
+.cal-day-popup-time svg {
   width: 11px;
   height: 11px;
   opacity: 0.7;
