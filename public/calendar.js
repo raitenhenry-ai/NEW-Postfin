@@ -754,7 +754,9 @@
 
     if (fresh) {
       popupTab = "prompt";
-      popupMode = "edit";
+      popupMode = canEditPopupDay(key) ? "edit" : "view";
+    } else if (!canEditPopupDay(key)) {
+      popupMode = "view";
     }
     dayPopup.hidden = false;
     applyPopupSize(loadPopupSize());
