@@ -1872,7 +1872,8 @@ body.theme-light .video-duration {
 
 .cal-icon-btn,
 .cal-view-btn,
-.cal-month-label {
+.cal-month-label,
+.cal-day-popup-time {
   border: 1px solid #222226;
   background: #1a1a1e;
   color: #e8e8e8;
