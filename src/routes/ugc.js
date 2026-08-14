@@ -266,7 +266,7 @@ router.patch("/jobs/:id", wrap(async (req, res) => {
 
   if (typeof req.body.brief === "string") {
     await dbRun("UPDATE ugc_jobs SET brief = ?, updated_at = ? WHERE id = ?",
-      [req.body.brief.slice(0, 2000), Date.now(), job.id]);
+      [req.body.brief.slice(0, 12000), Date.now(), job.id]);
   }
 
   // Caption and hashtags live inside the generated script; both are what

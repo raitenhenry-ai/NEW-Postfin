@@ -83,7 +83,7 @@ function visionContent(product, settings) {
 // on camera for it or the video cuts away to the product being used.
 function shapeStoryboard(raw, expectedLength, product) {
   const entries = (Array.isArray(raw) ? raw : []).map((entry) => ({
-    visual: String(entry?.visual || "").trim().slice(0, 300),
+    visual: String(entry?.visual || "").trim().slice(0, 1500),
     // Anything not explicitly a product shot keeps the creator on camera,
     // which is the safe default - a cutaway with nothing to cut to is worse
     // than a talking head.
@@ -154,12 +154,13 @@ export async function generateScript(product, settings = {}) {
             "the lines - any line about what the product does or how it feels to " +
             "use should be one - but keep the first line on the creator, since a " +
             "face is what stops the scroll. " +
-            "visual: what is on screen for that line, one short sentence. For a " +
-            "creator line, describe the room she is standing in, not her. For a " +
-            "product line, describe the product being used in a real moment - " +
-            "hands holding it, fitting it, tapping through it, the result of it " +
-            "working - in a real place with real light. Never describe what the " +
-            "product looks like; that is taken from its photos. " +
+            "visual: a detailed image-model prompt for that shot, 5-10 sentences: " +
+            "setting, time of day, lighting, camera, what is happening, materials, mood. " +
+            "No text, words, numbers or logos in the image. For a creator line, describe " +
+            "the room she is standing in, not her face. For a product line, describe the " +
+            "product being used in a real moment - hands holding it, fitting it, tapping " +
+            "through it, the result of it working - in a real place with real light. " +
+            "Never describe what the product looks like; that is taken from its photos. " +
             "hashtags: 6-10 lowercase hashtags starting with #, mixing product-specific and " +
             "discovery tags (#tiktokmademebuyit #fyp style). " +
             `Overall voice: ${TONES[tone]}. ` +
