@@ -2789,7 +2789,7 @@ body.theme-light .video-duration {
   display: flex;
   flex-direction: column;
   gap: 6px;
-  flex: 1 1 auto;
+  flex: 1 0 auto;
   min-height: 0;
 }
 
