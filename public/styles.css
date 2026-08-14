@@ -3914,22 +3914,46 @@ body.theme-light .cal-post-fields {
   position: relative;
   flex: 1 1 0;
   min-width: 0;
+  max-width: 42%;
+  z-index: 2;
 }
 
-.cal-platform-btn-icon {
-  width: 15px;
-  height: 15px;
+.cal-platform-btn {
+  gap: 7px;
+  padding-left: 8px;
+}
+
+.cal-platform-btn-icons {
   display: inline-flex;
+  align-items: center;
   flex-shrink: 0;
 }
 
-.cal-platform-btn-icon[hidden] {
+.cal-platform-btn-icons[hidden] {
   display: none;
 }
 
-.cal-platform-btn-icon img {
-  width: 15px;
-  height: 15px;
+.cal-platform-btn-icon {
+  width: 16px;
+  height: 16px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  border-radius: 4px;
+  overflow: hidden;
+  background: #1a1a1e;
+}
+
+.cal-platform-btn-icons .cal-platform-btn-icon + .cal-platform-btn-icon {
+  margin-left: -5px;
+  box-shadow: -1px 0 0 #2a2a30;
+}
+
+.cal-platform-btn-icon img,
+.cal-platform-btn-icon svg {
+  width: 16px;
+  height: 16px;
   display: block;
   object-fit: contain;
 }
@@ -3937,9 +3961,12 @@ body.theme-light .cal-post-fields {
 .cal-platform-menu {
   position: absolute;
   left: 0;
+  right: 0;
   bottom: calc(100% + 6px);
   z-index: 40;
-  min-width: 160px;
+  min-width: 100%;
+  width: max-content;
+  max-width: min(220px, 70vw);
   padding: 6px;
   border: 1px solid #2e2e32;
   border-radius: 10px;
