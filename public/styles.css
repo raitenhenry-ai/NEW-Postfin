@@ -2797,16 +2797,44 @@ body.theme-light .video-duration {
 
 .cal-day-editor-panel-reference {
   position: relative;
-  align-items: center;
-  justify-content: center;
+  align-items: flex-start;
+  justify-content: flex-start;
   flex: 1 1 auto;
   min-height: 0;
 }
 
-.cal-day-editor-panel-reference .cal-day-editor-label {
-  position: absolute;
-  top: 0;
-  left: 0;
+.cal-day-editor-reference-actions {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.cal-day-editor-reference-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 32px;
+  padding: 0 12px;
+  border: 1px solid #3a3a42;
+  border-radius: 8px;
+  background: #2a2a30;
+  color: #e8e8ee;
+  font-family: inherit;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s, color 0.15s;
+}
+
+.cal-day-editor-reference-btn:hover {
+  background: #34343c;
+  border-color: #4a4a54;
+  color: #fff;
+}
+
+.cal-day-popup.is-viewing .cal-day-editor-reference-btn {
+  opacity: 0.55;
+  pointer-events: none;
 }
 
 .cal-day-editor-label {
@@ -6582,6 +6610,18 @@ body.theme-light .cal-day-editor-switch.is-on {
 body.theme-light .cal-day-editor-save {
   background: #111114;
   color: #ffffff;
+}
+
+body.theme-light .cal-day-editor-reference-btn {
+  background: #f0f0f3;
+  border-color: #d8d8de;
+  color: #222228;
+}
+
+body.theme-light .cal-day-editor-reference-btn:hover {
+  background: #e6e6ea;
+  border-color: #ccccd4;
+  color: #111114;
 }
 
 body.theme-light .cal-day-popup-item {
