@@ -7466,7 +7466,8 @@ body.theme-light .connector-disconnect {
 
 /* Light: calendar month switcher */
 body.theme-light .cal-month-label,
-body.theme-light .cal-view-btn {
+body.theme-light .cal-view-btn,
+body.theme-light .cal-day-popup-time {
   background: #f0f0f3 !important;
   border: 1px solid #d8d8de !important;
   color: #111114 !important;
@@ -7475,7 +7476,9 @@ body.theme-light .cal-view-btn {
 
 body.theme-light .cal-month-label:hover,
 body.theme-light .cal-view-btn:hover,
-body.theme-light .cal-month-picker.open .cal-month-label {
+body.theme-light .cal-month-picker.open .cal-month-label,
+body.theme-light .cal-day-popup-time:hover:not(:disabled),
+body.theme-light .cal-day-popup-time-picker.open .cal-day-popup-time {
   background: #e6e6ea !important;
   border-color: #ccccd4 !important;
   color: #111114 !important;
@@ -7483,7 +7486,9 @@ body.theme-light .cal-month-picker.open .cal-month-label {
 
 body.theme-light .cal-month-label span,
 body.theme-light #cal-month-text,
-body.theme-light .cal-month-label svg {
+body.theme-light .cal-month-label svg,
+body.theme-light .cal-day-popup-time span,
+body.theme-light .cal-day-popup-time svg {
   color: #111114 !important;
   opacity: 1;
 }
