@@ -2303,6 +2303,14 @@ body.theme-light .video-duration {
   border: 1px solid #36363c;
   box-shadow: 0 12px 32px rgba(0, 0, 0, 0.45);
   pointer-events: auto;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.cal-day-popup-time-menu::-webkit-scrollbar {
+  display: none;
+  width: 0;
+  height: 0;
 }
 
 .cal-day-popup-time-menu[hidden] {
