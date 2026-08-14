@@ -315,17 +315,25 @@
     const prompt = editor.querySelector('[data-editor-panel="prompt"] textarea')?.value || "";
     const caption = editor.querySelector('[data-editor-panel="caption"] textarea')?.value || "";
     const model = editor.querySelector(".cal-day-popup-model")?.value;
+    const platforms = [...editor.querySelectorAll("[data-popup-platform].is-on")]
+      .map((btn) => btn.getAttribute("data-popup-platform"))
+      .filter((p) => PLATFORM_CHOICES.includes(p) || Boolean(PLATFORM_LABELS[p]));
     const saveBtn = editor.querySelector(".cal-day-editor-save");
+    if (!platforms.length) {
+      toast("Pick at least one platform", "error");
+      return;
+    }
     if (saveBtn) saveBtn.disabled = true;
     try {
       await api(`/api/jobs/${post.id}`, {
         method: "PATCH",
-        body: { title, caption, brief: prompt },
+        body: { title, caption, brief: prompt, platforms },
       });
       post.title = title.slice(0, 120);
       post.caption = caption;
       post.brief = prompt;
       post.prompt = prompt;
+      post.platforms = platforms;
       if (model && MODEL_OPTIONS.some((m) => m.id === model)) post.provider = model;
       toast("Saved");
       await loadEvents();
