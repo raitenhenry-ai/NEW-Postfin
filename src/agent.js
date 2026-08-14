@@ -817,6 +817,48 @@ const IMPLEMENTATIONS = {
 
 /* ----------------------------------------------------------------- loop */
 
+const VISION_MIME = {
+  ".jpg": "image/jpeg",
+  ".jpeg": "image/jpeg",
+  ".png": "image/png",
+  ".webp": "image/webp",
+  ".gif": "image/gif",
+};
+const MAX_DATA_URL_BYTES = 4 * 1024 * 1024;
+
+// OpenAI has to fetch http(s) image URLs itself. Uploads live on this
+// server, so inline them as data URLs rather than hoping their crawler
+// can reach Railway.
+function visionImageUrl(src) {
+  try {
+    const parsed = new URL(String(src), config.baseUrl);
+    const match = parsed.pathname.match(/\/ugc-media\/uploads\/([^/]+)$/);
+    if (!match) return src;
+    const file = path.join(config.ugcDir, "uploads", path.basename(match[1]));
+    if (!fs.existsSync(file)) return src;
+    const buf = fs.readFileSync(file);
+    if (!buf.length || buf.length > MAX_DATA_URL_BYTES) return src;
+    const mime = VISION_MIME[path.extname(file).toLowerCase()] || "image/jpeg";
+    return `data:${mime};base64,${buf.toString("base64")}`;
+  } catch {
+    return src;
+  }
+}
+
+function visionUserContent(text, images) {
+  const urls = (images || []).map(visionImageUrl).filter(Boolean);
+  if (!urls.length) return text;
+  return [
+    {
+      type: "text",
+      text:
+        `${text}\n\nA product photo is attached. You can see it. ` +
+        "Use what is actually in the image.",
+    },
+    ...urls.map((url) => ({ type: "image_url", image_url: { url, detail: "low" } })),
+  ];
+}
+
 function systemPrompt(ctx) {
   const today = new Date(Date.now() + ctx.offsetMinutes * 60000).toISOString().slice(0, 10);
   return [
