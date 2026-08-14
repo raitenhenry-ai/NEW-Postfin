@@ -2585,15 +2585,6 @@
     return picked.map((p) => PLATFORM_PICKER_SHORT[p] || platformName(p)).join(" · ");
   }
 
-  function platformPickerIconKeys() {
-    const choices = platformChoices();
-    if (!choices.length) return [];
-    if (!selectedPlatforms.size || selectedPlatforms.size >= choices.length) {
-      return choices.slice(0, 3);
-    }
-    return choices.filter((p) => selectedPlatforms.has(p)).slice(0, 3);
-  }
-
   function persistSelectedPlatforms() {
     localStorage.setItem(PLATFORM_KEY, JSON.stringify([...selectedPlatforms]));
   }
@@ -2605,19 +2596,14 @@
       platformMenu.innerHTML = `<p class="cal-platform-menu-empty">No accounts linked</p>`;
       return;
     }
-    const allIcons = choices.slice(0, 3)
-      .map((p) => `<span class="cal-platform-stack-icon">${platformIcon(p)}</span>`)
-      .join("");
     const allRow = choices.length > 1
       ? `<button type="button" class="cal-platform-menu-item" role="menuitemcheckbox" data-platform="all" aria-checked="false">
-           <span class="cal-platform-menu-icon cal-platform-menu-icon-stack" aria-hidden="true">${allIcons}</span>
            <span>All platforms</span>
            ${PLATFORM_CHECK}
          </button>`
       : "";
     platformMenu.innerHTML = allRow + choices.map((p) => `
       <button type="button" class="cal-platform-menu-item" role="menuitemcheckbox" data-platform="${escapeHtml(p)}" aria-checked="false">
-        <span class="cal-platform-menu-icon">${platformIcon(p)}</span>
         <span>${escapeHtml(platformName(p))}</span>
         ${PLATFORM_CHECK}
       </button>
@@ -2629,24 +2615,7 @@
     const allOn = !choices.length
       || !selectedPlatforms.size
       || selectedPlatforms.size >= choices.length;
-    const keys = platformPickerIconKeys();
     if (platformBtnLabel) platformBtnLabel.textContent = platformPickerLabel();
-    if (platformBtnIcon) {
-      if (!keys.length) {
-        platformBtnIcon.hidden = true;
-        platformBtnIcon.innerHTML = "";
-      } else if (keys.length === 1) {
-        platformBtnIcon.hidden = false;
-        platformBtnIcon.classList.remove("is-stack");
-        platformBtnIcon.innerHTML = platformIcon(keys[0]);
-      } else {
-        platformBtnIcon.hidden = false;
-        platformBtnIcon.classList.add("is-stack");
-        platformBtnIcon.innerHTML = keys
-          .map((p) => `<span class="cal-platform-stack-icon">${platformIcon(p)}</span>`)
-          .join("");
-      }
-    }
     platformBtn?.toggleAttribute("disabled", linkedPlatformsLoaded && !choices.length);
     platformMenu?.querySelectorAll("[data-platform]").forEach((btn) => {
       const key = btn.getAttribute("data-platform");
