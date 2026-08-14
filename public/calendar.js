@@ -339,7 +339,7 @@
       .filter((p) => platformChoices().includes(p));
     const saveBtn = editor.querySelector(".cal-day-editor-save");
     if (!platforms.length) {
-      toast("Pick at least one platform", "error");
+      toast(platformChoices().length ? "Pick at least one linked platform" : "No social accounts are linked", "error");
       return;
     }
     if (saveBtn) saveBtn.disabled = true;
