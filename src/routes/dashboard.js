@@ -402,6 +402,7 @@ router.get("/calendar", wrap(async (req, res) => {
       productName: shaped.product?.name || "",
       accountCount: posts.length,
       scheduledAt: shaped.scheduledAt,
+      references: Array.isArray(shaped.settings.references) ? shaped.settings.references : [],
     });
   }
 

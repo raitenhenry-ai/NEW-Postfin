@@ -253,6 +253,26 @@ router.get("/jobs/:id", wrap(async (req, res) => {
   res.json(shapeJob(job, await postsFor(job.id)));
 }));
 
+const MAX_REFERENCES = 12;
+
+// Reference material the user pinned to a post: links to videos/posts they
+// like, or images they uploaded. Returns null when a row is unusable.
+function normalizeReferences(list) {
+  const out = [];
+  for (const raw of list.slice(0, MAX_REFERENCES)) {
+    const url = String(raw?.url || "").trim().slice(0, 2000);
+    if (!url) return null;
+    const kind = raw?.kind === "image" ? "image" : "link";
+    if (kind === "link" && !/^https?:\/\//i.test(url)) return null;
+    out.push({
+      kind,
+      url,
+      name: String(raw?.name || "").trim().slice(0, 120) || null,
+    });
+  }
+  return out;
+}
+
 // Edit a job in place: retitle it, rewrite the caption the platforms will
 // use, or move its slot on the calendar.
 router.patch("/jobs/:id", wrap(async (req, res) => {
