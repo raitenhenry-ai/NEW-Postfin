@@ -3804,6 +3804,39 @@ body.theme-light .cal-post-fields {
   cursor: pointer;
 }
 
+.cal-platform-check {
+  margin-left: auto;
+  width: 14px;
+  height: 14px;
+  flex-shrink: 0;
+  color: #7cb8ff;
+  opacity: 0;
+}
+
+.cal-platform-check svg {
+  display: block;
+  width: 14px;
+  height: 14px;
+}
+
+.cal-platform-menu-item.is-on .cal-platform-check,
+.cal-day-editor-platform-item.is-on .cal-platform-check {
+  opacity: 1;
+}
+
+.cal-platform-menu-empty {
+  margin: 0;
+  padding: 10px 12px;
+  color: #8a8a92;
+  font-size: 12px;
+  font-weight: 550;
+}
+
+.cal-product-pill-btn:disabled {
+  opacity: 0.55;
+  cursor: default;
+}
+
 .cal-platform-menu-item:hover,
 .cal-platform-menu-item.is-on {
   background: #2a2a30;
