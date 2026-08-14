@@ -3031,6 +3031,7 @@
     const pos = clampPopupPosition(dayPopup.offsetLeft, dayPopup.offsetTop);
     dayPopup.style.left = `${Math.round(pos.left)}px`;
     dayPopup.style.top = `${Math.round(pos.top)}px`;
+    autosizePopupTexts();
   });
   document.getElementById("cal-chat-messages")?.addEventListener("scroll", () => {
     if (formatMenu && !formatMenu.hidden) setFormatMenuOpen(false);
