@@ -265,7 +265,7 @@
     return caption || tags || "—";
   }
 
-  function captionWithHashtags(post) {
+  function postPromptText(post) {
     const brief = String(post?.brief || "").trim();
     const prompt = String(post?.prompt || "").trim();
     return brief || prompt || "";
