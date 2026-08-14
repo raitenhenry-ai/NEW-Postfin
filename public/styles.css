@@ -2866,6 +2866,43 @@ body.theme-light .video-duration {
   display: none;
 }
 
+.cal-day-editor-reference-add {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  min-height: 88px;
+  padding: 16px;
+  border: 1px dashed #3a3a42;
+  border-radius: 10px;
+  background: #1c1c20;
+  color: #c8c8d0;
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s, color 0.15s;
+}
+
+.cal-day-editor-reference-add svg {
+  width: 14px;
+  height: 14px;
+  flex-shrink: 0;
+  opacity: 0.8;
+}
+
+.cal-day-editor-reference-add:hover {
+  background: #222228;
+  border-color: #4a4a54;
+  color: #fff;
+}
+
+.cal-day-popup.is-viewing .cal-day-editor-reference-add {
+  opacity: 0.55;
+  pointer-events: none;
+}
+
 .cal-day-popup-item.is-tiktok { color: #69c9ff; }
 .cal-day-popup-item.is-youtube { color: #ff3b3b; }
 .cal-day-popup-item.is-instagram { color: #e879f9; }
@@ -6568,6 +6605,18 @@ body.theme-light .cal-day-editor-switch.is-on {
 body.theme-light .cal-day-editor-save {
   background: #111114;
   color: #ffffff;
+}
+
+body.theme-light .cal-day-editor-reference-add {
+  background: #f7f7f9;
+  border-color: #d0d0d6;
+  color: #3a3a42;
+}
+
+body.theme-light .cal-day-editor-reference-add:hover {
+  background: #f0f0f3;
+  border-color: #b8b8c0;
+  color: #111114;
 }
 
 body.theme-light .cal-day-popup-item {

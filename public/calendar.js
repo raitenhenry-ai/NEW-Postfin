@@ -695,6 +695,10 @@
         </div>
         <div class="cal-day-editor-panel" data-editor-panel="reference" hidden>
           <span class="cal-day-editor-label">Reference</span>
+          <button type="button" class="cal-day-editor-reference-add">
+            <svg viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M8 3.5v9M3.5 8h9" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+            <span>Add a reference image or link</span>
+          </button>
         </div>
         <div class="cal-day-editor-panel" data-editor-panel="caption" hidden>
           <span class="cal-day-editor-label">Caption</span>
