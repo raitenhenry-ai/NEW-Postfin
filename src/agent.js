@@ -1030,7 +1030,7 @@ function systemPrompt(ctx) {
 // of what it actually did.
 export async function runAssistant({
   messages, selectedDates = [], offsetMinutes = 0, productUrl = "", outputFormat = "",
-  imageUrls = [], selectedVideo = null,
+  imageUrls = [], selectedVideo = null, platforms = [],
 }) {
   if (!assistantAvailable()) {
     throw new Error("The assistant needs an OpenAI key - set OPENAI_API_KEY");
