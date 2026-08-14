@@ -7200,16 +7200,6 @@ body.theme-light .stat-value {
   color: #111114;
 }
 
-body.theme-light .theme-toggle-track {
-  background: #d8d8de;
-  border-color: #c0c0c8;
-}
-
-body.theme-light .theme-toggle.is-light .theme-toggle-track {
-  background: #ffffff;
-  border-color: #c8c8d0;
-}
-
 body.theme-light .pf-empty {
   background: #f4f4f6;
   border-color: #e2e2e8;
