@@ -509,6 +509,7 @@
       editor?.querySelector(".cal-day-popup-model")?.addEventListener("pointerdown", (e) => {
         e.stopPropagation();
       });
+      bindPopupPlatformPicker(editor);
     }
 
     if (fresh) {
