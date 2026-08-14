@@ -1,6 +1,6 @@
 import config, { PLATFORM_NAMES, ENABLED_PLATFORMS } from "./config.js";
 import { q, q1, run as dbRun } from "./db.js";
-import { resolveTargetPlatforms, connectedPlatforms } from "./accounts.js";
+import { connectedPlatforms } from "./accounts.js";
 import { planContent } from "./ugc/plan.js";
 import { enqueueUgcJob, postJob, deleteJobFiles } from "./ugc/pipeline.js";
 import { toneOptions, styleOptions } from "./ugc/script.js";
