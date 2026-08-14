@@ -8639,7 +8639,9 @@ body.theme-light .product-shimmer {
 .cal-day-popup .cal-day-editor-reference-btn,
 .cal-day-popup .cal-day-editor-reference-input,
 .cal-day-popup .cal-day-editor-reference-submit,
-.cal-day-popup .cal-day-editor-reference-name {
+.cal-day-popup .cal-day-editor-reference-name,
+.cal-day-popup .cal-day-editor-image-name,
+.cal-day-popup .cal-day-editor-image-empty {
   font-size: clamp(10px, 2.86cqw, 12px);
 }
 
