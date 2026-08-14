@@ -381,6 +381,19 @@ router.post("/chat", wrap(async (req, res) => {
     }
   }
 
+  const imageUrls = (Array.isArray(req.body.imageUrls) ? req.body.imageUrls : [])
+    .filter((u) => typeof u === "string")
+    .map((u) => u.trim())
+    .filter((u) => {
+      try {
+        const parsed = new URL(u, "https://local.invalid");
+        return parsed.protocol === "https:" || parsed.protocol === "http:" || u.startsWith("/ugc-media/");
+      } catch {
+        return u.startsWith("/ugc-media/");
+      }
+    })
+    .slice(0, 4);
+
   // The composer's Video/Slideshow switch. "video" is this app's avatar
   // format; anything unrecognised leaves the choice to the assistant.
   const outputFormat = req.body.outputFormat === "slideshow"
@@ -390,7 +403,7 @@ router.post("/chat", wrap(async (req, res) => {
       : "";
 
   res.json(await runAssistant({
-    messages, selectedDates, offsetMinutes, productUrl, outputFormat,
+    messages, selectedDates, offsetMinutes, productUrl, outputFormat, imageUrls,
   }));
 }));
 
@@ -439,8 +452,8 @@ const UPLOAD_TYPES = {
 };
 const MAX_UPLOAD_BYTES = 6 * 1024 * 1024;
 
-// Calendar + button: save an image, add it to the product catalog, and
-// return a URL the assistant can plan videos around.
+// Calendar + button: save a screenshot/reference image for the chat.
+// This is an attachment, not a product.
 router.post("/uploads", wrap(async (req, res) => {
   const mime = String(req.body?.mime || "").toLowerCase().split(";")[0].trim();
   const ext = UPLOAD_TYPES[mime];
@@ -473,28 +486,10 @@ router.post("/uploads", wrap(async (req, res) => {
     .slice(0, 80) || "Upload";
   const name = original.replace(/\.[^.]+$/, "").trim() || "Uploaded image";
 
-  const product = {
-    url: publicUrl,
-    site: "upload",
-    name,
-    description: null,
-    price: null,
-    currency: null,
-    brand: null,
-    images: [publicUrl],
-  };
-  const now = Date.now();
-  await q1(
-    `INSERT INTO products (url, product_json, created_at, updated_at)
-     VALUES (?, ?, ?, ?) RETURNING id`,
-    [publicUrl, JSON.stringify(product), now, now]
-  );
-
   res.status(201).json({
     url: publicUrl,
     path: publicPath,
     name,
-    product: { url: publicUrl, name, image: publicUrl, images: [publicUrl] },
   });
 }));
 

@@ -961,6 +961,7 @@ function systemPrompt(ctx) {
 // of what it actually did.
 export async function runAssistant({
   messages, selectedDates = [], offsetMinutes = 0, productUrl = "", outputFormat = "",
+  imageUrls = [],
 }) {
   if (!assistantAvailable()) {
     throw new Error("The assistant needs an OpenAI key - set OPENAI_API_KEY");
@@ -983,12 +984,16 @@ export async function runAssistant({
       }
     }
   }
+  const attachedImages = (Array.isArray(imageUrls) ? imageUrls : [])
+    .filter((u) => typeof u === "string" && u)
+    .slice(0, 4);
   const ctx = {
     offsetMinutes,
     selectedDates,
     productUrl: productUrl || "",
     productName,
     productImages,
+    attachedImages,
     // The composer's own format switch. When it is set, it is an answer the
     // user has already given, so the assistant uses it instead of asking.
     outputFormat: outputFormat === "slideshow" ? "slideshow" : outputFormat === "avatar" ? "avatar" : "",
@@ -1002,10 +1007,13 @@ export async function runAssistant({
     .slice(-MAX_HISTORY)
     .map((m) => ({ role: m.role, content: m.content }));
 
-  if (productImages.length) {
-    const lastUser = [...history].reverse().find((m) => m.role === "user");
-    if (lastUser) {
-      lastUser.content = visionUserContent(lastUser.content, productImages);
+  const lastUser = [...history].reverse().find((m) => m.role === "user");
+  if (lastUser) {
+    const vision = attachedImages.length ? attachedImages : productImages;
+    if (vision.length) {
+      lastUser.content = visionUserContent(lastUser.content, vision, {
+        asProduct: !attachedImages.length && productImages.length > 0,
+      });
     }
   }
 
