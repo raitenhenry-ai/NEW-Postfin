@@ -438,11 +438,15 @@
       editor?.querySelector(".cal-day-popup-model")?.addEventListener("pointerdown", (e) => {
         e.stopPropagation();
       });
-      setPopupTab(popupTab || "prompt");
     }
 
+    if (fresh) {
+      popupTab = "prompt";
+      popupMode = isEditMode() ? "edit" : "view";
+    }
     dayPopup.hidden = false;
-    setPopupMode(isEditMode() ? popupMode || "edit" : popupMode);
+    setPopupTab(popupTab);
+    setPopupMode(popupMode);
     placeDayPopupBeside(cell || grid.querySelector(`.cal-cell[data-date="${key}"]`));
   }
 
