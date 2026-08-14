@@ -2242,6 +2242,47 @@ body.theme-light .video-duration {
   min-width: 0;
 }
 
+.cal-day-popup-date-input,
+.cal-day-popup-time-input {
+  width: auto;
+  max-width: 100%;
+  margin: 0;
+  border: none;
+  background: transparent;
+  font: inherit;
+  padding: 0;
+  outline: none;
+  color-scheme: dark;
+  cursor: text;
+  user-select: text;
+  touch-action: manipulation;
+}
+
+.cal-day-popup-date-input {
+  color: #f0f0f4;
+  font-size: 16px;
+  font-weight: 700;
+  line-height: 1.2;
+  letter-spacing: -0.02em;
+}
+
+.cal-day-popup-time-input {
+  color: #8a8a92;
+  font-size: 12.5px;
+  font-weight: 550;
+}
+
+.cal-day-popup-date-input:disabled,
+.cal-day-popup-time-input:disabled {
+  cursor: default;
+  opacity: 1;
+}
+
+.cal-day-popup:not(.is-viewing) .cal-day-popup-date-input:not(:disabled):hover,
+.cal-day-popup:not(.is-viewing) .cal-day-popup-time-input:not(:disabled):hover {
+  color: #fff;
+}
+
 .cal-day-popup-heading strong {
   color: #f0f0f4;
   font-size: 16px;
