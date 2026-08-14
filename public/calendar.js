@@ -805,6 +805,7 @@
       await api(`/api/jobs/${post.id}`, { method: "PATCH", body: { references: next } });
       post.references = next;
       renderPopupReferenceList(key, postIndex);
+      syncPopupPromptExtras(key, postIndex);
       return true;
     } catch (err) {
       post.references = previous;
