@@ -31,7 +31,7 @@
   const dayPopup = document.getElementById("cal-day-popup");
   const dayPopupDrag = document.getElementById("cal-day-popup-drag");
   const dayPopupDate = document.getElementById("cal-day-popup-date");
-  const dayPopupTime = document.getElementById("cal-day-popup-time");
+  const dayPopupCount = document.getElementById("cal-day-popup-count");
   const dayPopupList = document.getElementById("cal-day-popup-list");
   const dayPopupClose = document.getElementById("cal-day-popup-close");
   const PRODUCT_KEY = "cal-product-url";
