@@ -329,9 +329,10 @@ router.patch("/jobs/:id", wrap(async (req, res) => {
     }
   }
 
-  if (nextPlatforms) {
+  if (nextPlatforms || nextReferences) {
     const settings = JSON.parse(job.settings_json || "{}");
-    settings.platforms = nextPlatforms;
+    if (nextPlatforms) settings.platforms = nextPlatforms;
+    if (nextReferences) settings.references = nextReferences;
     await dbRun("UPDATE ugc_jobs SET settings_json = ?, updated_at = ? WHERE id = ?",
       [JSON.stringify(settings), Date.now(), job.id]);
   }
