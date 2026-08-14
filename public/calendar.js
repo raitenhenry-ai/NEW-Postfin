@@ -2619,7 +2619,17 @@
     if (!e.target.closest(".cal-day-editor-platform-picker")) closePopupPlatformMenus();
   });
 
-  window.addEventListener("resize", positionFormatMenu);
+  window.addEventListener("resize", () => {
+    positionFormatMenu();
+    if (!dayPopup || dayPopup.hidden) return;
+    applyPopupSize(loadPopupSize() || {
+      width: dayPopup.offsetWidth,
+      height: dayPopup.offsetHeight,
+    });
+    const pos = clampPopupPosition(dayPopup.offsetLeft, dayPopup.offsetTop);
+    dayPopup.style.left = `${Math.round(pos.left)}px`;
+    dayPopup.style.top = `${Math.round(pos.top)}px`;
+  });
   document.getElementById("cal-chat-messages")?.addEventListener("scroll", () => {
     if (formatMenu && !formatMenu.hidden) setFormatMenuOpen(false);
   }, { passive: true });
