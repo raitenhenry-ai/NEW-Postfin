@@ -536,7 +536,6 @@
       renderSuggestions(dashboard.suggestions);
       renderWeek();
       renderDay();
-      renderMonth();
     } catch (err) {
       if (token !== requestId) return;
       console.error(err);
