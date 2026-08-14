@@ -845,16 +845,14 @@ function visionImageUrl(src) {
   }
 }
 
-function visionUserContent(text, images) {
+function visionUserContent(text, images, { asProduct = false } = {}) {
   const urls = (images || []).map(visionImageUrl).filter(Boolean);
   if (!urls.length) return text;
+  const note = asProduct
+    ? "A product photo is attached. You can see it. Use what is actually in the image."
+    : "A screenshot or reference image is attached. You can see it. It is not automatically the product — only extra context unless the user says it is the product.";
   return [
-    {
-      type: "text",
-      text:
-        `${text}\n\nA product photo is attached. You can see it. ` +
-        "Use what is actually in the image.",
-    },
+    { type: "text", text: `${text}\n\n${note}` },
     ...urls.map((url) => ({ type: "image_url", image_url: { url, detail: "low" } })),
   ];
 }
