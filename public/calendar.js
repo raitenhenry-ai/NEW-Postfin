@@ -2454,6 +2454,7 @@
       setFormatMenuOpen(false);
     }
     if (!platformPicker?.contains(e.target)) setPlatformMenuOpen(false);
+    if (!e.target.closest(".cal-day-editor-platform-picker")) closePopupPlatformMenus();
   });
 
   window.addEventListener("resize", positionFormatMenu);
