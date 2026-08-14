@@ -406,7 +406,13 @@ router.get("/calendar", wrap(async (req, res) => {
       slideUrls: shaped.slideUrls,
       productUrl: shaped.productUrl,
       videoUrl: shaped.videoUrl,
-      prompt: promptText(shaped.script, shaped.settings, shaped.concept, shaped.brief),
+      prompt: promptText(
+        shaped.script,
+        shaped.settings,
+        shaped.concept,
+        shaped.brief,
+        shaped.product
+      ),
       brief: shaped.brief,
       caption: shaped.script?.caption || "",
       hashtags: (shaped.script?.hashtags || []).join(" "),
