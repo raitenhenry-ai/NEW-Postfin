@@ -489,9 +489,13 @@
   }
 
   function setPopupMode(next) {
+    if (!canEditPopupDay() && next !== "view") next = "view";
     popupMode = next === "view" ? "view" : "edit";
+    dayPopup?.classList.toggle("is-past-day", !canEditPopupDay());
     dayPopup?.querySelectorAll("[data-popup-mode]").forEach((btn) => {
-      btn.classList.toggle("is-on", btn.getAttribute("data-popup-mode") === popupMode);
+      const mode = btn.getAttribute("data-popup-mode");
+      btn.classList.toggle("is-on", mode === popupMode);
+      if (mode === "edit") btn.disabled = !canEditPopupDay();
     });
     dayPopup?.classList.toggle("is-viewing", popupMode === "view");
     dayPopup?.querySelectorAll(".cal-day-editor-title, .cal-day-editor-text").forEach((el) => {
