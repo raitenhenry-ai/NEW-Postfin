@@ -862,10 +862,14 @@
       return;
     }
 
-    if (field) field.placeholder = "Ask for videos, or anything about your posts";
+    if (field) {
+      field.placeholder = selectedEvent
+        ? "Ask to edit this video"
+        : "Ask for videos, or anything about your posts";
+    }
 
     const keys = [...selected].sort();
-    if (!keys.length) {
+    if (!keys.length && !selectedEvent) {
       dateChips.hidden = true;
       dateChips.innerHTML = "";
       return;
@@ -873,6 +877,30 @@
 
     dateChips.hidden = false;
     dateChips.innerHTML = "";
+
+    if (selectedEvent) {
+      const chip = document.createElement("div");
+      chip.className = "cal-date-chip cal-event-chip";
+      chip.innerHTML = `
+        <svg viewBox="0 0 16 16" fill="none" aria-hidden="true">
+          <rect x="2.5" y="3.5" width="11" height="9" rx="1.6" stroke="currentColor" stroke-width="1.4"/>
+          <path d="M6.6 6.2v3.2L10.2 8 6.6 6.2z" fill="currentColor"/>
+        </svg>
+        <span class="cal-date-chip-label"></span>
+        <button type="button" class="cal-date-chip-remove" aria-label="Remove event">
+          <svg viewBox="0 0 12 12" fill="none" aria-hidden="true"><path d="M3 3l6 6M9 3L3 9" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+        </button>
+      `;
+      chip.querySelector(".cal-date-chip-label").textContent = eventChipLabel(selectedEvent);
+      chip.querySelector(".cal-date-chip-remove").addEventListener("click", (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        selectedEvent = null;
+        render();
+        closeDayPopup();
+      });
+      dateChips.appendChild(chip);
+    }
     groupDateRanges(keys).forEach((range) => {
       const chip = document.createElement("div");
       chip.className = "cal-date-chip";
