@@ -2595,6 +2595,15 @@
     return picked.map((p) => PLATFORM_PICKER_SHORT[p] || platformName(p)).join(" · ");
   }
 
+  function platformPickerIconKeys() {
+    const choices = platformChoices();
+    if (!choices.length) return [];
+    if (!selectedPlatforms.size || selectedPlatforms.size >= choices.length) {
+      return choices.slice(0, 3);
+    }
+    return choices.filter((p) => selectedPlatforms.has(p)).slice(0, 3);
+  }
+
   function persistSelectedPlatforms() {
     localStorage.setItem(PLATFORM_KEY, JSON.stringify([...selectedPlatforms]));
   }
@@ -2606,8 +2615,12 @@
       platformMenu.innerHTML = `<p class="cal-platform-menu-empty">No accounts linked</p>`;
       return;
     }
+    const allIcons = choices.slice(0, 3)
+      .map((p) => `<span class="cal-platform-btn-icon">${platformIcon(p)}</span>`)
+      .join("");
     const allRow = choices.length > 1
       ? `<button type="button" class="cal-platform-menu-item" role="menuitemcheckbox" data-platform="all" aria-checked="false">
+           <span class="cal-platform-menu-icon cal-platform-menu-icon-stack" aria-hidden="true">${allIcons}</span>
            <span>All platforms</span>
            ${PLATFORM_CHECK}
          </button>`
@@ -2627,6 +2640,13 @@
       || !selectedPlatforms.size
       || selectedPlatforms.size >= choices.length;
     if (platformBtnLabel) platformBtnLabel.textContent = platformPickerLabel();
+    if (platformBtnIcons) {
+      const keys = platformPickerIconKeys();
+      platformBtnIcons.hidden = !keys.length;
+      platformBtnIcons.innerHTML = keys
+        .map((p) => `<span class="cal-platform-btn-icon">${platformIcon(p)}</span>`)
+        .join("");
+    }
     platformBtn?.toggleAttribute("disabled", linkedPlatformsLoaded && !choices.length);
     platformMenu?.querySelectorAll("[data-platform]").forEach((btn) => {
       const key = btn.getAttribute("data-platform");
