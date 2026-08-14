@@ -885,6 +885,7 @@
         <div class="cal-day-editor-tabs" role="tablist" aria-label="Post fields">
           <button type="button" role="tab" data-editor-tab="prompt">Prompt</button>
           <button type="button" role="tab" data-editor-tab="reference">Reference</button>
+          <button type="button" role="tab" data-editor-tab="image">Image</button>
           <button type="button" role="tab" data-editor-tab="caption">Caption</button>
           <button type="button" role="tab" data-editor-tab="model">Model</button>
         </div>
