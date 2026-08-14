@@ -1050,7 +1050,9 @@
     }
 
     const keys = [...selected].sort();
-    if (!keys.length) selectionLabel.textContent = "No dates selected";
+    if (selectedEvent) {
+      selectionLabel.textContent = `Editing ${selectedEvent.title || "this video"}`;
+    } else if (!keys.length) selectionLabel.textContent = "No dates selected";
     else if (keys.length === 1) selectionLabel.textContent = `Planning ${formatShort(keys[0])}`;
     else selectionLabel.textContent = `${keys.length} dates selected`;
     renderDayPanel();
