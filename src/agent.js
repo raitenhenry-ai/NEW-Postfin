@@ -501,9 +501,7 @@ const IMPLEMENTATIONS = {
     const settings = {
       tone: toneOptions().includes(tone) ? tone : "casual",
       style: styleOptions().includes(style) ? style : "product_pov",
-      // Empty/omitted platforms means every connected account - store that
-      // list so the calendar never shows "No platform".
-      platforms: await resolveTargetPlatforms(platforms),
+      platforms: await resolveLinkedPlatforms(platforms, ctx),
       format: resolveFormat(format, brief, ctx),
     };
     if (settings.format === "slideshow") {
