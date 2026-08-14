@@ -2272,6 +2272,17 @@
     syncFormatPicker();
   }
 
+  function setLinkedPlatforms(list) {
+    linkedPlatforms = (Array.isArray(list) ? list : [])
+      .map((p) => String(p || "").toLowerCase())
+      .filter((p) => PLATFORM_LABELS[p] || PLATFORM_PICKER_LABELS[p]);
+    selectedPlatforms = new Set([...selectedPlatforms].filter((p) => linkedPlatforms.includes(p)));
+    if (selectedPlatforms.size >= linkedPlatforms.length) selectedPlatforms = new Set();
+    persistSelectedPlatforms();
+    renderPlatformMenu();
+    syncPlatformPicker();
+  }
+
   function setPlatformMenuOpen(open) {
     if (!platformMenu || !platformBtn) return;
     platformMenu.hidden = !open;
@@ -2279,21 +2290,50 @@
   }
 
   function platformPickerLabel() {
-    if (!selectedPlatforms.size || selectedPlatforms.size >= PLATFORM_CHOICES.length) {
+    const choices = platformChoices();
+    if (!choices.length) return "No accounts";
+    if (choices.length === 1) return platformName(choices[0]);
+    if (!selectedPlatforms.size || selectedPlatforms.size >= choices.length) {
       return "All platforms";
     }
-    const picked = PLATFORM_CHOICES.filter((p) => selectedPlatforms.has(p));
-    if (picked.length === 1) return PLATFORM_PICKER_LABELS[picked[0]];
-    return picked.map((p) => PLATFORM_PICKER_SHORT[p] || PLATFORM_PICKER_LABELS[p]).join(" · ");
+    const picked = choices.filter((p) => selectedPlatforms.has(p));
+    if (picked.length === 1) return platformName(picked[0]);
+    return picked.map((p) => PLATFORM_PICKER_SHORT[p] || platformName(p)).join(" · ");
   }
 
   function persistSelectedPlatforms() {
     localStorage.setItem(PLATFORM_KEY, JSON.stringify([...selectedPlatforms]));
   }
 
+  function renderPlatformMenu() {
+    if (!platformMenu) return;
+    const choices = platformChoices();
+    if (!choices.length) {
+      platformMenu.innerHTML = `<p class="cal-platform-menu-empty">No accounts linked</p>`;
+      return;
+    }
+    const allRow = choices.length > 1
+      ? `<button type="button" class="cal-platform-menu-item" role="menuitemcheckbox" data-platform="all" aria-checked="false">
+           <span>All platforms</span>
+           ${PLATFORM_CHECK}
+         </button>`
+      : "";
+    platformMenu.innerHTML = allRow + choices.map((p) => `
+      <button type="button" class="cal-platform-menu-item" role="menuitemcheckbox" data-platform="${escapeHtml(p)}" aria-checked="false">
+        <span class="cal-platform-menu-icon">${platformIcon(p)}</span>
+        <span>${escapeHtml(platformName(p))}</span>
+        ${PLATFORM_CHECK}
+      </button>
+    `).join("");
+  }
+
   function syncPlatformPicker() {
-    const allOn = !selectedPlatforms.size || selectedPlatforms.size >= PLATFORM_CHOICES.length;
+    const choices = platformChoices();
+    const allOn = !choices.length
+      || !selectedPlatforms.size
+      || selectedPlatforms.size >= choices.length;
     if (platformBtnLabel) platformBtnLabel.textContent = platformPickerLabel();
+    platformBtn?.toggleAttribute("disabled", !choices.length);
     platformMenu?.querySelectorAll("[data-platform]").forEach((btn) => {
       const key = btn.getAttribute("data-platform");
       const on = key === "all" ? allOn : selectedPlatforms.has(key);
@@ -2303,17 +2343,17 @@
   }
 
   function toggleSelectedPlatform(platform) {
+    const choices = platformChoices();
     if (platform === "all") {
       selectedPlatforms = new Set();
       persistSelectedPlatforms();
       syncPlatformPicker();
       return;
     }
-    if (!PLATFORM_CHOICES.includes(platform)) return;
+    if (!choices.includes(platform)) return;
     if (selectedPlatforms.has(platform)) selectedPlatforms.delete(platform);
     else selectedPlatforms.add(platform);
-    // Selecting every platform is the same as All.
-    if (selectedPlatforms.size >= PLATFORM_CHOICES.length) selectedPlatforms = new Set();
+    if (selectedPlatforms.size >= choices.length) selectedPlatforms = new Set();
     persistSelectedPlatforms();
     syncPlatformPicker();
   }
