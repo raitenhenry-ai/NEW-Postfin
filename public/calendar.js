@@ -270,12 +270,33 @@
     return d.getTime();
   }
 
+  function positionPopupTimeMenu() {
+    if (!dayPopupTimeMenu || !dayPopupTimeBtn || dayPopupTimeMenu.hidden) return;
+    const rect = dayPopupTimeBtn.getBoundingClientRect();
+    const gap = 6;
+    const width = Math.max(148, Math.round(rect.width));
+    let left = Math.round(rect.left);
+    let top = Math.round(rect.bottom + gap);
+    const maxLeft = window.innerWidth - width - 8;
+    left = Math.max(8, Math.min(left, maxLeft));
+    const menuH = dayPopupTimeMenu.offsetHeight || 240;
+    if (top + menuH > window.innerHeight - 8 && rect.top - gap - menuH > 8) {
+      top = Math.round(rect.top - gap - menuH);
+    }
+    dayPopupTimeMenu.style.left = `${left}px`;
+    dayPopupTimeMenu.style.top = `${top}px`;
+    dayPopupTimeMenu.style.width = `${width}px`;
+  }
+
   function setPopupTimeMenuOpen(open) {
     if (!dayPopupTimePicker || !dayPopupTimeBtn || !dayPopupTimeMenu) return;
     if (open) {
       const post = focusedPopupPost();
       if (!canEditPopupTime(post)) return;
       renderPopupTimeMenu(post);
+      if (dayPopupTimeMenu.parentElement !== document.body) {
+        document.body.appendChild(dayPopupTimeMenu);
+      }
     }
     dayPopupTimePicker.classList.toggle("open", open);
     dayPopupTimeBtn.classList.toggle("open", open);
@@ -283,8 +304,12 @@
     dayPopupTimeMenu.hidden = !open;
     dayPopup?.classList.toggle("is-time-open", open);
     if (open) {
+      positionPopupTimeMenu();
       const active = dayPopupTimeMenu.querySelector(".active");
       active?.scrollIntoView({ block: "center" });
+      positionPopupTimeMenu();
+    } else if (dayPopupTimePicker && dayPopupTimeMenu.parentElement !== dayPopupTimePicker) {
+      dayPopupTimePicker.appendChild(dayPopupTimeMenu);
     }
   }
 
@@ -321,25 +346,10 @@
   function syncPopupTimeSwitcher() {
     const post = focusedPopupPost();
     const locked = !canEditPopupTime(post);
-    dayPopupTimeNav?.classList.toggle("is-locked", locked || !post);
-    dayPopupTimeNav?.classList.toggle("is-empty", !post);
+    dayPopupTimePicker?.classList.toggle("is-locked", locked || !post);
+    dayPopupTimePicker?.classList.toggle("is-empty", !post);
     if (dayPopupTimeBtn) dayPopupTimeBtn.disabled = locked || !post;
-    if (locked || !post) {
-      if (dayPopupTimePrev) dayPopupTimePrev.disabled = true;
-      if (dayPopupTimeNext) dayPopupTimeNext.disabled = true;
-      setPopupTimeMenuOpen(false);
-      return;
-    }
-    const current = popupPostTimestamp(post);
-    const prevAt = shiftPopupMinutes(current, -1);
-    let nextAt = shiftPopupMinutes(current, 1);
-    let cursor = current;
-    while (nextAt <= Date.now() && nextAt > cursor) {
-      cursor = nextAt;
-      nextAt = shiftPopupMinutes(cursor, 1);
-    }
-    if (dayPopupTimePrev) dayPopupTimePrev.disabled = prevAt >= current || prevAt <= Date.now();
-    if (dayPopupTimeNext) dayPopupTimeNext.disabled = nextAt <= current || nextAt <= Date.now();
+    if (locked || !post) setPopupTimeMenuOpen(false);
   }
 
   async function applyPopupTime(post, scheduledAt) {
@@ -362,18 +372,6 @@
     } catch (err) {
       toast(err.message || "Could not change that time", "error");
     }
-  }
-
-  function stepPopupTime(dir) {
-    const post = focusedPopupPost();
-    if (!canEditPopupTime(post)) return;
-    let at = popupPostTimestamp(post);
-    let next = shiftPopupMinutes(at, dir);
-    while (dir > 0 && next <= Date.now() && next > at) {
-      at = next;
-      next = shiftPopupMinutes(at, dir);
-    }
-    applyPopupTime(post, next);
   }
 
   function clampPopupPosition(left, top) {
