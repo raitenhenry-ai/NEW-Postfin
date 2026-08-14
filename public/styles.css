@@ -2796,21 +2796,17 @@ body.theme-light .video-duration {
 }
 
 .cal-day-editor-panel-reference {
+  position: relative;
   align-items: center;
   justify-content: center;
   flex: 1 1 auto;
-  min-height: 160px;
+  min-height: 0;
 }
 
 .cal-day-editor-panel-reference .cal-day-editor-label {
   position: absolute;
   top: 0;
   left: 0;
-  align-self: stretch;
-}
-
-.cal-day-editor-panel-reference {
-  position: relative;
 }
 
 .cal-day-editor-label {
