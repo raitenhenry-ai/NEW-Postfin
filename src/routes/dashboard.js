@@ -1,7 +1,7 @@
 import { Router } from "express";
 import config, { PLATFORM_NAMES, ENABLED_PLATFORMS } from "../config.js";
 import { q, q1, run as dbRun } from "../db.js";
-import { platforms, resolveTargetPlatforms } from "../accounts.js";
+import { platforms, resolveTargetPlatforms, connectedPlatforms } from "../accounts.js";
 import {
   postSeries, followerSeries, viewsByPlatform,
   estimateRevenue, accountLeaderboard, metricsStatus,
@@ -356,6 +356,7 @@ router.get("/calendar", wrap(async (req, res) => {
   // resolve to the same targets the publisher uses, so the calendar never
   // shows "No platform".
   const defaultPlatforms = await resolveTargetPlatforms([]);
+  const linkedPlatforms = await connectedPlatforms();
 
   const days = {};
   for (const job of jobs) {
@@ -364,7 +365,7 @@ router.get("/calendar", wrap(async (req, res) => {
     const at = jobTimestamp(job, posts);
     const key = dateKey(at);
     const savedPlatforms = (shaped.settings.platforms || [])
-      .filter((p) => ENABLED_PLATFORMS.includes(p));
+      .filter((p) => linkedPlatforms.includes(p));
 
     days[key] ??= { date: key, label: dayLabel(at), posts: [] };
     days[key].posts.push({
@@ -404,7 +405,7 @@ router.get("/calendar", wrap(async (req, res) => {
     });
   }
 
-  res.json({ start, end, days });
+  res.json({ start, end, days, connectedPlatforms: linkedPlatforms });
 }));
 
 // The brief the video was generated from: the hook, the scenes and the CTA
