@@ -553,6 +553,9 @@
     (chat.selectedDates || []).forEach((key) => {
       if (!isPastKey(key)) selected.add(key);
     });
+    selectedEvent = chat.selectedEvent?.videoId
+      ? { ...chat.selectedEvent }
+      : null;
     assistantBusy = false;
     setComposerActive(false);
     setHistoryMenuOpen(false);
