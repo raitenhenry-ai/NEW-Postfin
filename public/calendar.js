@@ -2294,6 +2294,7 @@
 
   function platformPickerLabel() {
     const choices = platformChoices();
+    if (!linkedPlatformsLoaded) return "All platforms";
     if (!choices.length) return "No accounts";
     if (choices.length === 1) return platformName(choices[0]);
     if (!selectedPlatforms.size || selectedPlatforms.size >= choices.length) {
