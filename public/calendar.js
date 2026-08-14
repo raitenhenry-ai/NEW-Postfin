@@ -214,7 +214,7 @@
   function clampPopupPosition(left, top) {
     if (!calBoard || !dayPopup) return { left, top };
     const board = calBoard.getBoundingClientRect();
-    const width = dayPopup.offsetWidth || 380;
+    const width = dayPopup.offsetWidth || 420;
     const height = dayPopup.offsetHeight || 180;
     const pad = 8;
     return {
@@ -227,7 +227,7 @@
     if (!calBoard || !dayPopup || !cell) return;
     const board = calBoard.getBoundingClientRect();
     const rect = cell.getBoundingClientRect();
-    const width = dayPopup.offsetWidth || 380;
+    const width = dayPopup.offsetWidth || 420;
     const gap = 10;
     let left = rect.right - board.left + gap;
     if (left + width > board.width - 8) {

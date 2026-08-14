@@ -2390,6 +2390,171 @@ body.theme-light .video-duration {
   overflow: visible;
 }
 
+.cal-day-editor {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.cal-day-editor-switcher {
+  display: flex;
+  gap: 6px;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+
+.cal-day-editor-switch {
+  flex: 0 0 auto;
+  border: none;
+  border-radius: 999px;
+  background: #2a2a30;
+  color: #b0b0b8;
+  font: inherit;
+  font-size: 11px;
+  font-weight: 600;
+  padding: 5px 10px;
+  cursor: pointer;
+}
+
+.cal-day-editor-switch.is-on {
+  background: #f4f4f6;
+  color: #111114;
+}
+
+.cal-day-editor-title-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 44px;
+  padding: 0 12px;
+  border: 1px solid #3a3a42;
+  border-radius: 10px;
+  background: #1c1c20;
+}
+
+.cal-day-editor-title {
+  flex: 1 1 auto;
+  min-width: 0;
+  height: 42px;
+  border: none;
+  background: transparent;
+  color: #f0f0f4;
+  font: inherit;
+  font-size: 15px;
+  font-weight: 650;
+  outline: none;
+}
+
+.cal-day-editor-platforms {
+  flex-shrink: 0;
+  color: #8a8a92;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.cal-day-editor-tabs {
+  display: flex;
+  gap: 6px;
+  padding: 4px;
+  border-radius: 999px;
+  background: #2a2a30;
+}
+
+.cal-day-editor-tabs button {
+  flex: 1 1 0;
+  border: none;
+  background: transparent;
+  color: #8a8a92;
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 650;
+  padding: 7px 10px;
+  border-radius: 999px;
+  cursor: pointer;
+}
+
+.cal-day-editor-tabs button.is-on {
+  background: #f4f4f6;
+  color: #111114;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.08);
+}
+
+.cal-day-editor-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.cal-day-editor-panel[hidden] {
+  display: none;
+}
+
+.cal-day-editor-label {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #8a8a92;
+}
+
+.cal-day-editor-box {
+  position: relative;
+  border: 1px solid #3a3a42;
+  border-radius: 10px;
+  background: #1c1c20;
+}
+
+.cal-day-editor-text {
+  display: block;
+  width: 100%;
+  min-height: 168px;
+  padding: 12px 12px 28px;
+  border: none;
+  background: transparent;
+  color: #e8e8ee;
+  font: inherit;
+  font-size: 13px;
+  line-height: 1.55;
+  resize: vertical;
+  outline: none;
+}
+
+.cal-day-editor-count {
+  position: absolute;
+  right: 10px;
+  bottom: 8px;
+  color: #8a8a92;
+  font-size: 11px;
+  font-weight: 550;
+  pointer-events: none;
+}
+
+.cal-day-editor-save {
+  width: 100%;
+  height: 44px;
+  border: none;
+  border-radius: 10px;
+  background: #f4f4f6;
+  color: #111114;
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.cal-day-editor-save:hover:not(:disabled) {
+  filter: brightness(0.96);
+}
+
+.cal-day-editor-save:disabled,
+.cal-day-editor-save[hidden] {
+  opacity: 0.55;
+}
+
+.cal-day-popup.is-viewing .cal-day-editor-save {
+  display: none;
+}
+
 .cal-day-popup-item.is-tiktok { color: #69c9ff; }
 .cal-day-popup-item.is-youtube { color: #ff3b3b; }
 .cal-day-popup-item.is-instagram { color: #e879f9; }
