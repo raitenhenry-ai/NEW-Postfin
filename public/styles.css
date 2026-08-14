@@ -2321,6 +2321,7 @@ body.theme-light .video-duration {
   flex-direction: column;
   gap: 10px;
   min-height: 0;
+  flex: 1 1 auto;
   scrollbar-width: none;
 }
 
@@ -2659,12 +2660,16 @@ body.theme-light .video-duration {
   border: 1px solid #3a3a42;
   border-radius: 10px;
   background: #1c1c20;
+  flex: 1 1 auto;
+  min-height: 0;
+  display: flex;
 }
 
 .cal-day-editor-text {
   display: block;
   width: 100%;
-  min-height: 220px;
+  min-height: 120px;
+  height: 100%;
   padding: 12px;
   border: none;
   background: transparent;
@@ -2672,7 +2677,7 @@ body.theme-light .video-duration {
   font: inherit;
   font-size: 13px;
   line-height: 1.55;
-  resize: vertical;
+  resize: none;
   outline: none;
 }
 
