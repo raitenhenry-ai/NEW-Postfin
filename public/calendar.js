@@ -37,28 +37,37 @@
   const PRODUCT_KEY = "cal-product-url";
   const FORMAT_KEY = "cal-output-format";
   const PLATFORM_KEY = "cal-target-platforms";
-  const PLATFORM_CHOICES = ["tiktok", "youtube", "instagram"];
   const PLATFORM_PICKER_LABELS = {
     tiktok: "TikTok",
     youtube: "YouTube",
     instagram: "Instagram",
+    facebook: "Facebook",
+    x: "X",
+    threads: "Threads",
+    pinterest: "Pinterest",
+    linkedin: "LinkedIn",
   };
   const PLATFORM_PICKER_SHORT = {
     tiktok: "TT",
     youtube: "YT",
     instagram: "IG",
+    facebook: "FB",
+    x: "X",
+    threads: "Th",
+    pinterest: "Pin",
+    linkedin: "Li",
   };
+  const PLATFORM_CHECK =
+    '<span class="cal-platform-check" aria-hidden="true"><svg viewBox="0 0 16 16" fill="none"><path d="M3.5 8.2L6.4 11.1L12.5 4.8" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></span>';
 
   function loadSelectedPlatforms() {
     try {
       const raw = JSON.parse(localStorage.getItem(PLATFORM_KEY) || "[]");
       if (!Array.isArray(raw)) return new Set();
-      return new Set(raw.filter((p) => PLATFORM_CHOICES.includes(p)));
+      return new Set(raw.filter((p) => typeof p === "string" && p));
     } catch {
-      // Migrate old single-platform key if present.
       const legacy = localStorage.getItem("cal-target-platform");
-      if (legacy && PLATFORM_CHOICES.includes(legacy)) return new Set([legacy]);
-      return new Set();
+      return legacy ? new Set([legacy]) : new Set();
     }
   }
   const FORMAT_ICONS = {
