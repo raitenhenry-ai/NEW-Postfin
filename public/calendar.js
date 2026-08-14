@@ -108,6 +108,8 @@
     "Jul", "Aug", "Sep", "Oct", "Nov", "Dec",
   ];
 
+  const { api, escapeHtml, PLATFORM_LABELS, platformIcon, toast } = window.Postfin;
+
   function platformChoices() {
     return linkedPlatforms;
   }
