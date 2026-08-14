@@ -280,6 +280,7 @@
       renderPopupTimeMenu(post);
     }
     dayPopupTimePicker.classList.toggle("open", open);
+    dayPopupTimeBtn.classList.toggle("open", open);
     dayPopupTimeBtn.setAttribute("aria-expanded", open ? "true" : "false");
     dayPopupTimeMenu.hidden = !open;
     dayPopup?.classList.toggle("is-time-open", open);

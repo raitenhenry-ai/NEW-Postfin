@@ -2245,26 +2245,15 @@ body.theme-light .video-duration {
 }
 
 .cal-day-popup-time-nav {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
   grid-column: 1;
   justify-self: start;
   min-width: 0;
   z-index: 2;
 }
 
-.cal-day-popup-time-nav .cal-icon-btn {
-  flex-shrink: 0;
-}
-
 .cal-day-popup-time-nav .cal-icon-btn:disabled {
   opacity: 0.35;
   cursor: default;
-}
-
-.cal-day-popup-time-picker {
-  position: relative;
 }
 
 .cal-day-popup-time {
@@ -2273,6 +2262,7 @@ body.theme-light .video-duration {
 
 .cal-day-popup-time:disabled {
   cursor: default;
+  opacity: 1;
 }
 
 .cal-day-popup-time-nav.is-locked .cal-icon-btn,
