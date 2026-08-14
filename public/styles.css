@@ -2837,9 +2837,9 @@ body.theme-light .video-duration {
 }
 
 .cal-day-editor-reference-btn.is-on {
-  background: #f4f4f6;
-  border-color: #f4f4f6;
-  color: #111114;
+  background: #34343c;
+  border-color: #5a5a66;
+  color: #fff;
 }
 
 .cal-day-popup.is-viewing .cal-day-editor-reference-btn {
