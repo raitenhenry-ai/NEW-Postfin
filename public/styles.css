@@ -6444,15 +6444,8 @@ body.theme-light .cal-day-popup-head {
   border-bottom-color: transparent;
 }
 
-body.theme-light .cal-day-popup-heading strong,
-body.theme-light .cal-day-popup-time {
+body.theme-light .cal-day-popup-heading strong {
   color: #111114;
-}
-
-body.theme-light .cal-day-popup-time:hover:not(:disabled),
-body.theme-light .cal-day-popup-time-picker.open .cal-day-popup-time {
-  background: #f0f0f3;
-  border-color: #d8d8de;
 }
 
 body.theme-light .cal-day-popup-time-menu {
