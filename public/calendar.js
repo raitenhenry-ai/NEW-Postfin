@@ -2823,6 +2823,7 @@
 
   window.addEventListener("resize", () => {
     positionFormatMenu();
+    positionPopupTimeMenu();
     if (!dayPopup || dayPopup.hidden) return;
     applyPopupSize(loadPopupSize() || {
       width: dayPopup.offsetWidth,
