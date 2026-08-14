@@ -333,8 +333,6 @@
       toast("Saved");
       await loadEvents();
       render();
-      const cell = grid.querySelector(`.cal-cell[data-date="${key}"]`);
-      openDayPopup(key, cell, postIndex, { fresh: false });
     } catch (err) {
       toast(err.message || "Could not save", "error");
       if (saveBtn) saveBtn.disabled = false;
