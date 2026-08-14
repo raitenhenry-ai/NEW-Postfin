@@ -8518,3 +8518,77 @@ body.theme-light .product-shimmer {
   );
   background-size: 200% 100%;
 }
+
+/* The day popup is user-resizable, so its type scales with its own width
+   (cqw is a percentage of the popup, not the viewport). Each max matches the
+   size the popup uses at its default 420px, so nothing shifts until it's
+   dragged narrower. */
+.cal-day-popup .cal-day-popup-heading strong {
+  font-size: clamp(12.5px, 3.81cqw, 16px);
+}
+
+.cal-day-popup .cal-day-popup-heading span {
+  font-size: clamp(10.5px, 2.98cqw, 12.5px);
+}
+
+.cal-day-popup .cal-day-popup-time {
+  height: clamp(28px, 8.1cqw, 34px);
+  padding: 0 clamp(8px, 2.86cqw, 12px);
+  gap: clamp(5px, 1.9cqw, 8px);
+  font-size: clamp(12px, 3.57cqw, 15px);
+}
+
+.cal-day-popup .cal-day-popup-mode button {
+  padding: 5px clamp(8px, 2.86cqw, 12px);
+  font-size: clamp(10px, 2.86cqw, 12px);
+}
+
+.cal-day-popup .cal-day-editor-switch {
+  font-size: clamp(9.5px, 2.62cqw, 11px);
+}
+
+.cal-day-popup .cal-day-editor-title {
+  font-size: clamp(12px, 3.57cqw, 15px);
+}
+
+.cal-day-popup .cal-day-editor-platforms {
+  font-size: clamp(10px, 2.86cqw, 12px);
+}
+
+.cal-day-popup .cal-day-editor-tabs button {
+  padding: 7px clamp(4px, 2.38cqw, 10px);
+  font-size: clamp(10.5px, 3.1cqw, 13px);
+}
+
+.cal-day-popup .cal-day-editor-label {
+  font-size: clamp(8.5px, 2.38cqw, 10px);
+}
+
+.cal-day-popup .cal-day-editor-text {
+  font-size: clamp(11px, 3.1cqw, 13px);
+}
+
+.cal-day-popup .cal-day-popup-model,
+.cal-day-popup .cal-day-popup-caption,
+.cal-day-popup .cal-day-popup-prompt,
+.cal-day-popup .cal-day-popup-empty {
+  font-size: clamp(10.5px, 2.98cqw, 12.5px);
+}
+
+.cal-day-popup .cal-day-editor-reference-btn,
+.cal-day-popup .cal-day-editor-reference-input,
+.cal-day-popup .cal-day-editor-reference-submit,
+.cal-day-popup .cal-day-editor-reference-name {
+  font-size: clamp(10px, 2.86cqw, 12px);
+}
+
+.cal-day-popup .cal-day-editor-reference-btn,
+.cal-day-popup .cal-day-editor-reference-input,
+.cal-day-popup .cal-day-editor-reference-submit {
+  height: clamp(27px, 7.62cqw, 32px);
+}
+
+.cal-day-popup .cal-day-editor-save {
+  height: clamp(36px, 10.5cqw, 44px);
+  font-size: clamp(12px, 3.33cqw, 14px);
+}
