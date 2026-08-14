@@ -2644,7 +2644,7 @@ body.theme-light .video-duration {
 .cal-day-editor-title {
   flex: 1 1 auto;
   min-width: 0;
-  height: 42px;
+  height: 38px;
   border: none;
   background: transparent;
   color: #f0f0f4;
