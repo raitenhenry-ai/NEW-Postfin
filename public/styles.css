@@ -3443,9 +3443,8 @@ body.theme-light .cal-post-fields {
 
 .cal-platform-picker {
   position: relative;
-  flex: 0 0 auto;
+  flex: 1 1 0;
   min-width: 0;
-  max-width: 100%;
 }
 
 .cal-platform-btn-icon {
