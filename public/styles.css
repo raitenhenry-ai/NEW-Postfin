@@ -6611,14 +6611,14 @@ body.theme-light .cal-day-editor-save {
 }
 
 body.theme-light .cal-day-editor-reference-add {
-  background: #f7f7f9;
-  border-color: #d0d0d6;
+  background: #f0f0f3;
+  border-color: #d8d8de;
   color: #3a3a42;
 }
 
 body.theme-light .cal-day-editor-reference-add:hover {
-  background: #f0f0f3;
-  border-color: #b8b8c0;
+  background: #e6e6ea;
+  border-color: #ccccd4;
   color: #111114;
 }
 
