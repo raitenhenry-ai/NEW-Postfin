@@ -7107,6 +7107,11 @@ body.theme-light .cal-day-editor-switch.is-on {
 body.theme-light .cal-day-editor-platform-item {
   color: #111114 !important;
 }
+body.theme-light .cal-platform-menu-item.is-on .cal-platform-check,
+body.theme-light .cal-day-editor-platform-item.is-on .cal-platform-check {
+  color: #3b6ef5 !important;
+  opacity: 1;
+}
 body.theme-light .cal-day-editor-platform-item:hover,
 body.theme-light .cal-day-editor-platform-item.is-on {
   background: #ececef !important;

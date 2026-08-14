@@ -81,6 +81,7 @@
   let selectedFormat = localStorage.getItem(FORMAT_KEY) === "slideshow" ? "slideshow" : "video";
   let selectedPlatforms = loadSelectedPlatforms(); // empty Set => all linked
   let linkedPlatforms = [];
+  let linkedPlatformsLoaded = false;
   let productCatalog = [];
   const modeButtons = document.querySelectorAll("[data-cal-mode]");
   const modeSwitcher = document.getElementById("cal-mode-switcher");
