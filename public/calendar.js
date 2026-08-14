@@ -2147,6 +2147,7 @@
     } catch (err) {
       toast(`Couldn't load the calendar: ${err.message}`, "error");
       events = {};
+      setLinkedPlatforms([]);
     }
     if (dayPopupKey && dayPopup && !dayPopup.hidden) {
       openDayPopup(
