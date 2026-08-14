@@ -6124,12 +6124,12 @@ body.theme-light .cal-board {
 
 body.theme-light .cal-day-popup {
   background: #ffffff;
-  border-color: #e0e0e6;
-  box-shadow: 0 14px 32px rgba(0, 0, 0, 0.12);
+  border-color: #e6e6ec;
+  box-shadow: 0 18px 40px rgba(20, 20, 28, 0.14);
 }
 
 body.theme-light .cal-day-popup-head {
-  border-bottom-color: #ececf0;
+  border-bottom-color: transparent;
 }
 
 body.theme-light .cal-day-popup-heading strong {
@@ -6148,6 +6148,60 @@ body.theme-light .cal-day-popup-close {
 body.theme-light .cal-day-popup-close:hover {
   background: #f0f0f3;
   color: #111114;
+}
+
+body.theme-light .cal-day-popup-mode {
+  background: #ececef;
+}
+
+body.theme-light .cal-day-popup-mode button {
+  color: #6a6a72;
+  background: transparent;
+}
+
+body.theme-light .cal-day-popup-mode button.is-on {
+  background: #ffffff;
+  color: #111114;
+  box-shadow: 0 1px 3px rgba(20, 20, 28, 0.1);
+}
+
+body.theme-light .cal-day-editor-title-row,
+body.theme-light .cal-day-editor-box {
+  background: #ffffff;
+  border-color: #e2e2e8;
+}
+
+body.theme-light .cal-day-editor-title,
+body.theme-light .cal-day-editor-text {
+  color: #111114;
+}
+
+body.theme-light .cal-day-editor-platforms,
+body.theme-light .cal-day-editor-label,
+body.theme-light .cal-day-editor-count {
+  color: #8a8a92;
+}
+
+body.theme-light .cal-day-editor-tabs,
+body.theme-light .cal-day-editor-switch {
+  background: #ececef;
+}
+
+body.theme-light .cal-day-editor-tabs button,
+body.theme-light .cal-day-editor-switch {
+  color: #6a6a72;
+}
+
+body.theme-light .cal-day-editor-tabs button.is-on,
+body.theme-light .cal-day-editor-switch.is-on {
+  background: #ffffff;
+  color: #111114;
+  box-shadow: 0 1px 3px rgba(20, 20, 28, 0.08);
+}
+
+body.theme-light .cal-day-editor-save {
+  background: #111114;
+  color: #ffffff;
 }
 
 body.theme-light .cal-day-popup-item {
