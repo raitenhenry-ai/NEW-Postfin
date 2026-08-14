@@ -10,6 +10,24 @@ html, body {
   font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display", system-ui, sans-serif;
 }
 
+/* Applied from a blocking head script so light mode does not flash black
+   while app.js is still loading at the bottom of the page. */
+html.theme-light,
+html.theme-light body {
+  background: #f4f4f6;
+  color: #3a3a42;
+  color-scheme: light;
+}
+
+html.theme-light .sidebar {
+  background: #ececef;
+}
+
+html.theme-light .page,
+html.theme-light .page.cal-workspace {
+  background: #f4f4f6;
+}
+
 body {
   --sidebar-width: 80px;
 }

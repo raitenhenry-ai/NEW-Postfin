@@ -12,14 +12,15 @@ function getTheme() {
 }
 
 function applyTheme(theme) {
-  document.body.classList.toggle("theme-light", theme === "light");
+  const light = theme === "light";
+  document.documentElement.classList.toggle("theme-light", light);
+  document.body?.classList.toggle("theme-light", light);
   const toggle = document.getElementById("theme-toggle");
   if (toggle) {
-    const on = theme === "light";
-    toggle.setAttribute("aria-checked", on ? "true" : "false");
-    toggle.classList.toggle("is-light", on);
+    toggle.setAttribute("aria-checked", light ? "true" : "false");
+    toggle.classList.toggle("is-light", light);
     const label = toggle.querySelector(".theme-toggle-label");
-    if (label) label.textContent = on ? "Light" : "Dark";
+    if (label) label.textContent = light ? "Light" : "Dark";
   }
 }
 
