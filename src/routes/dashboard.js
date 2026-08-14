@@ -378,6 +378,10 @@ router.get("/calendar", wrap(async (req, res) => {
     const savedPlatforms = (shaped.settings.platforms || [])
       .filter((p) => linkedPlatforms.includes(p));
 
+    const productImage = shaped.product?.images?.[0]
+      || catalogImages.get(shaped.productUrl)
+      || null;
+
     days[key] ??= { date: key, label: dayLabel(at), posts: [] };
     days[key].posts.push({
       id: shaped.id,
@@ -411,15 +415,14 @@ router.get("/calendar", wrap(async (req, res) => {
         shaped.settings,
         shaped.concept,
         shaped.brief,
-        shaped.product
+        shaped.product,
+        productImage
       ),
       brief: shaped.brief,
       caption: shaped.script?.caption || "",
       hashtags: (shaped.script?.hashtags || []).join(" "),
       productName: shaped.product?.name || "",
-      productImage: shaped.product?.images?.[0]
-        || catalogImages.get(shaped.productUrl)
-        || null,
+      productImage,
       accountCount: posts.length,
       scheduledAt: shaped.scheduledAt,
       references: Array.isArray(shaped.settings.references) ? shaped.settings.references : [],
