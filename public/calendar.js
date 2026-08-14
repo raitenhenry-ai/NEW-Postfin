@@ -233,56 +233,6 @@
     });
   }
 
-  function localDateValue(ms) {
-    const d = new Date(ms);
-    const y = d.getFullYear();
-    const m = String(d.getMonth() + 1).padStart(2, "0");
-    const day = String(d.getDate()).padStart(2, "0");
-    return `${y}-${m}-${day}`;
-  }
-
-  function localTimeValue(ms) {
-    const d = new Date(ms);
-    return `${String(d.getHours()).padStart(2, "0")}:${String(d.getMinutes()).padStart(2, "0")}`;
-  }
-
-  function timestampFromLocal(dateStr, timeStr) {
-    const [y, m, d] = String(dateStr || "").split("-").map(Number);
-    const [hh, mm] = String(timeStr || "09:00").split(":").map(Number);
-    if (!y || !m || !d) return NaN;
-    return new Date(y, m - 1, d, hh || 0, mm || 0).getTime();
-  }
-
-  function postTimestamp(post) {
-    const ms = Number(post?.scheduledAt || post?.at);
-    return Number.isFinite(ms) && ms > 0 ? ms : Date.now();
-  }
-
-  function fillPopupSchedule(post, fallbackKey) {
-    const ms = post ? postTimestamp(post) : (fallbackKey ? parseKey(fallbackKey).getTime() : Date.now());
-    if (dayPopupDate) {
-      dayPopupDate.value = localDateValue(ms);
-      dayPopupDate.min = keyFromDate(new Date());
-    }
-    if (dayPopupTime) {
-      dayPopupTime.value = post ? localTimeValue(ms) : "09:00";
-      dayPopupTime.hidden = !post;
-    }
-    syncPopupScheduleLock(post);
-  }
-
-  function syncPopupScheduleLock(post) {
-    const locked = popupMode === "view" || !post || post.jobStatus === "posted";
-    if (dayPopupDate) {
-      dayPopupDate.disabled = locked;
-      dayPopupDate.title = post?.jobStatus === "posted" ? "Already posted" : "Post date";
-    }
-    if (dayPopupTime) {
-      dayPopupTime.disabled = locked;
-      dayPopupTime.title = post?.jobStatus === "posted" ? "Already posted" : "Post time";
-    }
-  }
-
   function clampPopupPosition(left, top) {
     if (!calBoard || !dayPopup) return { left, top };
     const board = calBoard.getBoundingClientRect();
@@ -424,10 +374,6 @@
     }
     const save = dayPopup?.querySelector(".cal-day-editor-save");
     if (save) save.hidden = popupMode === "view";
-    const focused = dayPopupKey != null
-      ? (events[dayPopupKey] || [])[dayPopupEventIndex] || (events[dayPopupKey] || [])[0]
-      : null;
-    syncPopupScheduleLock(focused || null);
   }
 
   function setPopupTab(next) {
