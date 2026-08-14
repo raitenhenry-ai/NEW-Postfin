@@ -663,6 +663,186 @@
     });
   }
 
+  const REFERENCE_ACCEPT = "image/jpeg,image/png,image/webp,image/gif";
+  const MAX_POPUP_REFERENCES = 12;
+
+  function popupReferences(post) {
+    return Array.isArray(post?.references) ? post.references : [];
+  }
+
+  function referenceLabel(ref) {
+    if (ref.name) return ref.name;
+    try {
+      const url = new URL(ref.url);
+      return `${url.hostname.replace(/^www\./, "")}${url.pathname === "/" ? "" : url.pathname}`;
+    } catch {
+      return ref.url;
+    }
+  }
+
+  function referenceListHtml(post) {
+    const refs = popupReferences(post);
+    if (!refs.length) {
+      return `<p class="cal-day-editor-reference-empty">Add a link to a video or post you like, or an image of a post or product.</p>`;
+    }
+    return refs.map((ref, i) => `
+      <div class="cal-day-editor-reference-item">
+        ${ref.kind === "image"
+          ? `<img class="cal-day-editor-reference-thumb" src="${escapeHtml(ref.url)}" alt="">`
+          : `<span class="cal-day-editor-reference-thumb cal-day-editor-reference-thumb-link"><svg viewBox="0 0 14 14" fill="none" aria-hidden="true"><path d="M5.5 8.5l3-3M6 4.5l1-1a2.1 2.1 0 013 3l-1 1M8 9.5l-1 1a2.1 2.1 0 01-3-3l1-1" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg></span>`}
+        ${ref.kind === "image"
+          ? `<span class="cal-day-editor-reference-name">${escapeHtml(ref.name || "Reference image")}</span>`
+          : `<a class="cal-day-editor-reference-name" href="${escapeHtml(ref.url)}" target="_blank" rel="noopener noreferrer">${escapeHtml(referenceLabel(ref))}</a>`}
+        <button type="button" class="cal-day-editor-reference-remove" data-reference-remove="${i}" aria-label="Remove reference">
+          <svg viewBox="0 0 12 12" fill="none" aria-hidden="true"><path d="M3 3l6 6M9 3L3 9" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+        </button>
+      </div>`).join("");
+  }
+
+  function referencePanelHtml(post) {
+    return `
+      <div class="cal-day-editor-panel cal-day-editor-panel-reference" data-editor-panel="reference" hidden>
+        <div class="cal-day-editor-reference-actions">
+          <button type="button" class="cal-day-editor-reference-btn" data-reference-action="link">Add link</button>
+          <button type="button" class="cal-day-editor-reference-btn" data-reference-action="image">Add image</button>
+        </div>
+        <form class="cal-day-editor-reference-form" hidden>
+          <input class="cal-day-editor-reference-input" type="url" placeholder="Paste a link to a video or post" spellcheck="false">
+          <button type="submit" class="cal-day-editor-reference-submit">Add</button>
+        </form>
+        <input class="cal-day-editor-reference-file" type="file" accept="${REFERENCE_ACCEPT}" hidden>
+        <div class="cal-day-editor-reference-list">${referenceListHtml(post)}</div>
+      </div>`;
+  }
+
+  async function savePopupReferences(key, postIndex, next) {
+    const post = events[key]?.[postIndex];
+    if (!post?.id) return false;
+    const previous = popupReferences(post);
+    try {
+      await api(`/api/jobs/${post.id}`, { method: "PATCH", body: { references: next } });
+      post.references = next;
+      renderPopupReferenceList(key, postIndex);
+      return true;
+    } catch (err) {
+      post.references = previous;
+      toast(err.message || "Could not save that reference", "error");
+      return false;
+    }
+  }
+
+  function renderPopupReferenceList(key, postIndex) {
+    const list = dayPopupList?.querySelector(".cal-day-editor-reference-list");
+    if (!list) return;
+    list.innerHTML = referenceListHtml(events[key]?.[postIndex]);
+    bindPopupReferenceRemoves(list, key, postIndex);
+  }
+
+  function bindPopupReferenceRemoves(list, key, postIndex) {
+    list.querySelectorAll("[data-reference-remove]").forEach((btn) => {
+      btn.disabled = popupMode === "view";
+      btn.addEventListener("click", () => {
+        if (popupMode === "view" || !canEditPopupDay(key)) return;
+        const at = Number(btn.getAttribute("data-reference-remove"));
+        const next = popupReferences(events[key]?.[postIndex]).filter((_, i) => i !== at);
+        savePopupReferences(key, postIndex, next);
+      });
+    });
+  }
+
+  async function addPopupReference(key, postIndex, ref) {
+    const current = popupReferences(events[key]?.[postIndex]);
+    if (current.length >= MAX_POPUP_REFERENCES) {
+      toast(`Keep it to ${MAX_POPUP_REFERENCES} references`, "error");
+      return false;
+    }
+    return savePopupReferences(key, postIndex, [...current, ref]);
+  }
+
+  async function uploadReferenceImage(file, key, postIndex, btn) {
+    const mime = mimeFor(file);
+    if (!ACCEPT_TYPES.has(mime)) {
+      toast("Upload a JPEG, PNG, WebP, or GIF image.", "error");
+      return;
+    }
+    if (file.size > MAX_ATTACH_BYTES) {
+      toast("Keep uploads under 6 MB.", "error");
+      return;
+    }
+    if (btn) btn.disabled = true;
+    try {
+      const payload = await readFileAsPayload(file);
+      payload.mime = mime;
+      const result = await api("/api/uploads", { method: "POST", body: payload });
+      await addPopupReference(key, postIndex, {
+        kind: "image",
+        url: result.path || result.url,
+        name: result.name || file.name,
+      });
+    } catch (err) {
+      toast(err.message || "Could not upload that image", "error");
+    } finally {
+      if (btn) btn.disabled = popupMode === "view";
+    }
+  }
+
+  function bindPopupReferences(editor, key, postIndex) {
+    const panel = editor?.querySelector(".cal-day-editor-panel-reference");
+    if (!panel) return;
+    const form = panel.querySelector(".cal-day-editor-reference-form");
+    const input = panel.querySelector(".cal-day-editor-reference-input");
+    const fileInput = panel.querySelector(".cal-day-editor-reference-file");
+    const imageBtn = panel.querySelector('[data-reference-action="image"]');
+
+    panel.querySelectorAll("[data-reference-action]").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        if (popupMode === "view" || !canEditPopupDay(key)) return;
+        if (btn.getAttribute("data-reference-action") === "image") {
+          if (fileInput) fileInput.value = "";
+          fileInput?.click();
+          return;
+        }
+        const opening = form.hidden;
+        form.hidden = !opening;
+        btn.classList.toggle("is-on", opening);
+        if (opening) {
+          input.value = "";
+          input.focus();
+        }
+      });
+    });
+
+    // The popup closes on Escape and on outside clicks; typing a link should
+    // do neither.
+    panel.addEventListener("keydown", (e) => {
+      if (e.key !== "Escape") return e.stopPropagation();
+      if (!form.hidden) {
+        e.stopPropagation();
+        form.hidden = true;
+        panel.querySelector('[data-reference-action="link"]')?.classList.remove("is-on");
+      }
+    });
+
+    form?.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const raw = input.value.trim();
+      if (!raw) return;
+      const url = /^https?:\/\//i.test(raw) ? raw : `https://${raw}`;
+      const added = await addPopupReference(key, postIndex, { kind: "link", url });
+      if (!added) return;
+      input.value = "";
+      form.hidden = true;
+      panel.querySelector('[data-reference-action="link"]')?.classList.remove("is-on");
+    });
+
+    fileInput?.addEventListener("change", () => {
+      const file = fileInput.files?.[0];
+      if (file) uploadReferenceImage(file, key, postIndex, imageBtn);
+    });
+
+    bindPopupReferenceRemoves(panel.querySelector(".cal-day-editor-reference-list"), key, postIndex);
+  }
+
   function renderPopupEditor(key, posts, postIndex) {
     const post = posts[postIndex];
     if (!post) return "";
