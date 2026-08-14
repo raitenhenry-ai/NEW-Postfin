@@ -1829,11 +1829,13 @@
   });
   historyMenu?.addEventListener("click", (e) => e.stopPropagation());
 
-  document.addEventListener("click", () => {
+  document.addEventListener("click", (e) => {
     setModeMenuOpen(false);
     setMonthMenuOpen(false);
     setHistoryMenuOpen(false);
-    setPopupTimeMenuOpen(false);
+    if (!dayPopupTimePicker?.contains(e.target) && !dayPopupTimeMenu?.contains(e.target)) {
+      setPopupTimeMenuOpen(false);
+    }
   });
   document.addEventListener("keydown", (e) => {
     if (e.key === "Escape") {
