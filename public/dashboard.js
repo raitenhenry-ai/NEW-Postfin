@@ -238,48 +238,6 @@
       </button>`;
   }
 
-  function renderMonth() {
-    const grid = document.getElementById("dash-month-grid");
-    if (!grid) return;
-
-    const year = monthCursor.getFullYear();
-    const month = monthCursor.getMonth();
-    const first = new Date(year, month, 1);
-    // Grid starts on the Monday on or before the 1st.
-    const start = new Date(first);
-    start.setDate(first.getDate() - ((first.getDay() + 6) % 7));
-    const todayKey = dateKey(new Date());
-
-    const cells = [];
-    for (let i = 0; i < 35; i++) {
-      const d = new Date(start);
-      d.setDate(start.getDate() + i);
-      const key = dateKey(d);
-      const posts = postsOn(key);
-      const classes = ["month-cell"];
-      if (d.getMonth() !== month) classes.push("muted");
-      if (key === todayKey) classes.push("today");
-
-      if (!posts.length) {
-        cells.push(`<div class="${classes.join(" ")}"><span>${d.getDate()}</span></div>`);
-        continue;
-      }
-      classes.push("has-posts");
-      const dots = [...new Set(posts.map((p) => p.status))]
-        .map((status) => `<i class="${status}"></i>`).join("");
-      cells.push(`
-        <button type="button" class="${classes.join(" ")}" data-date="${key}">
-          <span>${d.getDate()}</span>
-          <div class="month-dots">${dots}</div>
-        </button>`);
-    }
-
-    grid.innerHTML = cells.join("");
-    grid.querySelectorAll("[data-date]").forEach((el) => {
-      el.addEventListener("click", () => openDay(el.dataset.date));
-    });
-  }
-
   /* ---------- day / post modal ---------- */
 
   function openDay(key) {
