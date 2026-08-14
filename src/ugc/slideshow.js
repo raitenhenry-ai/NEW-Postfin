@@ -184,7 +184,11 @@ export async function planSlideshow(product, settings = {}) {
         },
         {
           role: "user",
-          content: subjectFor(product, settings) || "Write a slideshow ad.",
+          content: visionUserContent(
+            subjectFor(product, settings) || "Write a slideshow ad.",
+            product,
+            settings
+          ),
         },
       ],
     }),

@@ -426,7 +426,9 @@ router.get("/calendar", wrap(async (req, res) => {
 // The brief the video was generated from: the hook, the scenes and the CTA
 // the script module produced, plus the tone/style that shaped them. A
 // slideshow is shown as its slides instead - that is what it actually is.
-function promptText(script, settings, concept, brief) {
+// References and the main product image are part of the prompt the writers
+// see, so they show up here too.
+function promptText(script, settings, concept, brief, product = null) {
   const parts = [];
   const briefText = String(brief || settings?.brief || "").trim();
   if (briefText) parts.push(`Brief:\n${briefText}`);
@@ -435,6 +437,29 @@ function promptText(script, settings, concept, brief) {
   if (concept?.talkingPoints?.length) {
     parts.push(`Talking points:\n- ${concept.talkingPoints.join("\n- ")}`);
   }
+
+  const refs = Array.isArray(settings?.references) ? settings.references : [];
+  if (refs.length) {
+    parts.push(
+      "References:\n" +
+        refs
+          .map((r) => {
+            const url = String(r?.url || "").trim();
+            if (!url) return null;
+            if (r?.kind === "image") {
+              return `- Image${r.name ? ` (${r.name})` : ""}: ${url}`;
+            }
+            return `- Link${r.name ? ` (${r.name})` : ""}: ${url}`;
+          })
+          .filter(Boolean)
+          .join("\n")
+    );
+  }
+  const productImage = product?.images?.[0] || null;
+  if (productImage) {
+    parts.push(`Main product image:\n${productImage}`);
+  }
+
   if (!script) return parts.join("\n\n");
 
   if (script.slides?.length) {
