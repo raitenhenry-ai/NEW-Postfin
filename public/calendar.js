@@ -330,14 +330,26 @@
   function captionWithHashtags(post) {
     const caption = String(post?.caption || "").trim();
     const tags = String(post?.hashtags || "").trim();
-    if (caption && tags) return `${caption}\n${tags}`;
-    return caption || tags || "—";
+    if (caption && tags) return `${caption}\n\n${tags}`;
+    return caption || tags || "";
+  }
+
+  function splitCaptionHashtags(text) {
+    const raw = String(text || "").replace(/\r\n/g, "\n").trim();
+    const trailing = raw.match(/^(.*?)\s*((?:#\S+\s*)+)$/s);
+    if (trailing) {
+      return {
+        caption: trailing[1].trim(),
+        hashtags: trailing[2].trim().split(/\s+/).filter(Boolean),
+      };
+    }
+    return { caption: raw, hashtags: [] };
   }
 
   function postPromptText(post) {
-    const brief = String(post?.brief || "").trim();
     const prompt = String(post?.prompt || "").trim();
-    return brief || prompt || "";
+    const brief = String(post?.brief || "").trim();
+    return prompt || brief || "";
   }
 
   function setPopupMode(next) {
@@ -382,7 +394,8 @@
     if (!post?.id || !editor) return;
     const title = editor.querySelector(".cal-day-editor-title")?.value || "";
     const prompt = editor.querySelector('[data-editor-panel="prompt"] textarea')?.value || "";
-    const caption = editor.querySelector('[data-editor-panel="caption"] textarea')?.value || "";
+    const captionRaw = editor.querySelector('[data-editor-panel="caption"] textarea')?.value || "";
+    const { caption, hashtags } = splitCaptionHashtags(captionRaw);
     const model = editor.querySelector(".cal-day-popup-model")?.value;
     const platforms = [...editor.querySelectorAll("[data-popup-platform].is-on")]
       .map((btn) => btn.getAttribute("data-popup-platform"))
@@ -394,14 +407,19 @@
     }
     if (saveBtn) saveBtn.disabled = true;
     try {
+      const payload = { title, caption, hashtags, platforms };
+      if (!String(post.prompt || "").trim()) payload.brief = prompt;
       await api(`/api/jobs/${post.id}`, {
         method: "PATCH",
-        body: { title, caption, brief: prompt, platforms },
+        body: payload,
       });
       post.title = title.slice(0, 120);
       post.caption = caption;
-      post.brief = prompt;
-      post.prompt = prompt;
+      post.hashtags = hashtags.join(" ");
+      if (payload.brief != null) {
+        post.brief = prompt;
+        post.prompt = prompt;
+      }
       post.platforms = platforms;
       if (model && MODEL_OPTIONS.some((m) => m.id === model)) post.provider = model;
       toast("Saved");
@@ -505,7 +523,7 @@
     const post = posts[postIndex];
     if (!post) return "";
     const prompt = postPromptText(post);
-    const caption = String(post.caption || "");
+    const caption = captionWithHashtags(post);
     const modelId = resolveModelId(post);
     const switcher = posts.length > 1
       ? `<div class="cal-day-editor-switcher">${posts.map((p, i) => `
@@ -533,7 +551,7 @@
         <div class="cal-day-editor-panel" data-editor-panel="caption" hidden>
           <span class="cal-day-editor-label">Caption</span>
           <div class="cal-day-editor-box">
-            <textarea class="cal-day-editor-text" maxlength="2200" placeholder="Caption">${escapeHtml(caption)}</textarea>
+            <textarea class="cal-day-editor-text" placeholder="Caption and hashtags">${escapeHtml(caption)}</textarea>
           </div>
         </div>
         <div class="cal-day-editor-panel" data-editor-panel="model" hidden>

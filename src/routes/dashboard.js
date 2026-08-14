@@ -411,10 +411,15 @@ router.get("/calendar", wrap(async (req, res) => {
 // The brief the video was generated from: the hook, the scenes and the CTA
 // the script module produced, plus the tone/style that shaped them. A
 // slideshow is shown as its slides instead - that is what it actually is.
-function promptText(script, settings, concept) {
+function promptText(script, settings, concept, brief) {
   const parts = [];
+  const briefText = String(brief || settings?.brief || "").trim();
+  if (briefText) parts.push(`Brief:\n${briefText}`);
   if (concept?.title) parts.push(`Concept: ${concept.title}`);
   if (concept?.angle) parts.push(`Angle: ${concept.angle}`);
+  if (concept?.talkingPoints?.length) {
+    parts.push(`Talking points:\n- ${concept.talkingPoints.join("\n- ")}`);
+  }
   if (!script) return parts.join("\n\n");
 
   if (script.slides?.length) {
