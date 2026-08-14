@@ -939,7 +939,7 @@
       }
 
       .models-marquee {
-        --models-gap: calc(var(--u) * 9.5);
+        --models-gap: calc(var(--u) * 3.6);
         width: 100vw;
         max-width: 100vw;
         margin-left: calc(50% - 50vw);
@@ -961,6 +961,7 @@
       }
 
       .models-row {
+        --models-shift: 50%;
         display: flex;
         flex-wrap: nowrap;
         align-items: center;
@@ -968,8 +969,8 @@
         padding: calc(var(--u) * 0.3) 0;
         will-change: transform;
         backface-visibility: hidden;
-        transform: translate3d(-50%, 0, 0);
-        animation: models-scroll-right 60s linear infinite;
+        transform: translate3d(0, 0, 0);
+        animation: models-scroll 40s linear infinite;
       }
 
       .models-group {
@@ -991,12 +992,12 @@
         filter: none;
       }
 
-      @keyframes models-scroll-right {
+      @keyframes models-scroll {
         from {
-          transform: translate3d(-50%, 0, 0);
+          transform: translate3d(0, 0, 0);
         }
         to {
-          transform: translate3d(0, 0, 0);
+          transform: translate3d(calc(-1 * var(--models-shift)), 0, 0);
         }
       }
 
