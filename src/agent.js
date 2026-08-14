@@ -875,11 +875,6 @@ function systemPrompt(ctx) {
       "been published, and connecting a social account.",
     `Today is ${today} in the user's timezone. Resolve relative dates like ` +
       '"next week" or "Friday" against that, and always pass dates as YYYY-MM-DD.',
-    ctx.selectedDates?.length
-      ? `The user has these days selected on the calendar: ${ctx.selectedDates.join(", ")}. ` +
-        "Use them when they ask for videos without naming dates."
-      : "The user has no days selected on the calendar. If they ask for videos " +
-        "without naming dates, pick sensible upcoming dates and say which you chose.",
     ctx.selectedVideo
       ? `The user clicked this scheduled video on the calendar and attached it to the chat: ` +
         `id ${ctx.selectedVideo.id}, titled "${ctx.selectedVideo.title || "Untitled"}"` +
@@ -887,7 +882,11 @@ function systemPrompt(ctx) {
         ". That is the video they mean. When they ask to edit, move, regenerate, retry, " +
         "post, or delete, call the matching tool with that videoId — do not ask which " +
         "video, and do not plan a new one unless they clearly ask for a new video."
-      : null,
+      : ctx.selectedDates?.length
+      ? `The user has these days selected on the calendar: ${ctx.selectedDates.join(", ")}. ` +
+        "Use them when they ask for videos without naming dates."
+      : "The user has no days selected on the calendar. If they ask for videos " +
+        "without naming dates, pick sensible upcoming dates and say which you chose.",
     ctx.productUrl
       ? `The user selected this product for the current chat: ${ctx.productName || "product"} (${ctx.productUrl}). ` +
         "When planning videos, pass that URL as productUrl unless they ask for a different product."

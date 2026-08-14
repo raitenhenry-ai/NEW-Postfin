@@ -3144,6 +3144,15 @@ body.theme-light .cal-post-fields {
   white-space: nowrap;
 }
 
+.cal-event-chip {
+  max-width: 100%;
+}
+
+.cal-event-chip .cal-date-chip-label {
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
 .cal-date-chip-remove {
   width: 14px;
   height: 14px;
