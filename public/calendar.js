@@ -1382,7 +1382,7 @@
 
   dayPopupDrag?.addEventListener("pointerdown", (e) => {
     if (e.button !== 0 || !dayPopup || !calBoard) return;
-    if (e.target.closest(".cal-day-popup-close")) return;
+    if (e.target.closest(".cal-day-popup-close, .cal-day-popup-mode")) return;
     e.preventDefault();
     e.stopPropagation();
     const board = calBoard.getBoundingClientRect();
