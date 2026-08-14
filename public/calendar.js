@@ -650,11 +650,7 @@
       ? dayPopupEventIndex
       : (posts.length ? 0 : null);
 
-    if (dayPopupDate) dayPopupDate.textContent = formatPopupDate(key);
-    if (dayPopupCount) {
-      const post = focusIndex != null ? posts[focusIndex] : null;
-      dayPopupCount.textContent = post?.time || (posts.length ? `${posts.length} posts` : "No posts");
-    }
+    fillPopupSchedule(focusIndex != null ? posts[focusIndex] : null, key);
 
     if (!posts.length) {
       dayPopupList.innerHTML = `<p class="cal-day-popup-empty">Nothing scheduled this day.</p>`;
