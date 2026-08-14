@@ -8615,9 +8615,10 @@ body.theme-light .product-shimmer {
   font-size: clamp(10px, 2.86cqw, 12px);
 }
 
+/* Five tabs at 300px wide is the tightest row in the popup. */
 .cal-day-popup .cal-day-editor-tabs button {
-  padding: 7px clamp(4px, 2.38cqw, 10px);
-  font-size: clamp(10.5px, 3.1cqw, 13px);
+  padding: 7px clamp(2px, 1.6cqw, 7px);
+  font-size: clamp(9px, 2.7cqw, 12.5px);
 }
 
 .cal-day-popup .cal-day-editor-label {
