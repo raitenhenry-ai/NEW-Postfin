@@ -264,28 +264,32 @@ router.patch("/jobs/:id", wrap(async (req, res) => {
       [req.body.title.slice(0, 120), Date.now(), job.id]);
   }
 
+  if (typeof req.body.brief === "string") {
+    await dbRun("UPDATE ugc_jobs SET brief = ?, updated_at = ? WHERE id = ?",
+      [req.body.brief.slice(0, 2000), Date.now(), job.id]);
+  }
+
   // Caption and hashtags live inside the generated script; both are what
   // the platforms actually receive at publish time.
   if (typeof req.body.caption === "string" || "hashtags" in req.body) {
     const script = JSON.parse(job.script_json || "null");
-    if (!script) {
-      return res.status(400).json({ error: "The script hasn't been generated yet" });
+    if (script) {
+      if (typeof req.body.caption === "string") {
+        script.caption = req.body.caption.slice(0, 2200);
+      }
+      if ("hashtags" in req.body) {
+        const raw = Array.isArray(req.body.hashtags)
+          ? req.body.hashtags
+          : String(req.body.hashtags || "").split(/[\s,]+/);
+        script.hashtags = raw
+          .map((tag) => String(tag).trim())
+          .filter(Boolean)
+          .map((tag) => (tag.startsWith("#") ? tag : `#${tag}`))
+          .slice(0, 30);
+      }
+      await dbRun("UPDATE ugc_jobs SET script_json = ?, updated_at = ? WHERE id = ?",
+        [JSON.stringify(script), Date.now(), job.id]);
     }
-    if (typeof req.body.caption === "string") {
-      script.caption = req.body.caption.slice(0, 2200);
-    }
-    if ("hashtags" in req.body) {
-      const raw = Array.isArray(req.body.hashtags)
-        ? req.body.hashtags
-        : String(req.body.hashtags || "").split(/[\s,]+/);
-      script.hashtags = raw
-        .map((tag) => String(tag).trim())
-        .filter(Boolean)
-        .map((tag) => (tag.startsWith("#") ? tag : `#${tag}`))
-        .slice(0, 30);
-    }
-    await dbRun("UPDATE ugc_jobs SET script_json = ?, updated_at = ? WHERE id = ?",
-      [JSON.stringify(script), Date.now(), job.id]);
   }
 
   if ("scheduledAt" in req.body) {
