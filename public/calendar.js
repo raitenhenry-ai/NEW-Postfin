@@ -24,7 +24,7 @@
   const platformPicker = document.getElementById("cal-platform-picker");
   const platformBtn = document.getElementById("cal-platform-btn");
   const platformBtnLabel = document.getElementById("cal-platform-label");
-  const platformBtnIcons = document.getElementById("cal-platform-btn-icons");
+  const platformBtnIcon = document.getElementById("cal-platform-btn-icon");
   const platformMenu = document.getElementById("cal-platform-menu");
   const hint = document.getElementById("cal-hint");
   const shell = document.querySelector(".cal-shell");
