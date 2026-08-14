@@ -526,7 +526,7 @@
   }
 
   function setPopupTab(next) {
-    popupTab = ["prompt", "caption", "model", "reference"].includes(next) ? next : "prompt";
+    popupTab = ["prompt", "caption", "model", "reference", "image"].includes(next) ? next : "prompt";
     dayPopupList?.querySelectorAll("[data-editor-tab]").forEach((btn) => {
       const on = btn.getAttribute("data-editor-tab") === popupTab;
       btn.classList.toggle("is-on", on);
