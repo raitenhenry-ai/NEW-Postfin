@@ -1816,6 +1816,7 @@
     setModeMenuOpen(false);
     setMonthMenuOpen(false);
     setHistoryMenuOpen(false);
+    setPopupTimeMenuOpen(false);
   });
   document.addEventListener("keydown", (e) => {
     if (e.key === "Escape") {
