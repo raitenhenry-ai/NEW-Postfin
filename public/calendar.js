@@ -79,7 +79,8 @@
   let selectedProductUrl = localStorage.getItem(PRODUCT_KEY) || "";
   let attachedUpload = null;
   let selectedFormat = localStorage.getItem(FORMAT_KEY) === "slideshow" ? "slideshow" : "video";
-  let selectedPlatforms = loadSelectedPlatforms(); // empty Set => all platforms
+  let selectedPlatforms = loadSelectedPlatforms(); // empty Set => all linked
+  let linkedPlatforms = [];
   let productCatalog = [];
   const modeButtons = document.querySelectorAll("[data-cal-mode]");
   const modeSwitcher = document.getElementById("cal-mode-switcher");
