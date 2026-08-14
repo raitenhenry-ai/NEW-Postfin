@@ -341,6 +341,15 @@
     }
   }
 
+  function modelSelectHtml(selectedId) {
+    return `
+      <select class="cal-day-popup-model" aria-label="Model">
+        ${MODEL_OPTIONS.map((m) => `
+          <option value="${escapeHtml(m.id)}"${m.id === selectedId ? " selected" : ""}>${escapeHtml(m.label)}</option>
+        `).join("")}
+      </select>`;
+  }
+
   function renderPopupEditor(key, posts, postIndex) {
     const post = posts[postIndex];
     if (!post) return "";
