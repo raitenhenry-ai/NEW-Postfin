@@ -2148,6 +2148,9 @@ body.theme-light .video-duration {
   position: absolute;
   z-index: 40;
   width: min(420px, calc(100% - 16px));
+  min-width: 300px;
+  min-height: 280px;
+  max-width: calc(100% - 16px);
   max-height: min(640px, calc(100% - 16px));
   display: flex;
   flex-direction: column;
@@ -2156,6 +2159,59 @@ body.theme-light .video-duration {
   background: #18181c;
   box-shadow: 0 14px 36px rgba(0, 0, 0, 0.45);
   overflow: hidden;
+}
+
+.cal-day-popup.is-sized {
+  max-height: none;
+}
+
+.cal-day-popup.is-resizing {
+  user-select: none;
+}
+
+.cal-day-popup-resize {
+  position: absolute;
+  z-index: 6;
+  touch-action: none;
+}
+
+.cal-day-popup-resize.is-e {
+  top: 28px;
+  right: 0;
+  bottom: 18px;
+  width: 10px;
+  cursor: ew-resize;
+}
+
+.cal-day-popup-resize.is-s {
+  left: 28px;
+  right: 18px;
+  bottom: 0;
+  height: 10px;
+  cursor: ns-resize;
+}
+
+.cal-day-popup-resize.is-se {
+  right: 0;
+  bottom: 0;
+  width: 18px;
+  height: 18px;
+  display: flex;
+  align-items: flex-end;
+  justify-content: flex-end;
+  padding: 2px;
+  color: #6a6a72;
+  cursor: nwse-resize;
+}
+
+.cal-day-popup-resize.is-se svg {
+  width: 12px;
+  height: 12px;
+  display: block;
+}
+
+.cal-day-popup-resize.is-se:hover {
+  color: #c8c8d0;
 }
 
 .cal-day-popup[hidden] {
