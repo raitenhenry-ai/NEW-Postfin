@@ -3293,7 +3293,7 @@ body.theme-light .cal-post-fields {
 
 .cal-chat-tools {
   display: flex;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
   align-items: center;
   gap: 8px;
   margin: 0 10px;
