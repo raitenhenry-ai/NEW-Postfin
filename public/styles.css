@@ -2196,8 +2196,41 @@ body.theme-light .video-duration {
 
 .cal-day-popup-heading span {
   color: #8a8a92;
-  font-size: 11px;
-  font-weight: 500;
+  font-size: 12.5px;
+  font-weight: 550;
+}
+
+.cal-day-popup-head-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.cal-day-popup-mode {
+  display: inline-flex;
+  background: #2a2a30;
+  border-radius: 999px;
+  padding: 3px;
+  gap: 2px;
+}
+
+.cal-day-popup-mode button {
+  border: none;
+  background: transparent;
+  color: #8a8a92;
+  font-family: inherit;
+  font-size: 12px;
+  font-weight: 600;
+  padding: 5px 12px;
+  border-radius: 999px;
+  cursor: pointer;
+}
+
+.cal-day-popup-mode button.is-on {
+  background: #f4f4f6;
+  color: #111114;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.08);
 }
 
 .cal-day-popup-close {
