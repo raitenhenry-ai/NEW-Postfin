@@ -245,6 +245,52 @@
     };
   }
 
+  function loadPopupSize() {
+    try {
+      const raw = JSON.parse(localStorage.getItem(POPUP_SIZE_KEY) || "null");
+      if (!raw || typeof raw !== "object") return null;
+      const width = Number(raw.width);
+      const height = Number(raw.height);
+      if (!Number.isFinite(width) || !Number.isFinite(height)) return null;
+      return { width, height };
+    } catch {
+      return null;
+    }
+  }
+
+  function persistPopupSize(width, height) {
+    localStorage.setItem(POPUP_SIZE_KEY, JSON.stringify({
+      width: Math.round(width),
+      height: Math.round(height),
+    }));
+  }
+
+  function clampPopupSize(width, height, left, top) {
+    if (!calBoard) return { width, height };
+    const board = calBoard.getBoundingClientRect();
+    const pad = 8;
+    const maxW = Math.max(POPUP_MIN_W, board.width - (left ?? pad) - pad);
+    const maxH = Math.max(POPUP_MIN_H, board.height - (top ?? pad) - pad);
+    return {
+      width: Math.min(Math.max(POPUP_MIN_W, width), maxW),
+      height: Math.min(Math.max(POPUP_MIN_H, height), maxH),
+    };
+  }
+
+  function applyPopupSize(size) {
+    if (!dayPopup) return;
+    if (!size) {
+      dayPopup.classList.remove("is-sized");
+      dayPopup.style.width = "";
+      dayPopup.style.height = "";
+      return;
+    }
+    const next = clampPopupSize(size.width, size.height, dayPopup.offsetLeft || 8, dayPopup.offsetTop || 8);
+    dayPopup.classList.add("is-sized");
+    dayPopup.style.width = `${Math.round(next.width)}px`;
+    dayPopup.style.height = `${Math.round(next.height)}px`;
+  }
+
   function placeDayPopupBeside(cell) {
     if (!calBoard || !dayPopup || !cell) return;
     const board = calBoard.getBoundingClientRect();
