@@ -27,7 +27,6 @@
 
   let calendarDays = {};
   let weekStart = startOfWeek(new Date());
-  let monthCursor = new Date();
   let rangeKey = "30d";
   let requestId = 0;
 
