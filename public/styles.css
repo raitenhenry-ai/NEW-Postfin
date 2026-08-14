@@ -2524,6 +2524,10 @@ body.theme-light .video-duration {
   cursor: pointer;
 }
 
+.cal-day-editor-platform-item .cal-platform-check {
+  color: #7cb8ff;
+}
+
 .cal-day-editor-platform-item:hover,
 .cal-day-editor-platform-item.is-on {
   background: #2a2a30;
