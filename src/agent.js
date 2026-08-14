@@ -952,8 +952,15 @@ function systemPrompt(ctx) {
         "unless they clearly say that image IS the product."
       : null,
     ctx.accounts
-      ? `Connected accounts: ${ctx.accounts}.`
-      : "No social accounts are connected yet - videos will generate but cannot publish.",
+      ? `Connected accounts: ${ctx.accounts}. You can ONLY post to these linked platforms: ${
+          (ctx.connectedPlatforms || []).join(", ") || "none"
+        }. Never pass a platform that is not in that list. If the user asks for one that is not linked, tell them it is not connected and do not schedule it there.`
+      : "No social accounts are connected yet - videos will generate but cannot publish. Do not pass any platforms.",
+    ctx.targetPlatforms?.length
+      ? `The user picked these platforms in the composer: ${ctx.targetPlatforms.join(", ")}. Use them when planning unless they name different linked platforms.`
+      : (ctx.connectedPlatforms || []).length
+        ? `No specific platforms were picked in the composer, so use every linked account: ${ctx.connectedPlatforms.join(", ")}.`
+        : null,
     "Use the tools rather than guessing. Never invent view counts, dates or video " +
       "ids: read them with a tool first. Every date a tool gives you is already " +
       "in the user's timezone - use it as-is and never convert it.",
