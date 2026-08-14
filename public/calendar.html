@@ -228,9 +228,15 @@
                   <strong id="cal-day-popup-date"></strong>
                   <span id="cal-day-popup-count"></span>
                 </div>
-                <button type="button" class="cal-day-popup-close" id="cal-day-popup-close" aria-label="Close">
-                  <svg viewBox="0 0 12 12" fill="none" aria-hidden="true"><path d="M3 3l6 6M9 3L3 9" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
-                </button>
+                <div class="cal-day-popup-head-actions">
+                  <div class="cal-day-popup-mode" role="tablist" aria-label="Edit or view">
+                    <button type="button" class="is-on" data-popup-mode="edit">Edit</button>
+                    <button type="button" data-popup-mode="view">View</button>
+                  </div>
+                  <button type="button" class="cal-day-popup-close" id="cal-day-popup-close" aria-label="Close">
+                    <svg viewBox="0 0 12 12" fill="none" aria-hidden="true"><path d="M3 3l6 6M9 3L3 9" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+                  </button>
+                </div>
               </div>
               <div class="cal-day-popup-list" id="cal-day-popup-list"></div>
             </div>
