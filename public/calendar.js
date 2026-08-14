@@ -463,6 +463,21 @@
     try {
       const payload = { title, caption, hashtags, platforms };
       if (!String(post.prompt || "").trim()) payload.brief = prompt;
+      if (post.jobStatus !== "posted") {
+        const dateVal = dayPopupDate?.value || key;
+        const timeVal = dayPopupTime?.value || "09:00";
+        const scheduledAt = timestampFromLocal(dateVal, timeVal);
+        const prevDate = localDateValue(postTimestamp(post));
+        const prevTime = localTimeValue(postTimestamp(post));
+        if (dateVal !== prevDate || timeVal !== prevTime) {
+          if (!Number.isFinite(scheduledAt) || scheduledAt <= Date.now()) {
+            toast("Pick a date and time in the future", "error");
+            if (saveBtn) saveBtn.disabled = false;
+            return;
+          }
+          payload.scheduledAt = scheduledAt;
+        }
+      }
       await api(`/api/jobs/${post.id}`, {
         method: "PATCH",
         body: payload,
