@@ -19,8 +19,8 @@ function applyTheme(theme) {
   if (toggle) {
     toggle.setAttribute("aria-checked", light ? "true" : "false");
     toggle.classList.toggle("is-light", light);
-    const label = toggle.querySelector(".theme-toggle-label");
-    if (label) label.textContent = light ? "Light" : "Dark";
+    // Sun in dark mode (click for light); moon in light mode (click for dark).
+    toggle.setAttribute("aria-label", light ? "Switch to dark mode" : "Switch to light mode");
   }
 }
 
@@ -39,7 +39,7 @@ const sidebar = document.getElementById("sidebar");
 const logoBtn = document.getElementById("logo-btn");
 const collapseBtn = document.getElementById("collapse-btn");
 
-// Light / dark switch sits above the foot divider (not under it).
+// Theme control sits above the foot divider as a sun / moon icon.
 (function mountThemeToggle() {
   const foot = document.querySelector(".sidebar-foot");
   if (!foot || document.getElementById("theme-toggle")) return;
@@ -47,11 +47,14 @@ const collapseBtn = document.getElementById("collapse-btn");
   const wrap = document.createElement("div");
   wrap.className = "theme-toggle-wrap";
   wrap.innerHTML = `
-    <button type="button" class="theme-toggle" id="theme-toggle" role="switch" aria-checked="false" aria-label="Toggle light mode">
-      <span class="theme-toggle-track" aria-hidden="true">
-        <span class="theme-toggle-thumb"></span>
-      </span>
-      <span class="theme-toggle-label">Dark</span>
+    <button type="button" class="theme-toggle" id="theme-toggle" role="switch" aria-checked="false" aria-label="Switch to light mode">
+      <svg class="theme-toggle-icon theme-toggle-sun" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+        <circle cx="12" cy="12" r="4" stroke="currentColor" stroke-width="1.75"/>
+        <path d="M12 2.5v2.2M12 19.3v2.2M2.5 12h2.2M19.3 12h2.2M5.05 5.05l1.56 1.56M17.39 17.39l1.56 1.56M18.95 5.05l-1.56 1.56M6.61 17.39l-1.56 1.56" stroke="currentColor" stroke-width="1.75" stroke-linecap="round"/>
+      </svg>
+      <svg class="theme-toggle-icon theme-toggle-moon" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+        <path d="M19.5 13.4A7.5 7.5 0 0110.6 4.5 7.6 7.6 0 0012 19.5 7.6 7.6 0 0019.5 13.4z" stroke="currentColor" stroke-width="1.75" stroke-linejoin="round"/>
+      </svg>
     </button>`;
   const divider = foot.querySelector(".divider");
   foot.insertBefore(wrap, divider || foot.firstChild);

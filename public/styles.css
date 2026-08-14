@@ -210,30 +210,18 @@ body.sidebar-expanded {
   flex-shrink: 0;
 }
 
-.sidebar.expanded .theme-toggle-wrap {
-  justify-content: stretch;
-  padding: 0 4px;
-}
-
 .theme-toggle {
+  width: 40px;
+  height: 40px;
   border: none;
   background: transparent;
-  display: flex;
+  display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 10px;
   cursor: pointer;
-  padding: 6px;
+  padding: 0;
   border-radius: 10px;
   color: #b8b8b8;
-  font: inherit;
-  width: auto;
-}
-
-.sidebar.expanded .theme-toggle {
-  width: 100%;
-  justify-content: flex-start;
-  padding: 8px 10px;
 }
 
 .theme-toggle:hover {
@@ -241,46 +229,21 @@ body.sidebar-expanded {
   color: #e8e8e8;
 }
 
-.theme-toggle-track {
-  position: relative;
-  width: 36px;
-  height: 22px;
-  border-radius: 999px;
-  background: #2a2a2e;
-  border: 1px solid #3a3a42;
-  flex-shrink: 0;
-  transition: background 0.2s ease, border-color 0.2s ease;
+.theme-toggle-icon {
+  width: 20px;
+  height: 20px;
+  display: block;
 }
 
-.theme-toggle-thumb {
-  position: absolute;
-  top: 2px;
-  left: 2px;
-  width: 16px;
-  height: 16px;
-  border-radius: 50%;
-  background: #d8d8de;
-  transition: transform 0.2s ease, background 0.2s ease;
-}
-
-.theme-toggle.is-light .theme-toggle-track {
-  background: #e8e8ec;
-  border-color: #c8c8d0;
-}
-
-.theme-toggle.is-light .theme-toggle-thumb {
-  transform: translateX(14px);
-  background: #fff;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.18);
-}
-
-.theme-toggle-label {
+.theme-toggle-moon {
   display: none;
-  font-size: 12px;
-  font-weight: 550;
 }
 
-.sidebar.expanded .theme-toggle-label {
+.theme-toggle.is-light .theme-toggle-sun {
+  display: none;
+}
+
+.theme-toggle.is-light .theme-toggle-moon {
   display: block;
 }
 
