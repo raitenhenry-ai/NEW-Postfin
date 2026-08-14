@@ -18,18 +18,18 @@ export async function connectedPlatforms() {
   return ENABLED_PLATFORMS.filter((p) => set.has(p));
 }
 
-// Jobs store an explicit platform list. Empty/"omit" means every connected
-// account (or every enabled platform when nothing is connected yet), which
-// matches how the publisher already behaves.
+// Jobs store an explicit platform list. Empty/"omit" means every linked
+// account. Named platforms that are not linked are dropped — we never
+// schedule or publish to an account that is not connected.
 export async function resolveTargetPlatforms(wanted) {
-  const picked = [...new Set(
+  const connected = await connectedPlatforms();
+  const requested = [...new Set(
     (Array.isArray(wanted) ? wanted : [])
       .map((p) => String(p || "").toLowerCase())
-      .filter((p) => ENABLED_PLATFORMS.includes(p))
+      .filter(Boolean)
   )];
-  if (picked.length) return picked;
-  const connected = await connectedPlatforms();
-  return connected.length ? connected : [...ENABLED_PLATFORMS];
+  if (!requested.length) return [...connected];
+  return requested.filter((p) => connected.includes(p));
 }
 
 // Refresh the access token if it expires within the next 5 minutes.

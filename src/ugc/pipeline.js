@@ -2,7 +2,7 @@ import fs from "node:fs";
 import path from "node:path";
 import config from "../config.js";
 import { q, q1, run } from "../db.js";
-import { platforms, freshAccount } from "../accounts.js";
+import { platforms, freshAccount, connectedPlatforms } from "../accounts.js";
 import { scrapeProduct, downloadImages } from "./scrape.js";
 import { generateScript, captionText, spokenText, spokenLines } from "./script.js";
 import { heygenConfigured, startAvatarVideo, waitAndDownload } from "./heygen.js";
@@ -318,9 +318,11 @@ export async function postJob(jobId, { onlyFailed = false } = {}) {
   const settings = JSON.parse(job.settings_json || "{}");
   const script = JSON.parse(job.script_json || "{}");
   const product = JSON.parse(job.product_json || "{}");
-  const wantedPlatforms = Array.isArray(settings.platforms) && settings.platforms.length
+  const linked = await connectedPlatforms();
+  const wantedPlatforms = (Array.isArray(settings.platforms) && settings.platforms.length
     ? settings.platforms
-    : Object.keys(platforms);
+    : linked
+  ).filter((p) => linked.includes(p));
 
   const accounts = (await q("SELECT * FROM accounts ORDER BY platform, id"))
     .filter((a) => wantedPlatforms.includes(a.platform));
