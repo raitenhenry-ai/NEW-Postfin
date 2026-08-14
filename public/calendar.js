@@ -2143,6 +2143,7 @@
       events = Object.fromEntries(
         Object.entries(data.days).map(([key, day]) => [key, day.posts])
       );
+      setLinkedPlatforms(data.connectedPlatforms);
     } catch (err) {
       toast(`Couldn't load the calendar: ${err.message}`, "error");
       events = {};
