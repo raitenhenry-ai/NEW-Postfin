@@ -880,6 +880,14 @@ function systemPrompt(ctx) {
         "Use them when they ask for videos without naming dates."
       : "The user has no days selected on the calendar. If they ask for videos " +
         "without naming dates, pick sensible upcoming dates and say which you chose.",
+    ctx.selectedVideo
+      ? `The user clicked this scheduled video on the calendar and attached it to the chat: ` +
+        `id ${ctx.selectedVideo.id}, titled "${ctx.selectedVideo.title || "Untitled"}"` +
+        (ctx.selectedVideo.date ? `, on ${ctx.selectedVideo.date}` : "") +
+        ". That is the video they mean. When they ask to edit, move, regenerate, retry, " +
+        "post, or delete, call the matching tool with that videoId — do not ask which " +
+        "video, and do not plan a new one unless they clearly ask for a new video."
+      : null,
     ctx.productUrl
       ? `The user selected this product for the current chat: ${ctx.productName || "product"} (${ctx.productUrl}). ` +
         "When planning videos, pass that URL as productUrl unless they ask for a different product."
@@ -961,7 +969,7 @@ function systemPrompt(ctx) {
 // of what it actually did.
 export async function runAssistant({
   messages, selectedDates = [], offsetMinutes = 0, productUrl = "", outputFormat = "",
-  imageUrls = [],
+  imageUrls = [], selectedVideo = null,
 }) {
   if (!assistantAvailable()) {
     throw new Error("The assistant needs an OpenAI key - set OPENAI_API_KEY");

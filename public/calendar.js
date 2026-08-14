@@ -470,6 +470,16 @@
       id: activeChatId,
       updatedAt: Date.now(),
       selectedDates: [...selected].sort(),
+      selectedEvent: selectedEvent
+        ? {
+            id: selectedEvent.id,
+            key: selectedEvent.key,
+            index: selectedEvent.index,
+            videoId: selectedEvent.videoId,
+            title: selectedEvent.title,
+            time: selectedEvent.time,
+          }
+        : null,
       messages: conversation.map(({ role, content, actions, questions, answered, imageUrls }) => ({
         role,
         content,
