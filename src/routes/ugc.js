@@ -1,7 +1,7 @@
 import { Router } from "express";
 import config, { PLATFORM_NAMES, ENABLED_PLATFORMS } from "../config.js";
 import { q, q1, run as dbRun } from "../db.js";
-import { platforms, resolveTargetPlatforms } from "../accounts.js";
+import { platforms, resolveTargetPlatforms, connectedPlatforms } from "../accounts.js";
 import { toneOptions, styleOptions } from "../ugc/script.js";
 import { slideshowAngles, slideshowConfigured, testImageGeneration } from "../ugc/slideshow.js";
 import { planContent, normalizeSettings } from "../ugc/plan.js";
@@ -264,13 +264,14 @@ router.patch("/jobs/:id", wrap(async (req, res) => {
     if (!Array.isArray(req.body.platforms)) {
       return res.status(400).json({ error: "platforms must be an array" });
     }
-    nextPlatforms = [...new Set(
-      req.body.platforms
-        .map((p) => String(p || "").toLowerCase())
-        .filter((p) => ENABLED_PLATFORMS.includes(p))
-    )];
+    nextPlatforms = await resolveTargetPlatforms(req.body.platforms);
     if (!nextPlatforms.length) {
-      return res.status(400).json({ error: "Pick at least one platform this workspace can post to" });
+      const linked = await connectedPlatforms();
+      return res.status(400).json({
+        error: linked.length
+          ? "Pick at least one linked platform"
+          : "No social accounts are linked",
+      });
     }
   }
 
@@ -441,8 +442,13 @@ router.post("/chat", wrap(async (req, res) => {
       ? "avatar"
       : "";
 
+  const platforms = Array.isArray(req.body.platforms)
+    ? req.body.platforms.map((p) => String(p || "").toLowerCase()).filter(Boolean).slice(0, 12)
+    : [];
+
   res.json(await runAssistant({
     messages, selectedDates, offsetMinutes, productUrl, outputFormat, imageUrls, selectedVideo,
+    platforms,
   }));
 }));
 
