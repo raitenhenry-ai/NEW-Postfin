@@ -2910,13 +2910,6 @@ body.theme-light .video-duration {
   display: none;
 }
 
-.cal-day-editor-reference-empty {
-  margin: 0;
-  font-size: 12px;
-  line-height: 1.5;
-  color: #8a8a92;
-}
-
 .cal-day-editor-reference-item {
   display: flex;
   align-items: center;
