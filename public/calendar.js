@@ -2053,7 +2053,8 @@
       openDayPopup(
         dayPopupKey,
         grid.querySelector(`.cal-cell[data-date="${dayPopupKey}"]`),
-        dayPopupEventIndex
+        dayPopupEventIndex,
+        { fresh: false }
       );
     }
   }
