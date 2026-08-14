@@ -481,10 +481,53 @@
     return { caption: raw, hashtags: [] };
   }
 
+  function promptExtrasText(post) {
+    const parts = [];
+    const refs = popupReferences(post);
+    if (refs.length) {
+      parts.push(
+        "References:\n" +
+          refs
+            .map((r) => {
+              if (r.kind === "image") {
+                return `- Image${r.name ? ` (${r.name})` : ""}: ${r.url}`;
+              }
+              return `- Link${r.name ? ` (${r.name})` : ""}: ${r.url}`;
+            })
+            .join("\n")
+      );
+    }
+    if (post?.productImage) {
+      parts.push(`Main product image:\n${post.productImage}`);
+    }
+    return parts.join("\n\n");
+  }
+
+  // The References / Image tabs feed the prompt: show them under the brief,
+  // but strip them before saving so they stay owned by those tabs.
+  function stripPromptExtras(text) {
+    return String(text || "")
+      .replace(/\n\n(?:References:|Main product image:)[\s\S]*$/i, "")
+      .trim();
+  }
+
   function postPromptText(post) {
-    const prompt = String(post?.prompt || "").trim();
-    const brief = String(post?.brief || "").trim();
-    return prompt || brief || "";
+    const base = stripPromptExtras(
+      String(post?.prompt || "").trim() || String(post?.brief || "").trim()
+    );
+    const extras = promptExtrasText(post);
+    if (!extras) return base;
+    return base ? `${base}\n\n${extras}` : extras;
+  }
+
+  function syncPopupPromptExtras(key, postIndex) {
+    const post = events[key]?.[postIndex];
+    const text = dayPopupList?.querySelector('[data-editor-panel="prompt"] textarea');
+    if (!post || !text) return;
+    const head = stripPromptExtras(text.value);
+    const extras = promptExtrasText(post);
+    text.value = extras ? (head ? `${head}\n\n${extras}` : extras) : head;
+    autosizePopupText(text);
   }
 
   function setPopupMode(next) {
