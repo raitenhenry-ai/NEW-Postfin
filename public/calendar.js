@@ -42,7 +42,7 @@
   const PLATFORM_KEY = "cal-target-platforms";
   const POPUP_SIZE_KEY = "cal-day-popup-size";
   const POPUP_MIN_W = 300;
-  const POPUP_MIN_H = 320;
+  const POPUP_MIN_H = 280;
   const PLATFORM_PICKER_LABELS = {
     tiktok: "TikTok",
     youtube: "YouTube",

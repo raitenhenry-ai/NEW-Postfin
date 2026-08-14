@@ -2155,7 +2155,7 @@ body.theme-light .video-duration {
   z-index: 40;
   width: min(420px, calc(100% - 16px));
   min-width: 300px;
-  min-height: 320px;
+  min-height: 280px;
   max-width: calc(100% - 16px);
   max-height: min(640px, calc(100% - 16px));
   display: flex;
