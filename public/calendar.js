@@ -1832,6 +1832,13 @@
           offsetMinutes: -new Date().getTimezoneOffset(),
           productUrl: selectedProductUrl || "",
           imageUrls,
+          selectedVideo: selectedEvent?.videoId
+            ? {
+                id: selectedEvent.videoId,
+                title: selectedEvent.title || "",
+                date: selectedEvent.key || "",
+              }
+            : null,
           outputFormat: selectedFormat,
           platforms: [...selectedPlatforms],
         },
