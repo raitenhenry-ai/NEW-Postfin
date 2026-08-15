@@ -473,24 +473,21 @@ router.post("/chat", wrap(async (req, res) => {
     }
   }
 
-  // The composer's model switch. "slideshow" is its own format; "grok" and
-  // "heygen" are both the avatar format rendered by that model; the legacy
-  // "video"/"avatar" values leave the model to the workspace default.
-  const rawFormat = String(req.body.outputFormat || "");
-  const outputFormat = rawFormat === "slideshow"
+  // The composer's Video/Slideshow switch. "video" is this app's avatar
+  // format; anything unrecognised leaves the choice to the assistant.
+  const outputFormat = req.body.outputFormat === "slideshow"
     ? "slideshow"
-    : ["video", "avatar", "grok", "heygen"].includes(rawFormat)
+    : req.body.outputFormat === "video" || req.body.outputFormat === "avatar"
       ? "avatar"
       : "";
-  const videoProvider = rawFormat === "grok" || rawFormat === "heygen" ? rawFormat : "";
 
   const platforms = Array.isArray(req.body.platforms)
     ? req.body.platforms.map((p) => String(p || "").toLowerCase()).filter(Boolean).slice(0, 12)
     : [];
 
   res.json(await runAssistant({
-    messages, selectedDates, offsetMinutes, productUrl, outputFormat, videoProvider,
-    imageUrls, selectedVideo, platforms,
+    messages, selectedDates, offsetMinutes, productUrl, outputFormat, imageUrls, selectedVideo,
+    platforms,
   }));
 }));
 
