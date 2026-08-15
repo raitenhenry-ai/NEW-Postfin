@@ -7211,11 +7211,20 @@ body.theme-light .video-thumb {
   background: #ececef;
 }
 
-body.theme-light .recent-tile:hover .recent-tile-media {
+body.theme-light .recent-tile:hover .recent-tile-open .recent-tile-media,
+body.theme-light .recent-tile-open:hover .recent-tile-media {
   outline: 1px solid #c8c8d0;
 }
 
 body.theme-light .recent-tile-caption,
+body.theme-light a.recent-tile-caption.is-link {
+  color: #111114 !important;
+}
+
+body.theme-light a.recent-tile-caption.is-link:hover {
+  color: #3b6ef5 !important;
+}
+
 body.theme-light .recent-detail-views-value,
 body.theme-light .account-name,
 body.theme-light .video-meta h3,
