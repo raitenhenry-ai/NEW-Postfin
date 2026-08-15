@@ -211,6 +211,11 @@ router.post("/plan", wrap(async (req, res) => {
 function formatSettings(body) {
   const format = body.format === "slideshow" ? "slideshow" : body.format === "avatar" ? "avatar" : null;
   const out = format ? { format } : {};
+  // Which model renders a non-slideshow video, chosen per job so switching
+  // the workspace later doesn't re-route videos that are already scheduled.
+  if (body.videoProvider === "grok" || body.videoProvider === "heygen") {
+    out.videoProvider = body.videoProvider;
+  }
   if (slideshowAngles().includes(body.angle)) out.angle = body.angle;
   const slides = Number(body.slides);
   if (Number.isInteger(slides) && slides >= 3 && slides <= 10) out.slides = slides;
@@ -473,21 +478,24 @@ router.post("/chat", wrap(async (req, res) => {
     }
   }
 
-  // The composer's Video/Slideshow switch. "video" is this app's avatar
-  // format; anything unrecognised leaves the choice to the assistant.
-  const outputFormat = req.body.outputFormat === "slideshow"
+  // The composer's model switch. "slideshow" is its own format; "grok" and
+  // "heygen" are both the avatar format rendered by that model; the legacy
+  // "video"/"avatar" values leave the model to the workspace default.
+  const rawFormat = String(req.body.outputFormat || "");
+  const outputFormat = rawFormat === "slideshow"
     ? "slideshow"
-    : req.body.outputFormat === "video" || req.body.outputFormat === "avatar"
+    : ["video", "avatar", "grok", "heygen"].includes(rawFormat)
       ? "avatar"
       : "";
+  const videoProvider = rawFormat === "grok" || rawFormat === "heygen" ? rawFormat : "";
 
   const platforms = Array.isArray(req.body.platforms)
     ? req.body.platforms.map((p) => String(p || "").toLowerCase()).filter(Boolean).slice(0, 12)
     : [];
 
   res.json(await runAssistant({
-    messages, selectedDates, offsetMinutes, productUrl, outputFormat, imageUrls, selectedVideo,
-    platforms,
+    messages, selectedDates, offsetMinutes, productUrl, outputFormat, videoProvider,
+    imageUrls, selectedVideo, platforms,
   }));
 }));
 
