@@ -305,11 +305,7 @@
             <span class="post-meta-value">${escapeHtml(
               post.format === "slideshow"
                 ? `AI slideshow${post.slideCount ? ` · ${post.slideCount} slides` : ""}`
-                : post.provider === "grok"
-                  ? "Grok video"
-                  : post.provider === "heygen"
-                    ? "HeyGen avatar"
-                    : "AI video"
+                : "HeyGen avatar"
             )}</span>
           </div>
         </div>

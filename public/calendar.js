@@ -2524,7 +2524,7 @@
         // the render finishes, by which point it is the wrong video.
         const made = a.result.format === "slideshow"
           ? `AI slideshow${a.result.angle ? ` · ${a.result.angle.replace(/_/g, " ")}` : ""}`
-          : "AI video";
+          : "HeyGen avatar video";
         const header = `<li class="cal-action-note">${escapeHtml(made)}</li>`;
         return header + (a.result.videos || []).map((v) => `
           <li class="cal-plan-item">
