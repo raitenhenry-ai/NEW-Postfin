@@ -7254,7 +7254,17 @@ body.theme-light a.recent-tile-caption.is-link:hover {
   color: #3b6ef5 !important;
 }
 
-body.theme-light .recent-detail-views-value,
+body.theme-light .recent-tile-status.is-blue {
+  color: #fff !important;
+}
+
+body.theme-light .recent-tile-status.is-amber {
+  color: #1a1408 !important;
+}
+
+body.theme-light .recent-tile-status.is-red {
+  color: #fff !important;
+}
 body.theme-light .account-name,
 body.theme-light .video-meta h3,
 body.theme-light .connector-name,
