@@ -198,10 +198,38 @@ async function processJob(jobId) {
         `[ugc] job ${job.id}: slideshow ready - ${script.slideFiles.length} slide images ` +
           `plus a ${durationSeconds.toFixed(1)}s video`
       );
+    } else if (provider === "grok") {
+      if (!grokConfigured()) {
+        throw new Error(
+          "Grok is not configured - set XAI_API_KEY to generate videos with " +
+            "Grok Imagine, or switch this video to the slideshow format"
+        );
+      }
+
+      // Grok renders the whole clip in one shot: the script becomes a single
+      // generation prompt, and the product's real photos ride along as
+      // reference images so the product in the video looks like the product.
+      const photoDir = path.join(workDir, "photos");
+      const localImages = product?.images?.length
+        ? await downloadImages(product.images, photoDir)
+        : [];
+      const referenceImages = grokReferenceImages({ localImages, settings });
+
+      const requestId = await startGrokVideo({ script, product, settings, referenceImages });
+      console.log(
+        `[ugc] job ${job.id}: Grok render started (${requestId}), ` +
+          `${referenceImages.length} reference image(s), ` +
+          `${config.ugc.grokVideoSeconds}s ${config.ugc.grokVideoModel}`
+      );
+      await waitAndDownloadGrok(requestId, outputPath);
+
+      await setJob(job.id, { status: "ready", video_filename: filename });
+      console.log(`[ugc] job ${job.id}: video ready (${provider})`);
     } else {
       if (!heygenConfigured()) {
         throw new Error(
           "HeyGen is not configured - set HEYGEN_API_KEY to generate avatar videos, " +
+            "set XAI_API_KEY to use Grok Imagine instead, " +
             "or switch this video to the slideshow format"
         );
       }
