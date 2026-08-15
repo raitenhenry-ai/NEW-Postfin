@@ -5497,6 +5497,35 @@ body.theme-light .analytics-note {
   pointer-events: none;
 }
 
+.recent-tile-status {
+  position: absolute;
+  top: 8px;
+  left: 8px;
+  z-index: 1;
+  padding: 3px 9px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 650;
+  letter-spacing: 0.01em;
+  pointer-events: none;
+  backdrop-filter: blur(4px);
+}
+
+.recent-tile-status.is-blue {
+  background: rgba(47, 111, 237, 0.85);
+  color: #fff;
+}
+
+.recent-tile-status.is-amber {
+  background: rgba(214, 158, 46, 0.9);
+  color: #1a1408;
+}
+
+.recent-tile-status.is-red {
+  background: rgba(226, 75, 75, 0.9);
+  color: #fff;
+}
+
 .recent-tile-app {
   width: 30px;
   height: 30px;
