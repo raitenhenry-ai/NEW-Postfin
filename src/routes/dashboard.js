@@ -739,20 +739,15 @@ const PLATFORM_DESCRIPTIONS = {
 
 /* ------------------------------------------------------------------- Recent */
 
-// recent.html: only videos that actually went live somewhere.
+// recent.html: every video in the pipeline, newest first - live posts,
+// scheduled ones, ones still rendering, and failures the user needs to see.
 router.get("/recent", wrap(async (req, res) => {
-  const limit = Math.min(100, Math.max(1, Number(req.query.limit) || 50));
+  const limit = Math.min(200, Math.max(1, Number(req.query.limit) || 100));
 
-  // Require at least one successful post row - job.status = 'posted' alone
-  // is not enough (it can be set when posting was skipped or partial).
   const jobs = await q(
-    `SELECT j.*
-     FROM ugc_jobs j
-     WHERE EXISTS (
-       SELECT 1 FROM ugc_posts p
-       WHERE p.job_id = j.id AND p.status = 'done'
-     )
-     ORDER BY j.created_at DESC
+    `SELECT *
+     FROM ugc_jobs
+     ORDER BY COALESCE(scheduled_at, created_at) DESC
      LIMIT ?`,
     [limit]
   );
