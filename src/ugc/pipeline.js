@@ -66,10 +66,14 @@ async function setJob(id, fields) {
 }
 
 // Which renderer a job will use. Slideshows are rendered in-process with
-// ffmpeg. Talking-creator videos go to Grok Imagine when an xAI key exists
-// (or when pinned via UGC_VIDEO_PROVIDER), and to HeyGen otherwise.
+// ffmpeg. Talking-creator videos use the model picked on the job itself,
+// then the UGC_VIDEO_PROVIDER pin, then auto: Grok when an xAI key exists,
+// HeyGen otherwise.
 export function pickProvider(settings) {
   if (jobFormat(settings) === "slideshow") return "slideshow";
+  if (settings?.videoProvider === "grok" || settings?.videoProvider === "heygen") {
+    return settings.videoProvider;
+  }
   if (config.ugc.videoProvider === "grok") return "grok";
   if (config.ugc.videoProvider === "heygen") return "heygen";
   return grokConfigured() ? "grok" : "heygen";
