@@ -1,6 +1,6 @@
 import config from "./config.js";
 import { q, run } from "./db.js";
-import { postJob } from "./ugc/pipeline.js";
+import { postJob, enqueueUgcJob } from "./ugc/pipeline.js";
 
 // Scheduled publishing.
 //
