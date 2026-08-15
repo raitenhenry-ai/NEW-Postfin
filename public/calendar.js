@@ -1459,11 +1459,7 @@
       detail.querySelector(".cal-post-model").textContent =
         post.format === "slideshow"
           ? `AI slideshow${post.slideCount ? ` · ${post.slideCount} slides` : ""}`
-          : post.provider === "grok"
-            ? "Grok video"
-            : post.provider === "heygen"
-              ? "HeyGen avatar"
-              : "AI video";
+          : "HeyGen avatar";
       const statusEl = detail.querySelector(".cal-post-status");
       statusEl.textContent =
         `${post.jobStatus}${post.accountCount ? ` \u00b7 ${post.accountCount} account(s)` : ""}`;
