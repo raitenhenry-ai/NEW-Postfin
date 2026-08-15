@@ -7265,6 +7265,8 @@ body.theme-light .recent-tile-status.is-amber {
 body.theme-light .recent-tile-status.is-red {
   color: #fff !important;
 }
+
+body.theme-light .recent-detail-views-value,
 body.theme-light .account-name,
 body.theme-light .video-meta h3,
 body.theme-light .connector-name,
