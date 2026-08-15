@@ -71,10 +71,62 @@ export async function runDueJobs() {
         );
       }
     }
+    await retryFailedJobs().catch((err) => console.error("[schedule] auto-retry:", err));
     return due.length;
   } finally {
     running = false;
   }
+}
+
+// Failed jobs get another shot on their own instead of sitting in Recent as
+// a wall of "Failed" until someone notices. Bounded per process so a video
+// that fails the same way every time does not burn render credits forever.
+const MAX_GEN_RETRIES = 2;
+const genRetries = new Map();
+
+// Failures that come out identical on every run - configuration gaps and
+// content refusals. Retrying those spends time and money to be told no again.
+const PERMANENT_FAILURE =
+  /not configured|no social accounts|content policy|could not be generated|rejected the video/i;
+
+export async function retryFailedJobs(now = Date.now()) {
+  const rows = await q(
+    `SELECT id, error, video_filename, updated_at FROM ugc_jobs
+     WHERE status = 'failed'
+     ORDER BY updated_at DESC
+     LIMIT 25`
+  );
+  let kicked = 0;
+  for (const row of rows) {
+    if (PERMANENT_FAILURE.test(String(row.error || ""))) continue;
+    const count = genRetries.get(row.id) || 0;
+    if (count >= MAX_GEN_RETRIES) continue;
+    // Give the failure a minute to settle - hot-looping a flaky API makes
+    // rate limits worse, not better.
+    if (Number(row.updated_at) > now - 60_000) continue;
+    genRetries.set(row.id, count + 1);
+
+    if (row.video_filename) {
+      // The video rendered fine and only posting failed, so hand it back to
+      // the posting queue rather than paying to re-render it.
+      attempts.delete(row.id);
+      await run(
+        `UPDATE ugc_jobs SET status = 'ready', error = NULL, updated_at = ? WHERE id = ?`,
+        [Date.now(), row.id]
+      );
+    } else {
+      await run(
+        `UPDATE ugc_jobs SET status = 'queued', error = NULL, updated_at = ? WHERE id = ?`,
+        [Date.now(), row.id]
+      );
+      enqueueUgcJob(row.id);
+    }
+    kicked++;
+    console.log(
+      `[schedule] auto-retrying failed job ${row.id} (attempt ${count + 1}/${MAX_GEN_RETRIES})`
+    );
+  }
+  return kicked;
 }
 
 // Move a job's slot. Returns false when the job has already gone out, since
