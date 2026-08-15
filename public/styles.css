@@ -7722,7 +7722,15 @@ body.theme-light .analytics-platform-btn[data-platform="youtube"].active {
 body.theme-light .analytics-platform-btn[data-platform="instagram"].active {
   color: #a21caf !important;
 }
-body.theme-light a:not(.schedule-btn):not(.automated-plan-btn) {
+body.theme-light a:not(.schedule-btn):not(.automated-plan-btn):not(.recent-tile-caption) {
+  color: #3b6ef5 !important;
+}
+
+body.theme-light a.recent-tile-caption.is-link {
+  color: #111114 !important;
+}
+
+body.theme-light a.recent-tile-caption.is-link:hover {
   color: #3b6ef5 !important;
 }
 
