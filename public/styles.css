@@ -5428,6 +5428,19 @@ body.theme-light .analytics-note {
   gap: 14px;
 }
 
+.recent-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 14px;
+}
+
+.recent-toolbar-note {
+  color: #e24b4b;
+  font-size: 13px;
+  font-weight: 600;
+}
+
 .recent-tile {
   border: none;
   background: transparent;
