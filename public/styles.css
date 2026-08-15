@@ -7279,6 +7279,10 @@ body.theme-light .recent-tile-status.is-red {
   color: #fff !important;
 }
 
+body.theme-light .recent-toolbar-note {
+  color: #c23b3b !important;
+}
+
 body.theme-light .recent-detail-views-value,
 body.theme-light .account-name,
 body.theme-light .video-meta h3,
