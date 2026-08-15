@@ -150,7 +150,8 @@ const config = {
   schedulerIntervalSeconds: Number(process.env.SCHEDULER_INTERVAL_SECONDS || 30),
 
   // Video generation. Two formats:
-  //   avatar    - HeyGen renders a talking-head UGC clip (needs HEYGEN_API_KEY)
+  //   avatar    - a talking-creator UGC clip, rendered by Grok Imagine when
+  //               XAI_API_KEY is set (preferred) or HeyGen otherwise
   //   slideshow - the built-in renderer builds the short-form slideshow ad
   //               format: AI-generated images, one big text overlay per slide,
   //               a voiceover, hard cuts (needs OPENAI_API_KEY + ffmpeg)
@@ -158,6 +159,28 @@ const config = {
     format: ["avatar", "slideshow"].includes(env("UGC_FORMAT"))
       ? env("UGC_FORMAT")
       : "avatar",
+    // Which renderer makes non-slideshow videos. Empty means auto: Grok when
+    // an xAI key exists, HeyGen otherwise. Set explicitly to pin one.
+    videoProvider: ["grok", "heygen"].includes(env("UGC_VIDEO_PROVIDER"))
+      ? env("UGC_VIDEO_PROVIDER")
+      : "",
+
+    // Grok Imagine (xAI) - generates the whole clip in one shot from the
+    // script, with the product's real photos passed as reference images.
+    xaiApiKey: env("XAI_API_KEY"),
+    xaiApiBase: env("XAI_API_BASE", "https://api.x.ai").replace(/\/+$/, ""),
+    grokVideoModel: env("GROK_VIDEO_MODEL", "grok-imagine-video-1.5"),
+    // Reference-to-video is capped at 720p; plain text/image-to-video can do
+    // 1080p. 720p is the safe default since product references are the norm.
+    grokResolution: ["480p", "720p", "1080p"].includes(env("GROK_VIDEO_RESOLUTION"))
+      ? env("GROK_VIDEO_RESOLUTION")
+      : "720p",
+    // The API's hard ceiling is 15 seconds.
+    grokVideoSeconds: Math.max(1, Math.min(15, Number(process.env.GROK_VIDEO_SECONDS || 15))),
+    // Optional preset voice (e.g. "eve") from xAI's TTS roster, so the
+    // creator in the clip speaks with a consistent voice across videos.
+    grokVoiceId: env("GROK_VOICE_ID"),
+
     heygenApiKey: env("HEYGEN_API_KEY"),
     heygenApiBase: env("HEYGEN_API_BASE", "https://api.heygen.com").replace(/\/+$/, ""),
     // Fallbacks only - the create form lists the avatars and voices this
