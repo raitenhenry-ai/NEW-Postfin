@@ -113,8 +113,11 @@
     if (job.videoUrl) {
       return `<video src="${escapeHtml(job.videoUrl)}" controls playsinline preload="metadata"></video>`;
     }
+    if (job.slideUrls?.length) {
+      return `<img src="${escapeHtml(job.slideUrls[0])}" alt="" referrerpolicy="no-referrer">`;
+    }
     const img = job.product?.images?.[0];
-    if (img) return `<img src="${escapeHtml(img)}" alt="">`;
+    if (img) return `<img src="${escapeHtml(img)}" alt="" referrerpolicy="no-referrer">`;
     return `<div class="video-thumb-fallback" aria-hidden="true"></div>`;
   }
 
