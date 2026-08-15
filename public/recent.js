@@ -68,7 +68,7 @@
     const posted = (job.posts || []).some((p) => p.status === "done");
     if (posted) return "";
     if (job.status === "failed") {
-      return `<span class="recent-tile-status is-red">Failed</span>`;
+      return `<span class="recent-tile-status is-red" title="${escapeHtml(job.error || "Failed")}">Failed</span>`;
     }
     if (job.status === "posting") {
       return `<span class="recent-tile-status is-blue">Posting…</span>`;
