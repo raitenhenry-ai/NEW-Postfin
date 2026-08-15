@@ -28,6 +28,12 @@
     return job.settings?.platforms || [];
   }
 
+  // First live post URL - what the title under the tile opens.
+  function primaryPostUrl(job) {
+    const hit = (job.posts || []).find((p) => p.status === "done" && p.url);
+    return hit?.url || null;
+  }
+
   function platformIcons(job) {
     const keys = platformsFor(job);
     if (!keys.length) return "";
@@ -40,32 +46,38 @@
       </span>`;
   }
 
-  // The finished video is what the tile is about, so it wins over the
-  // product photo whenever it exists. #t=0.5 asks the browser for a frame
-  // half a second in - without it a poster-less video paints black.
+  // Prefer the rendered mp4 frame over slide / product stills: slide files
+  // can go missing after cleanup, and scraped product CDNs often block hotlinks.
   function thumbMedia(job) {
-    // The hook slide is the ad's first frame and loads far faster than the
-    // video does.
-    if (job.slideUrls?.length) {
-      return `<img src="${escapeHtml(job.slideUrls[0])}" alt="" loading="lazy">`;
-    }
     if (job.videoUrl) {
       return `<video src="${escapeHtml(job.videoUrl)}#t=0.5" muted playsinline preload="metadata"></video>`;
     }
+    if (job.slideUrls?.length) {
+      return `<img src="${escapeHtml(job.slideUrls[0])}" alt="" loading="lazy" referrerpolicy="no-referrer" data-thumb-fallback="1">`;
+    }
     const img = job.product?.images?.[0];
-    if (img) return `<img src="${escapeHtml(img)}" alt="" loading="lazy">`;
+    if (img) {
+      return `<img src="${escapeHtml(img)}" alt="" loading="lazy" referrerpolicy="no-referrer" data-thumb-fallback="1">`;
+    }
     return `<div class="video-thumb-fallback" aria-hidden="true"></div>`;
   }
 
   function jobTile(job) {
+    const postUrl = primaryPostUrl(job);
+    const title = shortCaption(job);
+    const caption = postUrl
+      ? `<a class="recent-tile-caption is-link" href="${escapeHtml(postUrl)}" target="_blank" rel="noopener noreferrer">${escapeHtml(title)}</a>`
+      : `<span class="recent-tile-caption">${escapeHtml(title)}</span>`;
     return `
-      <button type="button" class="recent-tile" data-open="${job.id}" aria-label="${escapeHtml(job.title)}">
-        <span class="recent-tile-thumb">
-          <span class="recent-tile-media">${thumbMedia(job)}</span>
-          ${platformIcons(job)}
-        </span>
-        <span class="recent-tile-caption">${escapeHtml(shortCaption(job))}</span>
-      </button>`;
+      <div class="recent-tile">
+        <button type="button" class="recent-tile-open" data-open="${job.id}" aria-label="${escapeHtml(job.title || title)}">
+          <span class="recent-tile-thumb">
+            <span class="recent-tile-media">${thumbMedia(job)}</span>
+            ${platformIcons(job)}
+          </span>
+        </button>
+        ${caption}
+      </div>`;
   }
 
   function statusChip(status) {
