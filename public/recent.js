@@ -233,6 +233,9 @@
         ? `<ul class="recent-posts">${job.posts.map(postRow).join("")}</ul>`
         : `<p class="recent-card-meta">Not published yet.</p>`}
       <div class="recent-card-actions">
+        ${job.status === "failed"
+          ? `<button type="button" class="pf-btn" data-action="retry" data-job="${job.id}">Retry</button>`
+          : ""}
         <button type="button" class="pf-btn danger" data-action="delete" data-job="${job.id}">Delete</button>
       </div>`;
 
