@@ -2828,24 +2828,19 @@
   }
 
   function syncFormatPicker() {
-    if (formatBtnIcon) formatBtnIcon.innerHTML = FORMAT_ICONS[selectedFormat] || FORMAT_ICONS.video;
+    if (formatBtnIcon) formatBtnIcon.innerHTML = FORMAT_ICONS[selectedFormat] || FORMAT_ICONS.grok;
     formatMenu?.querySelectorAll("[data-format]").forEach((btn) => {
       const on = btn.getAttribute("data-format") === selectedFormat;
       btn.classList.toggle("is-on", on);
       btn.setAttribute("aria-checked", on ? "true" : "false");
     });
-    formatBtn?.setAttribute(
-      "title",
-      selectedFormat === "slideshow" ? "Slideshow generation" : "Video generation"
-    );
-    formatBtn?.setAttribute(
-      "aria-label",
-      selectedFormat === "slideshow" ? "Slideshow · slideshow generation" : "Video · video generation"
-    );
+    const labels = FORMAT_LABELS[selectedFormat] || FORMAT_LABELS.grok;
+    formatBtn?.setAttribute("title", labels.title);
+    formatBtn?.setAttribute("aria-label", labels.aria);
   }
 
   function setSelectedFormat(format) {
-    selectedFormat = format === "slideshow" ? "slideshow" : "video";
+    selectedFormat = normalizeFormat(format);
     localStorage.setItem(FORMAT_KEY, selectedFormat);
     syncFormatPicker();
   }
