@@ -6,6 +6,7 @@ import { platforms, freshAccount, connectedPlatforms } from "../accounts.js";
 import { scrapeProduct, downloadImages } from "./scrape.js";
 import { generateScript, captionText, spokenText, spokenLines } from "./script.js";
 import { heygenConfigured, startAvatarVideo, waitAndDownload } from "./heygen.js";
+import { grokConfigured, grokReferenceImages, startGrokVideo, waitAndDownloadGrok } from "./grok.js";
 import {
   planSlideshow, generateSlideImages, generateSceneImages, renderSlideImages,
   renderSlideshowVideo,
