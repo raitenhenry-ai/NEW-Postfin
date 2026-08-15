@@ -211,11 +211,6 @@ router.post("/plan", wrap(async (req, res) => {
 function formatSettings(body) {
   const format = body.format === "slideshow" ? "slideshow" : body.format === "avatar" ? "avatar" : null;
   const out = format ? { format } : {};
-  // Which model renders a non-slideshow video, chosen per job so switching
-  // the workspace later doesn't re-route videos that are already scheduled.
-  if (body.videoProvider === "grok" || body.videoProvider === "heygen") {
-    out.videoProvider = body.videoProvider;
-  }
   if (slideshowAngles().includes(body.angle)) out.angle = body.angle;
   const slides = Number(body.slides);
   if (Number.isInteger(slides) && slides >= 3 && slides <= 10) out.slides = slides;
