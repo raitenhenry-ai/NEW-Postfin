@@ -264,6 +264,36 @@
     }
   }
 
+  async function retryJob(jobId, button) {
+    if (button) button.disabled = true;
+    try {
+      await api(`/api/jobs/${jobId}/retry`, { method: "POST" });
+      toast("Retrying");
+      closeDetail();
+      await load();
+    } catch (err) {
+      toast(err.message, "error");
+      if (button) button.disabled = false;
+    }
+  }
+
+  async function retryAllFailed(button) {
+    const failed = [...jobsById.values()].filter((j) => j.status === "failed");
+    if (!failed.length) return;
+    button.disabled = true;
+    let ok = 0;
+    for (const job of failed) {
+      try {
+        await api(`/api/jobs/${job.id}/retry`, { method: "POST" });
+        ok++;
+      } catch {
+        // Counted below; each job's own error shows once it re-fails.
+      }
+    }
+    toast(ok === failed.length ? `Retrying ${ok} video${ok === 1 ? "" : "s"}` : `Retried ${ok} of ${failed.length}`, ok ? undefined : "error");
+    await load();
+  }
+
   function bind() {
     feed.querySelectorAll("[data-open]").forEach((btn) => {
       btn.addEventListener("click", () => openDetail(btn.dataset.open));
