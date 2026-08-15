@@ -1077,6 +1077,8 @@ export async function runAssistant({
     // The composer's own format switch. When it is set, it is an answer the
     // user has already given, so the assistant uses it instead of asking.
     outputFormat: outputFormat === "slideshow" ? "slideshow" : outputFormat === "avatar" ? "avatar" : "",
+    // Which model the composer picked to render video-format jobs.
+    videoProvider: videoProvider === "grok" || videoProvider === "heygen" ? videoProvider : "",
     changed: false,
     questions: [],
     accounts: accountRows.map((a) => `${a.platform} (${a.display_name})`).join(", "),
