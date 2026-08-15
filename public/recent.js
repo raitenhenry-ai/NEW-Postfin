@@ -241,6 +241,20 @@
     feed.querySelectorAll("[data-open]").forEach((btn) => {
       btn.addEventListener("click", () => openDetail(btn.dataset.open));
     });
+    // Broken stills fall back to the mp4 frame, then a blank placeholder.
+    feed.querySelectorAll("[data-thumb-fallback]").forEach((img) => {
+      img.addEventListener("error", () => {
+        const tile = img.closest(".recent-tile");
+        const job = jobsById.get(String(tile?.querySelector("[data-open]")?.dataset.open));
+        const media = img.closest(".recent-tile-media");
+        if (!media) return;
+        if (job?.videoUrl) {
+          media.innerHTML = `<video src="${escapeHtml(job.videoUrl)}#t=0.5" muted playsinline preload="metadata"></video>`;
+        } else {
+          media.innerHTML = `<div class="video-thumb-fallback" aria-hidden="true"></div>`;
+        }
+      });
+    });
   }
 
   async function load() {
