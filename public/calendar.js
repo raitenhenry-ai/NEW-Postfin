@@ -84,7 +84,7 @@
   };
   let selectedProductUrl = localStorage.getItem(PRODUCT_KEY) || "";
   let attachedUpload = null;
-  let selectedFormat = normalizeFormat(localStorage.getItem(FORMAT_KEY));
+  let selectedFormat = localStorage.getItem(FORMAT_KEY) === "slideshow" ? "slideshow" : "video";
   let selectedPlatforms = loadSelectedPlatforms(); // empty Set => all linked
   let linkedPlatforms = [];
   let linkedPlatformsLoaded = false;
