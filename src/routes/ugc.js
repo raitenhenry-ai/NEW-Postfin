@@ -369,9 +369,16 @@ router.post("/jobs/:id/retry", wrap(async (req, res) => {
   if (job.status !== "failed") {
     return res.status(400).json({ error: "Only failed jobs can be retried" });
   }
-  await dbRun("UPDATE ugc_jobs SET status = 'queued', error = NULL, updated_at = ? WHERE id = ?",
-    [Date.now(), job.id]);
-  enqueueUgcJob(job.id);
+  if (job.video_filename) {
+    // The video rendered - only posting failed. Park it back at 'ready' so
+    // the scheduler re-posts it, instead of re-rendering a finished video.
+    await dbRun("UPDATE ugc_jobs SET status = 'ready', error = NULL, updated_at = ? WHERE id = ?",
+      [Date.now(), job.id]);
+  } else {
+    await dbRun("UPDATE ugc_jobs SET status = 'queued', error = NULL, updated_at = ? WHERE id = ?",
+      [Date.now(), job.id]);
+    enqueueUgcJob(job.id);
+  }
   res.json({ ok: true });
 }));
 
