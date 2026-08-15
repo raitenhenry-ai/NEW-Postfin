@@ -62,6 +62,26 @@
     return `<div class="video-thumb-fallback" aria-hidden="true"></div>`;
   }
 
+  // State badge on the tile so scheduled / rendering / failed videos read at
+  // a glance. Live posts carry no badge - the platform icons say it shipped.
+  function tileStatus(job) {
+    const posted = (job.posts || []).some((p) => p.status === "done");
+    if (posted) return "";
+    if (job.status === "failed") {
+      return `<span class="recent-tile-status is-red">Failed</span>`;
+    }
+    if (job.status === "posting") {
+      return `<span class="recent-tile-status is-blue">Posting…</span>`;
+    }
+    if (ACTIVE.includes(job.status)) {
+      return `<span class="recent-tile-status is-blue">Generating…</span>`;
+    }
+    if (job.scheduledAt && job.scheduledAt > Date.now()) {
+      return `<span class="recent-tile-status is-amber">Scheduled</span>`;
+    }
+    return `<span class="recent-tile-status is-amber">Ready</span>`;
+  }
+
   function jobTile(job) {
     const postUrl = primaryPostUrl(job);
     const title = shortCaption(job);
@@ -73,6 +93,7 @@
         <button type="button" class="recent-tile-open" data-open="${job.id}" aria-label="${escapeHtml(job.title || title)}">
           <span class="recent-tile-thumb">
             <span class="recent-tile-media">${thumbMedia(job)}</span>
+            ${tileStatus(job)}
             ${platformIcons(job)}
           </span>
         </button>
