@@ -66,10 +66,13 @@ async function setJob(id, fields) {
 }
 
 // Which renderer a job will use. Slideshows are rendered in-process with
-// ffmpeg; avatar videos need HeyGen, and without a key such a job fails with
-// that reason rather than quietly producing something else.
+// ffmpeg. Talking-creator videos go to Grok Imagine when an xAI key exists
+// (or when pinned via UGC_VIDEO_PROVIDER), and to HeyGen otherwise.
 export function pickProvider(settings) {
-  return jobFormat(settings) === "slideshow" ? "slideshow" : "heygen";
+  if (jobFormat(settings) === "slideshow") return "slideshow";
+  if (config.ugc.videoProvider === "grok") return "grok";
+  if (config.ugc.videoProvider === "heygen") return "heygen";
+  return grokConfigured() ? "grok" : "heygen";
 }
 
 // A slideshow goes out as photos wherever the platform has a photo post -
