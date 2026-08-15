@@ -544,10 +544,6 @@ const IMPLEMENTATIONS = {
       if (slideshowAngles().includes(angle)) settings.angle = angle;
       const count = Number(slides);
       if (Number.isInteger(count) && count >= 3 && count <= 10) settings.slides = count;
-    } else if (ctx.videoProvider) {
-      // Pin the model the composer picked, so this video renders with it
-      // even if the workspace default changes before its slot comes round.
-      settings.videoProvider = ctx.videoProvider;
     }
 
     const plan = await planContent({
