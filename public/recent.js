@@ -287,7 +287,7 @@
       jobsById = new Map(jobs.map((j) => [String(j.id), j]));
       feed.innerHTML = jobs.length
         ? `<div class="recent-grid">${jobs.map(jobTile).join("")}</div>`
-        : emptyBlock("Nothing posted yet. Once a video goes live, it shows up here.");
+        : emptyBlock("No videos yet. Everything you create shows up here - scheduled, rendering, and live.");
       bind();
 
       // Anything still rendering updates itself rather than needing a reload.
