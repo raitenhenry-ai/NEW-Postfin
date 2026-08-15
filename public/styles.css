@@ -7579,7 +7579,7 @@ body.theme-light .suggestion-chevron {
   color: #6a6a72 !important;
 }
 
-body.theme-light a:not(.schedule-btn):not(.automated-plan-btn):not(.stat-label) {
+body.theme-light a:not(.schedule-btn):not(.automated-plan-btn):not(.stat-label):not(.recent-tile-caption) {
   color: #3b6ef5;
 }
 
