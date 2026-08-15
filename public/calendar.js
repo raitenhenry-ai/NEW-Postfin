@@ -79,9 +79,22 @@
   const FORMAT_ICONS = {
     slideshow:
       '<svg viewBox="0 0 16 16" fill="none"><rect x="2.5" y="3.5" width="11" height="9" rx="1.5" stroke="currentColor" stroke-width="1.4"/><circle cx="5.75" cy="6.5" r="1" fill="currentColor"/><path d="M2.75 10.5l2.8-2.4 2.1 1.7 2.4-2.6 3.2 3.3" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>',
-    video:
+    grok:
       '<svg viewBox="0 0 16 16" fill="none"><rect x="2.5" y="3.5" width="11" height="9" rx="1.5" stroke="currentColor" stroke-width="1.4"/><path d="M7 6.2v3.6L10.2 8 7 6.2z" fill="currentColor"/></svg>',
+    heygen:
+      '<svg viewBox="0 0 16 16" fill="none"><circle cx="8" cy="5.4" r="2.2" stroke="currentColor" stroke-width="1.4"/><path d="M3.6 12.8c.6-2.2 2.4-3.4 4.4-3.4s3.8 1.2 4.4 3.4" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>',
   };
+  const FORMAT_LABELS = {
+    slideshow: { title: "Slideshow generation", aria: "Slideshow · slideshow generation" },
+    grok: { title: "Grok video generation", aria: "Grok · video generation" },
+    heygen: { title: "HeyGen avatar video", aria: "HeyGen · avatar video" },
+  };
+  function normalizeFormat(value) {
+    if (value === "slideshow" || value === "grok" || value === "heygen") return value;
+    // "video" is what the old two-way switch stored; Grok is today's default
+    // video renderer, so that's what it means now.
+    return "grok";
+  }
   let selectedProductUrl = localStorage.getItem(PRODUCT_KEY) || "";
   let attachedUpload = null;
   let selectedFormat = localStorage.getItem(FORMAT_KEY) === "slideshow" ? "slideshow" : "video";
