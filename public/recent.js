@@ -318,10 +318,20 @@
     try {
       const jobs = await api("/api/recent");
       jobsById = new Map(jobs.map((j) => [String(j.id), j]));
+      const failedCount = jobs.filter((j) => j.status === "failed").length;
+      const toolbar = failedCount
+        ? `<div class="recent-toolbar">
+             <span class="recent-toolbar-note">${failedCount} video${failedCount === 1 ? "" : "s"} failed</span>
+             <button type="button" class="pf-btn" data-retry-all>Retry all failed</button>
+           </div>`
+        : "";
       feed.innerHTML = jobs.length
-        ? `<div class="recent-grid">${jobs.map(jobTile).join("")}</div>`
+        ? `${toolbar}<div class="recent-grid">${jobs.map(jobTile).join("")}</div>`
         : emptyBlock("No videos yet. Everything you create shows up here - scheduled, rendering, and live.");
       bind();
+      feed.querySelector("[data-retry-all]")?.addEventListener("click", (e) => {
+        retryAllFailed(e.currentTarget);
+      });
 
       // Anything still rendering updates itself rather than needing a reload.
       clearTimeout(pollTimer);
@@ -335,6 +345,8 @@
     if (e.target.closest("[data-close-modal]")) closeDetail();
     const del = e.target.closest("[data-action='delete']");
     if (del) deleteJob(del.dataset.job, del);
+    const retry = e.target.closest("[data-action='retry']");
+    if (retry) retryJob(retry.dataset.job, retry);
   });
 
   document.addEventListener("keydown", (e) => {
